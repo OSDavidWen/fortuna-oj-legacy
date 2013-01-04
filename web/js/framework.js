@@ -1,5 +1,16 @@
-if ( window.addEventListener ) {
+if ( ! ('onhashchange' in window)){
+	var old_href = location.href;
+	setInterval(function() {
+		var new_href = location.href;
+		if (old_href != new_href){
+				old_href = new_href;
+				on_hash_change.call(window, {type: 'hashchange', 'newURL' : new_href, 'oldURL': old_href});
+		}
+	}, 100);
+	
+} else if ( window.addEventListener ) {
 	window.addEventListener('hashchange', on_hash_change, false);
+	
 } else if ( window.attachEvent ) {
 	window.attachEvent('onhashchange', on_hash_change);
 }

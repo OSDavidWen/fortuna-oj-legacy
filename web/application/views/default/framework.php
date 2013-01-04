@@ -77,7 +77,7 @@
 		<script type="text/javascript">
 			timer = Date.parse('<?=date(DATE_ATOM);?>');
 			setInterval("server_time.innerHTML=('Server Time: ' + (new Date(timer).toString())); timer += 1000;", 1000);
-			$('#navigation').affix();
+			//$('#navigation').affix();
 			<?php
 				if ( ! $logged_in) echo 'var logged_in = false;';
 				else echo 'load_userinfo(); var logged_in = true;';
