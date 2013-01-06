@@ -5,7 +5,7 @@
 
 <div class="newtask_form">
 
-	<form class="form-horizontal" action="/index.php/admin/new_task<?=isset($tid) ? "/$tid" : ''?>" method="post" id="newtask">
+	<form class="form-horizontal" action="index.php/admin/new_task<?=isset($tid) ? "/$tid" : ''?>" method="post" id="newtask">
 		<div class="control-group">
 			<label for="title" class="control-label">Title</label>
 			<div class="controls controls-row">

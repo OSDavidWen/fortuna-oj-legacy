@@ -29,19 +29,19 @@ function get_cookie(name){
 }
 
 function randomize(url){
-	if (url.indexOf('?') == -1) url += '?'; else url += '&';
-	url += 'seed=' + Math.random();
+	if (url.indexOf('?') == -1) url += '?';
+	url += '&seed=' + Math.random();
 	return url;
 }
 
 function hash_to_url(hash){
-	var url = window.location.hash;
-	url = 'index.php/' + url.substr(1);
+	if (hash[0] == '#') hash = hash.substr(1);
+	url = "index.php/" + hash;
 	return url;
 }
 
 function set_page_content(selector, url, success){
-	$(selector).html("<img src=\"/images/ajax-loader.gif\" />");
+	$(selector).html("<img src=\"images/ajax-loader.gif\" />");
 	url = randomize(url);
 	$.ajax({
 		type: "GET",
@@ -58,10 +58,8 @@ function set_page_content(selector, url, success){
 	});
 }
 
-function access_page(url, success){
-	if (url[0] == '#') url = url.substr(1);
-	url = randomize(url);
-	url = '/index.php/' + url;
+function access_page(hash, success){
+	url = randomize(hash_to_url(hash));
 	refresh = arguments.length == 3 && arguments[2] == false ? false : true;
 	if (refresh){
 		$.get(url, function(){
@@ -103,7 +101,7 @@ function init_framework(){
 }
 
 function load_userinfo(){
-	set_page_content('#userinfo', '/index.php/main/userinfo');
+	set_page_content('#userinfo', "index.php/main/userinfo");
 }
 
 function login_submit(){

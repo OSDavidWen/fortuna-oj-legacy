@@ -31,7 +31,7 @@
 <div class="row-fluid" style="margin-top:7px">
 	<div id="mainbar" class="span10">
 		<div class="problem">
-			<div class="well"><fieldset>
+			<div class="span12 well"><fieldset>
 				<legend><h4>Description</h4></legend>
 				<div class="content"><?=nl2br($data->problemDescription)?></div>
 			</fieldset></div>

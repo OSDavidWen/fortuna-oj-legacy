@@ -7,9 +7,7 @@ a:hover {color: #0088cc; text-decoration: none;}
 .label-info a, .badge-info a, .btn-primary a, .btn-info a{color: white;}
 .clear { background-color:#F9F9F9 }
 
-.user_specificator{
-	margin: 0 10px;
-}
+.user_specificator{ margin: 0 10px; }
 
 .sidebar-nav #username, .sidebar-nav #logout {
 	float: left;

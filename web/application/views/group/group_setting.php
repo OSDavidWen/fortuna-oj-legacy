@@ -56,14 +56,17 @@
 			</h5></legend>
 		</fieldset>
 		<?php
+		if (isset($grouping)){
 			$left = true;
 			foreach ($grouping->tasks as $task){
 				if ($left) echo '<div class="row-fluid">';
 				
 				echo '<div class="well span6" ' . ($left ? 'style="margin-left:0" ' : '') . '>';
 				echo '<table class="table table-condensed table-hover table-bordered clear">';
-				echo "<caption>$task->title
-					<button class='close' onclick=\"access_page('group/group_delete_task/$grouping->gid/$task->tid')\">&times;</button>
+				echo '<caption>';
+				if ($task->new_title != 'NULL' && $task->new_title != '') echo $task->new_title; else echo $task->title;
+				echo "<button class='close' onclick=\"access_page('group/group_delete_task/$grouping->gid/$task->tid')\">&times;</button>
+					<i class='icon-cog' onclick=\"task_config($grouping->gid, $task->tid)\"></i>
 					</caption>";
 					
 				foreach ($task->problems as $problem)
@@ -75,6 +78,7 @@
 				if ($left) echo '</div>';
 			}
 			if ( ! $left) echo '</div>';
+		}
 		?>
 	</div>
 </div>
@@ -139,6 +143,18 @@
 	</div>	
 </div>
 
+<div id="config_task_modal" class="modal hide fade">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Task Configuration</h3>
+	</div>
+	<div class="modal-body" id="task_config"></div>
+	<div class="modal-footer">
+		<a class="btn" data-dismiss="modal">Close</a>
+		<a class="btn btn-success" id="confirm_modify">Save</a>
+	</div>	
+</div>
+
 <script>
 
 var gid=<?=isset($grouping->gid) ? $grouping->gid : 0?>;
@@ -180,8 +196,21 @@ $(document).ready(function(){
 			url: 'index.php/group/group_add_tasks/' + gid,
 			success: refresh_page
 		})
+	}),
+	
+	$('#confirm_modify').click(function(){
+		$('#config_task_modal').modal('hide');
+		$('#form_config_task').ajaxSubmit({
+			type: 'post',
+			success: refresh_page
+		})
 	})
-})
+});
+
+function task_config(gid, tid){
+	set_page_content('#task_config', 'index.php/group/task_config/' + gid + '/' + tid);
+	$('#config_task_modal').modal('show');
+}
 
 function accept(gid, uid, object){
 	access_page('group/group_member_accept/' + gid + '/' + uid, void 0, false);

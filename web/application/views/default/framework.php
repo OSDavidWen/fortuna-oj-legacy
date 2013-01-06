@@ -8,15 +8,17 @@
 		<meta name="author" content="moreD" />
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-		<link href="/css/bootstrap.min.css" rel="stylesheet">
-		<link href="/css/bootstrap-responsive.min.css" rel="stylesheet">
-		<link href="/css/style.css" rel="stylesheet">
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+		<link href="css/style.css" rel="stylesheet">
 
-		<script src="/js/jquery.js"></script>
-		<script src="/js/jquery.form.js"></script>
-		<script src="/js/bootstrap.min.js"></script>
-		<script src="/js/framework.js"></script>
-		<script src="/js/jquery.hashchange.min.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/jquery.form.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script src="js/framework.js"></script>
+		<script src="js/jquery.hashchange.min.js"></script>
+		<script src="application/third_party/ckeditor/ckeditor.js"></script>
+		<script src="application/third_party/ckfinder/ckfinder.js"></script>
 		<?php if (isset($head)) echo $head?>
 		
 		<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -26,16 +28,16 @@
 	</head>
 
 <body onload="init_framework()">
-	<div class="container-fluid nav nav-list">
+	<div class="container-fluid">
 		<div class="row-fluid">
 		
 			<!-- Header -->
 			<div class="span12">
 				<div class="well">
 					<div class="tabbable tabs-left">
-						<ul id="navigation" class="nav nav-tabs">
+						<ul id="navigation" class="nav nav-tabs pull-left">
 							<li>
-								<img src="/images/school_logo.png" class="visible-desktop" width="83" style="margin-right: 20px" alt="ZSJZ OJ"/>
+								<img src="images/school_logo.png" class="visible-desktop" width="83" style="margin-right: 20px" alt="ZSJZ OJ"/>
 								<div id="userinfo"></div>
 								<div class="clearfix"></div>
 							</li>
@@ -54,6 +56,11 @@
 									<li class="nav_bar"><a href="#admin/task_list">Task List</a></li>
 									<li class="nav_bar"><a href="#admin/users">Manage User</a></li>
 								</ul>
+							</li>
+							<li>
+								<div id="scroll_tip" class="well" style="text-align:center; padding: 7px; position:fixed" onclick="javascript:scroll(0,0)">
+									<i class="icon-arrow-up"></i>
+								</div>
 							</li>
 						</ul>
 						<div id="page_content" class="tab-content" style="float:none; margin-left:123px"></div>
@@ -77,7 +84,11 @@
 		<script type="text/javascript">
 			timer = Date.parse('<?=date(DATE_ATOM);?>');
 			setInterval("server_time.innerHTML=('Server Time: ' + (new Date(timer).toString())); timer += 1000;", 1000);
-			//$('#navigation').affix();
+			
+			var browser = navigator.userAgent;
+			if (browser.indexOf('MSIE 6.0') > 0 || browser.indexOf('MSIE 7.0') > 0) $('#scroll_tip').affix();
+			else $('#navigation').affix();
+			//$('#scroll_tip').tooltip({placement:'right'});
 			<?php
 				if ( ! $logged_in) echo 'var logged_in = false;';
 				else echo 'load_userinfo(); var logged_in = true;';

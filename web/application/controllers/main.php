@@ -67,7 +67,7 @@ class Main extends CI_Controller {
 		$this->form_validation->set_rules('confirm_password', 'Confirm Password', 'required');
 		$this->form_validation->set_rules('email', 'Email', 'required|valid_email|is_unique[User.email]');
 
-		$this->form_validation->set_message('is_unique', 'The %s you use is not available!');
+		$this->form_validation->set_message('is_unique', '%s not available!');
 		$this->form_validation->set_message('required', '%s is required!');
 		
 		if ($this->form_validation->run() == FALSE)
@@ -163,7 +163,7 @@ class Main extends CI_Controller {
 		}
 
 		$this->load->library('pagination');
-		$config['base_url'] = base_url() . 'index.php#main/problemset/';
+		$config['base_url'] = '#main/problemset/';
 		$config['total_rows'] = $count;
 		$config['per_page'] = $problems_per_page;
 		$config['cur_page'] = $page;
@@ -312,7 +312,7 @@ class Main extends CI_Controller {
 			
 			$this->load->model('problems');
 			$showed = $this->problems->is_showed($data['pid']);
-			if ( ! $showed){
+			if ($showed == 0){
 				if ($this->user->is_admin()) $data['isShowed'] = 0;
 				else return;
 			}
@@ -335,7 +335,7 @@ class Main extends CI_Controller {
 		$this->submission->format_data($data);
 		
 		$this->load->library('pagination');
-		$config['base_url'] = base_url() . "index.php#main/statistic/$pid/";
+		$config['base_url'] = "#main/statistic/$pid/";
 		$config['total_rows'] = $count;
 		$config['per_page'] = $users_per_page;
 		$config['cur_page'] = $page;
@@ -348,21 +348,30 @@ class Main extends CI_Controller {
 	public function status($page = 1){
 		$submissions_per_page = 20;
 		
+		$filter = (array)$this->input->post(NULL, TRUE);
+		
 		$this->load->model('submission');
 		$row_begin = ($page - 1) * $submissions_per_page;
-		$count = $this->submission->count();
-		$data = $this->submission->load_status($row_begin, $submissions_per_page);
+		$count = $this->submission->count($filter);
+		$data = $this->submission->load_status($row_begin, $submissions_per_page, $filter);
 		$this->submission->format_data($data);
 		
 		$this->load->library('pagination');
-		$config['base_url'] = base_url() . 'index.php#main/status/';
+		$config['base_url'] = '#main/status/';
 		$config['total_rows'] = $count;
 		$config['per_page'] = $submissions_per_page;
 		$config['first_link'] = 'Top';
 		$config['last_link'] = FALSE;
 		$this->pagination->initialize($config);
 
-		$this->load->view('main/status', array('data'	=>	$data));
+		$filter = array_merge(array('status' => array(), 'languages' =>array()), $filter);
+		$this->load->view('main/status', array('data'	=>	$data, 'filter' => $filter));
+	}
+	
+	public function submission_change_access($sid){
+		$this->load->model('submission');
+		if ($this->session->userdata('priviledge') == 'admin' || $this->session->userdata('uid') == $this->submission->load_uid($sid))
+			$this->submission->change_access($sid);
 	}
 
 	public function code($sid){
@@ -409,7 +418,7 @@ class Main extends CI_Controller {
 		}
 		
 		$this->load->library('pagination');
-		$config['base_url'] = base_url() . 'index.php#main/ranklist/';
+		$config['base_url'] = '#main/ranklist/';
 		$config['total_rows'] = $count;
 		$config['per_page'] = $users_per_page;
 		$this->pagination->initialize($config);

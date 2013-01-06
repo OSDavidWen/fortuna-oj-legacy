@@ -1,5 +1,5 @@
-<script src="/application/third_party/uploadify/jquery.uploadify.min.js"></script>
-<script src="/js/jquery-ui.js"></script>
+<script src="application/third_party/uploadify/jquery.uploadify.min.js"></script>
+<script src="js/jquery-ui.js"></script>
 
 <?="<center><h3>$pid . $title <sub>(Data Configuration)</sub></h3></center>";?>
 
@@ -181,8 +181,8 @@
 
 	$(function() {
 		$('#file_upload').uploadify({
-			'swf'      : '/application/third_party/uploadify/uploadify.swf',
-			'uploader' : 'index.php/admin/upload/<?=$pid?>',
+			'swf'      : "application/third_party/uploadify/uploadify.swf",
+			'uploader' : "index.php/admin/upload/<?=$pid?>",
 			'onQueueComplete' : refresh_data
 		});
 	});
@@ -190,7 +190,7 @@
 	function refresh_data(){
 		$.ajax({
 			type: "GET",
-			url: "/index.php/admin/scan/" + pid.toString(),
+			url: "index.php/admin/scan/" + pid.toString(),
 			success: function(data){
 				$('#data').html('');
 				data = eval("(" + data + ")");

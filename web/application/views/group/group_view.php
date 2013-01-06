@@ -54,7 +54,9 @@
 				if ($left) echo '<div class="row-fluid">';
 				echo '<div class="well span6" ' . ($left ? 'style="margin-left:0" ' : '') . '>';
 				echo '<table class="table table-condensed table-hover table-bordered clear">';
-				echo "<caption>$task->title</caption>";
+				echo '<caption>';
+				if ($task->new_title != 'NULL' && $task->new_title != '') echo $task->new_title; else echo $task->title;
+				echo '</caption>';
 				foreach ($task->problems as $problem) 
 					echo "<tr><td><a href='#task/show/$problem->pid/$grouping->gid/$task->tid'>$problem->title</a></td></tr>";
 				echo '</table></div>';

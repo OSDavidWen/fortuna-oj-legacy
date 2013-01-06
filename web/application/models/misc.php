@@ -215,6 +215,18 @@ class Misc extends CI_Model{
 		}
 	}
 	
+	function load_group_task_configuration($gid, $tid){
+		return $this->db->query("SELECT * FROM Group_has_Task WHERE gid=? AND tid=?", array($gid, $tid))->row();
+	}
+	
+	function save_group_task_configuration($gid, $tid, $raw){
+		$data['title'] = $raw['title'];
+		$data['startTime'] = $raw['start_date'] . ' ' . $raw['start_time'];
+		$data['endTime'] = $raw['end_date'] . ' ' . $raw['end_time'];
+		$sql = $this->db->update_string('Group_has_Task', $data, "gid=$gid AND tid=$tid");
+		$this->db->query($sql);
+	}
+	
 	function group_delete_task($gid, $tid){
 		$this->db->query("DELETE FROM Group_has_Task WHERE gid=? AND tid=?", array($gid, $tid));
 	}

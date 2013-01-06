@@ -39,10 +39,10 @@
 	);
 ?>
 	
-<div id="register_field" class="modal">
+<div id="register_field" class="modal" style="width:740px; margin-left:-370px">
 	<div class="modal-header"><h3><em>Register</em></h3></div>
 	
-	<form action="/index.php/main/register" id="register_form" class="form" method="post">
+	<form action="index.php/main/register" id="register_form" class="form" method="post">
 		<div class="modal-body">
 			<div>
 				<span style="position:absolute; left:10"><i class="icon-user"></i>Username*</span>

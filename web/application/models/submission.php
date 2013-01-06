@@ -10,6 +10,10 @@ class Submission extends CI_Model{
 		$this->db->query("UPDATE Submission SET isShowed=1-isShowed WHERE sid=?", array($sid));
 	}
 	
+	function change_access($sid){
+		$this->db->query("UPDATE Submission SET private=1-private WHERE sid=?", array($sid));
+	}
+	
 	function save_submission($data){
 		$sql = $this->db->insert_string('Submission', $data);
 		$this->db->query($sql);
@@ -60,27 +64,62 @@ class Submission extends CI_Model{
 			array($pid, $pid, $row_begin, $count))->result();
 	}
 	
-	function count(){
-		return $this->db->query("SELECT COUNT(*) AS count FROM Submission WHERE cid IS NULL")->row()->count;
+	private function filter_to_string($filter){
+		$conditions = '';
+		if (isset($filter['problems'])){
+			$conditions .= ' AND pid IN (';
+			foreach ($filter['problems'] as $pid) $conditions .= $pid . ',';
+			$conditions[strlen($conditions) - 1] = ')';
+		}
+		if (isset($filter['users'])){
+			$conditions .= ' AND name IN (';
+			foreach ($filter['users'] as $name) $conditions .= "'$name',";
+			$conditions[strlen($conditions) - 1] = ')';
+		}
+		if (isset($filter['status'])){
+			$conditions .= ' AND status IN (';
+			foreach ($filter['status'] as $status) $conditions .= $status . ',';
+			$conditions[strlen($conditions) - 1] = ')';
+		}
+		if (isset($filter['languages'])){
+			$conditions .= ' AND language IN (';
+			foreach ($filter['languages'] as $language) $conditions .= "'$language',";
+			$conditions[strlen($conditions) - 1] = ')';
+		}
+		return $conditions;
 	}
 	
-	function load_status($row_begin, $count){
-		return $this->db->query("SELECT sid, name, pid, status, score, time, memory, codeLength, submitTime, language, isShowed 
-								FROM Submission WHERE cid IS NULL ORDER BY sid DESC LIMIT ?, ?", array($row_begin, $count))->result();
+	function count($filter = NULL){
+		$conditions = self::filter_to_string($filter);
+		return $this->db->query("SELECT COUNT(*) AS count FROM Submission WHERE cid IS NULL $conditions")->row()->count;
+	}
+	
+	function load_status($row_begin, $count, $filter = NULL){
+		$conditions = self::filter_to_string($filter);
+		return $this->db->query("SELECT sid, uid, name, pid, status, score, time, memory, codeLength, submitTime, language, isShowed, private 
+								FROM Submission WHERE cid IS NULL $conditions ORDER BY sid DESC LIMIT ?, ?", array($row_begin, $count))->result();
 	}
 	
 	function load_code($sid){
-		$result = $this->db->query("SELECT uid, pid, code, language FROM Submission WHERE sid=?", array($sid))->row();
+		$result = $this->db->query("SELECT uid, pid, code, language, private FROM Submission WHERE sid=?", array($sid));
+		if ($result->num_rows() == 0) return FALSE; else $result = $result->row();
 		$uid = $this->session->userdata('uid');
-		if ($result->uid == $uid || $this->session->userdata('priviledge') == 'admin' ||
+		if ($result->uid == $uid || $this->session->userdata('priviledge') == 'admin' || $result->private == 0 || 
 			$this->db->query("SELECT * FROM Submission WHERE pid=? AND uid=? AND status=0", array($result->pid, $uid))->num_rows() > 0)
 			return $result;
 		return FALSE;
 	}
 	
 	function load_result($sid){
-		$result = $this->db->query("SELECT uid, judgeResult AS result FROM Submission WHERE sid=?", array($sid))->row();
-		if ($result->uid == $this->session->userdata('uid') || $this->session->userdata('priviledge') == 'admin') return $result;
+		$result = $this->db->query("SELECT uid, judgeResult AS result FROM Submission WHERE sid=?", array($sid));
+		if ($result->num_rows() == 0) return FALSE;
+		if ($result->row()->uid == $this->session->userdata('uid') || $this->session->userdata('priviledge') == 'admin') return $result->row();
 		return FALSE;
+	}
+	
+	function load_uid($sid){
+		$result = $this->db->query("SELECT uid FROM Submission WHERE sid=?", array($sid));
+		if ($result->num_rows() == 0) return FALSE;
+		return $result->row()->uid;		
 	}
 }

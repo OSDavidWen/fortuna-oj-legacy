@@ -43,7 +43,7 @@
 							if (isset($row->acList[$prob->pid])){
 								echo '<span class="badge badge-success">' . $row->attempt[$prob->pid] . '/' . $row->acList[$prob->pid] . '</span>';
 							}else{
-								echo '<span class="badge badge-important">' . $row->attempt[$prob->pid] . '</span>';
+								echo '<span class="badge badge-important">-' . $row->attempt[$prob->pid] . '</span>';
 							}
 						}
 						echo '</td>';

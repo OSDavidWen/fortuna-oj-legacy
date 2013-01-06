@@ -5,7 +5,7 @@
 
 <div class="newcontest_form">
 
-	<form class="form-horizontal" action="/index.php/admin/newcontest<?=isset($cid) ? "/$cid" : ''?>" method="post" id="newcontest">
+	<form class="form-horizontal" action="index.php/admin/newcontest<?=isset($cid) ? "/$cid" : ''?>" method="post" id="newcontest">
 		<div class="control-group">
 			<label for="title" class="control-label">Title</label>
 			<div class="controls controls-row">

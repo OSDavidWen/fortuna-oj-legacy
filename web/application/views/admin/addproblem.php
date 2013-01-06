@@ -1,6 +1,3 @@
-		<script src="/application/third_party/ckeditor/ckeditor.js"></script>
-		<script src="/application/third_party/ckfinder/ckfinder.js"></script>
-
 <h4>Problem Statements <a title="Click empty frames to edit!" id="editor_help"><i class="icon-question-sign"></i></a></h4>
 <hr />
 
@@ -8,7 +5,7 @@
 
 <div class="addproblem_form">
 
-	<form class="form-horizontal" action="/index.php/admin/addproblem/<?=isset($pid) ? $pid : ''?>" method="post" id="addproblem">
+	<form class="form-horizontal" action="index.php/admin/addproblem/<?=isset($pid) ? $pid : ''?>" method="post" id="addproblem">
 	
 		<input type="hidden" name="title" id="title_data" />
 		<fieldset>
@@ -90,7 +87,6 @@
 		<button type="submit" class="btn btn-primary pull-right" onclick="return add_problem()">Save</button>
 		
 		<script type="text/javascript">
-			CKEDITOR.basePath = "/application/third_party/ckeditor/";
 			$(document).ready(function(){
 				$('#editor_help').tooltip({placement: 'bottom'});
 			});
@@ -110,11 +106,11 @@
 			var sod = CKEDITOR.inline('outputSample');
 			var dc = CKEDITOR.inline('dataConstraint');
 			var hint = CKEDITOR.inline('hint');
- 			CKFinder.setupCKEditor(pd, "/application/third_party/ckfinder/");
- 			CKFinder.setupCKEditor(id, "/application/third_party/ckfinder/");
- 			CKFinder.setupCKEditor(od, "/application/third_party/ckfinder/");
- 			CKFinder.setupCKEditor(dc, "/application/third_party/ckfinder/");
- 			CKFinder.setupCKEditor(hint, "/application/third_party/ckfinder/");
+ 			CKFinder.setupCKEditor(pd, "application/third_party/ckfinder/");
+ 			CKFinder.setupCKEditor(id, "application/third_party/ckfinder/");
+ 			CKFinder.setupCKEditor(od, "application/third_party/ckfinder/");
+ 			CKFinder.setupCKEditor(dc, "application/third_party/ckfinder/");
+ 			CKFinder.setupCKEditor(hint, "application/third_party/ckfinder/");
 			
 			function add_problem(){
 				$('#title_data').val(td.getData());

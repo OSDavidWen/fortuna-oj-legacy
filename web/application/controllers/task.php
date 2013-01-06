@@ -86,7 +86,7 @@ class Task extends CI_Controller {
 		$data->tid = $tid;
 		$data->gid = $gid;
 		
-		$endTime = $this->misc->load_task_endtime($gid, $tid);
+		$endTime = $this->misc->load_task_info($gid, $tid)->endTime;
 		$data->timeout = strtotime($endTime) < time();
 		
 		if ($data == FALSE)

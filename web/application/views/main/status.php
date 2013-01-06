@@ -1,15 +1,133 @@
+<?php
+	function my_set_checkbox($array, $value){
+		if ($array != NULL && in_array($value, $array)) return 'checked';
+	}
+?>
 <div class="status_table">
-	<table class="table table-condensed table-striped table-bordered">
+	<form class="accordion form form-inline" id="form_filter" method="post">
+		<div class="accordion-group">
+			<div class="accordion-heading">
+				<a class="accordion-toggle" data-toggle="collapse" data-parent="#form_filter" data-target="#filters">
+					<span>
+						<b>Status Filters</b>
+						<i id="filter_tips" class="icon-info-sign" title="Select none means select all!"></i>
+					</span>
+					<i class="icon-chevron-down pull-right"></i>
+				</a>
+			</div>
+			<div class="accordion-body collapse" id="filters">
+				<div class="accordion-inner">
+					<div>
+						<span>
+							<b>Problems</b>
+							<i class="icon-plus-sign" id="add_problem" rel="popover"></i>
+							<span id="problems"></span>
+							<span id="popover_add_problem"></span>
+						</span>
+					</div>
+					
+					<div>
+						<span>
+							<b>User</b>
+							<i class="icon-plus-sign" id="add_user"></i>
+							<span id="popover_add_user"></span>
+						</span>
+						<span id="users"></span>
+					</div>
+					
+					<div>
+						<span><b>Result</b> </span>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="-1" <?=my_set_checkbox($filter['status'], -1)?> />
+							<span class="label">Pending</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="0" <?=my_set_checkbox($filter['status'], 0)?> />
+							<span class="label label-success">Accepted</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="1" <?=my_set_checkbox($filter['status'], 1)?> />
+							<span class="label label-important">Presentation Error</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="2" <?=my_set_checkbox($filter['status'], 2)?> />
+							<span class="label label-important">Wrong Answer</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="3" <?=my_set_checkbox($filter['status'], 3)?> />
+							<span class="label label-info">Checker Error</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="4" <?=my_set_checkbox($filter['status'], 4)?> />
+							<span class="label label-warning">Output Limit Exceeded</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="5" <?=my_set_checkbox($filter['status'], 5)?> />
+							<span class="label label-warning">Memory Limit Exceeded</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="6" <?=my_set_checkbox($filter['status'], 6)?> />
+							<span class="label label-warning">Time Limit Exceeded</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="7" <?=my_set_checkbox($filter['status'], 7)?> />
+							<span class="label label-important">Runtime Error</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="8" <?=my_set_checkbox($filter['status'], 8)?> />
+							<span class="label">Compile Error</span>
+						</label>
+						<label for="status">
+							<input type="checkbox" name="status[]" value="9" <?=my_set_checkbox($filter['status'], 9)?> />
+							<span class="label">Internal Error</span>
+						</label>
+					</div>
+					
+					<div>
+						<span><b>Language</b> </span>
+						<label for="languages">
+							<input type="checkbox" name="languages[]" value="C" <?=my_set_checkbox($filter['languages'], 'C')?> />
+							C
+						</label> 
+						<label for="languages">
+							<input type="checkbox" name="languages[]" value="C++" <?=my_set_checkbox($filter['languages'], 'C++')?> />
+							C++
+						</label> 
+						<label for="languages">
+							<input type="checkbox" name="languages[]" value="C++11" <?=my_set_checkbox($filter['languages'], 'C++11')?> />
+							C++11(0x)
+						</label> 
+						<label for="languages">
+							<input type="checkbox" name="languages[]" value="Pascal" <?=my_set_checkbox($filter['languages'], 'Pascal')?> />
+							Pascal
+						</label> 
+						<label for="languages">
+							<input type="checkbox" name="languages[]" value="Java" <?=my_set_checkbox($filter['languages'], 'Java')?> />
+							Java
+						</label> 
+						<label for="languages">
+							<input type="checkbox" name="languages[]" value="Python" <?=my_set_checkbox($filter['languages'], 'Python')?> />
+							Python
+						</label> 
+					</div>
+				</div>
+				<button class="btn btn-primary btn-mini pull-right" id="btn_filter">Filter</button>
+			</div>
+		</div>
+	</form>
+	
+	<table class="table table-condensed table-striped" style="text-align:center">
 		<thead><tr>
-			<th class="sid">Submission</th>
-			<th class="pid">Problem</th>
-			<th class="user">User</th>
-			<th class="result">Result</th>
-			<th class="time">Time</th>
-			<th class="memory">Memory</th>
-			<th class="language">Language</th>
-			<th class="codeLength">Code Length</th>
-			<th class="submitTime">Submit Time</th>
+			<th>Sid</th>
+			<th>Problem</th>
+			<th>User</th>
+			<th>Result</th>
+			<th>Time</th>
+			<th>Memory</th>
+			<th>Language</th>
+			<th>Length</th>
+			<th>Submit Time</th>
+			<th>Access</th>
 			<?php if ($this->user->is_admin()) echo '<th></th>'; ?>
 		</tr></thead>
 		
@@ -23,24 +141,34 @@
 			if ($row->status == -1) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
-				if (round($row->score, 0) == 100)
-					$sname = "$row->result<span class=\"badge badge-success\">" . round($row->score, 1) . '</span>';
-				elseif (round($row->score, 0) == 0)
-					$sname = "$row->result<span class=\"badge badge-important\">" . round($row->score, 1) . '</span>';
-				else
-					$sname = "$row->result<span class=\"badge badge-info\">" . round($row->score, 1) . '</span>';
-				echo "<a href=\"#main/result/$row->sid\">$sname</a>";
+				//if (round($row->score, 0) == 100)
+				//	$sname = "$row->result<span class=\"label label-success\">" . round($row->score, 1) . '</span>';
+				//elseif (round($row->score, 0) == 0)
+				//	$sname = "$row->result<span class=\"label label-important\">" . round($row->score, 1) . '</span>';
+				//else
+					$sname = "$row->result<span class=\"label label-info\">" . round($row->score, 1) . '</span>';
+				echo "<a href=\"#main/result/$row->sid\"> $sname</a>";
 			}
-			echo "</td><td><span class=\"badge badge-info\">$row->time</span></td>" . 
-				"<td><span class=\"badge badge-info\">$row->memory</span></td>" . 
-				"<td><a href=\"#main/code/$row->sid\">$row->language</a>" . 
-				"</td><td>$row->codeLength</td><td>$row->submitTime</td>";
+			echo "</td><td><span class=\"label label-info\">$row->time</span></td>" . 
+				"<td><span class=\"label label-info\">$row->memory</span></td>" . 
+				"<td><a href=\"#main/code/$row->sid\">$row->language</a></td>" . 
+				"<td>$row->codeLength</td><td>$row->submitTime</td>";
+			
+			echo '<td>';
+			if ($this->user->uid() == $row->uid || $this->user->is_admin()){
+				echo "<a onclick=\"access_page('main/submission_change_access/$row->sid')\">";
+				if ($row->private == 1) echo '<i class="icon-lock"></i>'; else echo '<i class="icon-globe"></i>';
+				echo '</a>';
+			} else if ($row->private == 0) echo '<i class="icon-globe"></i>';
+			echo '</td>';
+			
 			if ($this->user->is_admin()){
 				echo "<td><a onclick=\"access_page('admin/change_submission_status/$row->sid')\">";
 				if ($row->isShowed == 1) echo '<i class="icon-eye-open"></i>';
 				else echo '<i class="icon-eye-close"></i>';
 				echo '</a></td>';
 			}
+			
 			echo '</tr>';
 		}
 		?></tbody>
@@ -51,7 +179,100 @@
 <?=$this->pagination->create_links()?>
 
 <script type="text/javascript">
-	refresh_flag = setTimeout("refresh_page()", 30000);
+	var problems = [<?php
+		if (isset($filter['problems']))
+			foreach ($filter['problems'] as $pid) echo $pid . ',';
+	?>];
+	var users = [<?php
+		if (isset($filter['users']))
+			foreach ($filter['users'] as $pid) echo "'$pid',";
+	?>];
+
+	for (pid in problems) add_problem(problems[pid]);
+	for (name in users) add_user(users[name]);
+	//$('.label').removeClass('label');
+	//$('.label-info').removeClass('label-info');
+	//$('.label-success').removeClass('label-success');
+	//$('.label-warning').removeClass('label-warning');
+	//$('.label-important').removeClass('label-important');
+	
+	$(document).ready(function(){
+		$('#filter_tips').tooltip({placement: 'right'}),
+		
+		$('#add_problem').tooltip({
+			html: true,
+			placement: 'right',
+			trigger: 'click',
+			selector: $('#popover_add_problem'),
+			title: '<input id="problem" type="text" class="input-mini" /> \
+					<button id="btn_add_problem" class="btn btn-mini">Add</button>'
+		}),
+		
+		$('#add_user').tooltip({
+			html: true,
+			placement: 'right',
+			trigger: 'click',
+			selector: $('#popover_add_user'),
+			title: '<input id="user" type="text" class="input-mini" /> \
+					<button id="btn_add_user" class="btn btn-mini">Add</button>'
+		}),
+		
+		$('#btn_add_problem').die(),
+		$('#btn_add_problem').live('click', function(){
+			$('#add_problem').tooltip('hide');
+			var pid = $('#problem').val();
+			$('#problem').val('');
+			add_problem(pid);
+			return false;
+		}),
+		
+		$('#btn_add_user').die(),
+		$('#btn_add_user').live('click', function(){
+			$('#add_user').tooltip('hide');
+			var name = $('#user').val();
+			$('#user').val('');
+			add_user(name);
+			return false;			
+		}),
+		
+		$('.close').die(),
+		$('.close').live('click', function(){
+			var selector = '#' + $(this).parent().attr('data');
+			$(selector).remove();
+			$(this).parent().remove();
+		}),
+		
+		$('.pagination a').click(function(){
+			filter(hash_to_url($(this).attr('href')));
+			return false;
+		}),
+		
+		$('#btn_filter').click(function(){
+			filter("index.php/main/status/<?=$this->uri->segment(3, 1)?>");
+			return false;
+		})
+	});
+	
+	function filter(url){
+		$('#form_filter').ajaxSubmit({
+			url: url,
+			success: function(responseText){
+				$('#page_content').html(responseText);
+			}
+		});
+	}
+	
+	function add_problem(pid){
+		$('#problems').append("<span class='label label-info' data='problem_" + pid + "'>" + pid + "<span class='close' style='line-height:14px'>&times;</span></span> ");
+		$('#problems').append("<input type='hidden' name='problems[]' id='problem_" + pid + "' value='" + pid + "' />");
+	}
+	
+	function add_user(name){
+		$('#users').append("<span class='label label-info' data=user_'" + name + "'>" + name + "<span class='close' style='line-height:14px'>&times;</span></span> ");
+		$('#users').append("<input type='hidden' name='users[]' id=user_'" + name + "' value='" + name + "' />");
+	}
+	
+	//refresh_flag = setTimeout("refresh_page()", 30000);
 </script>
 
 <!-- End of file status.php -->

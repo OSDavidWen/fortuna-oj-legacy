@@ -139,6 +139,21 @@ class Group extends CI_Controller {
 		}
 	}
 	
+	function task_config($gid, $tid){
+		$this->load->model('misc');
+		if ($this->misc->is_group_admin($gid)){
+			$data = $this->misc->load_group_task_configuration($gid, $tid);
+			
+			$this->load->view('group/modal_task_config', $data);
+		}
+	}
+	
+	function group_task_configuration($gid, $tid){
+		$this->load->model('misc');
+		if ($this->misc->is_group_admin($gid))
+			$this->misc->save_group_task_configuration($gid, $tid, $this->input->post(NULL, TRUE));
+	}
+	
 	function group_add_tasks($gid){
 		$this->load->model('misc');
 		if ( ! $this->misc->is_group_admin($gid)) return;

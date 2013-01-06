@@ -15,7 +15,9 @@
 			?>
 					<table class="table table-condensed table-bordered table-hover clear">
 						<caption>
-							<h5 style="margin-bottom: 3px"><a class="title" title="<?=$task->description?>"><?=$task->title?></a></h5>
+							<h5 style="margin-bottom: 3px"><a class="title" title="<?=$task->description?>"><?php
+								if ($task->new_title != 'NULL' && $task->new_title != '') echo $task->new_title; else echo $task->title;
+							?></a></h5>
 							<?=strtotime($task->endTime) >= time() ?
 								"<span class='label'>Deadline</span> $task->endTime" : '<span class="label">End</span>'?>
 						</caption>
