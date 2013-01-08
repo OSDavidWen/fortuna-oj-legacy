@@ -84,6 +84,11 @@ function refresh_page(){
 }
 
 function on_hash_change(){
+	if (window.preventHashchange == true){
+		window.preventHashchange = false;
+		return;
+	}
+	
 	if (typeof refresh_flag != 'undefined'){
 		clearTimeout(refresh_flag);
 		delete refresh_flag;
@@ -92,6 +97,8 @@ function on_hash_change(){
 }
 
 function init_framework(){
+	window.preventHashchange = false;
+	
 	if (window.location.hash != ''){
 		set_page_content('#page_content', hash_to_url(window.location.hash));
 	}else load_page('main/home');

@@ -11,12 +11,12 @@
 		if ($row->status == -1) echo $row->result;
 		elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 		else{
-			if (round($row->score, 0) == 100)
-				$sname = "$row->result<span class=\"badge badge-success\">" . round($row->score, 1) . '</span>';
-			elseif (round($row->score, 0) == 0)
-				$sname = "$row->result<span class=\"badge badge-important\">" . round($row->score, 1) . '</span>';
-			else
-				$sname = "$row->result<span class=\"badge badge-info\">" . round($row->score, 1) . '</span>';
+//			if (round($row->score, 0) == 100)
+//				$sname = "$row->result<span class=\"badge badge-success\">" . round($row->score, 1) . '</span>';
+//			elseif (round($row->score, 0) == 0)
+//				$sname = "$row->result<span class=\"badge badge-important\">" . round($row->score, 1) . '</span>';
+//			else
+			$sname = "$row->result <span class=\"label label-info\">" . round($row->score, 1) . '</span>';
 			echo "<a href=\"#main/result/$row->sid\">$sname</a>";
 		}
 		echo "</td><td>$row->time</td>

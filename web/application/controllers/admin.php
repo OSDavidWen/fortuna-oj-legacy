@@ -207,8 +207,9 @@ class Admin extends CI_Controller {
 				$infile = $info['basename'];
 				if (!strpos($infile, '.in')) continue;
 				$outfile1 = str_ireplace('.in', '.out', $infile);
-				$outfile2 = str_ireplace('.in', '.ans', $infile);	
-				if ((is_file($outfile1) || is_file($outfile2))) $cnts++;
+				$outfile2 = str_ireplace('.in', '.ans', $infile);
+				$outfile3 = str_ireplace('.in', '.ou', $infile);
+				if (is_file($outfile1) || is_file($outfile2) || is_file($outfile3)) $cnts++;
 			}
 		}
 
@@ -218,12 +219,15 @@ class Admin extends CI_Controller {
 				$infile = $info['basename'];
 				if (!strpos($infile, '.in')) continue;
 				$outfile1 = str_ireplace('.in', '.out', $infile);
-				$outfile2 = str_ireplace('.in', '.ans', $infile);	
-				if ((is_file($outfile1) || is_file($outfile2))){
+				$outfile2 = str_ireplace('.in', '.ans', $infile);
+				$outfile3 = str_ireplace('.in', '.ou', $infile);
+				if (is_file($outfile1) || is_file($outfile2) || is_file($outfile3)){
 					if (isset($test)) unset($test);
 					if (isset($case)) unset($case);
 					$test['input'] = $infile;
-					if (is_file($outfile1)) $test['output'] = $outfile1; else $test['output'] = $outfile2;
+					if (is_file($outfile1)) $test['output'] = $outfile1;
+					else if (is_file($outfile2)) $test['output'] = $outfile2;
+					else if (is_file($outfile3)) $test['output'] = $outfile3;
 					$case['tests'][] = $test;
 					$data['cases'][] = $case;
 				}

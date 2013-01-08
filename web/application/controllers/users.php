@@ -21,9 +21,6 @@ class Users extends CI_Controller {
 	public function index($user){
 		if ($user->submitCount == 0) $user->rate = 0;
 		else $user->rate = number_format($user->solvedCount / $user->submitCount * 100, 2);
-		 
-		if ($user->idSchool)
-			$user->school = $this->user->load_school($user->idSchool);
 			
 		$user->rank = $this->user->load_rank($user->uid);
 		

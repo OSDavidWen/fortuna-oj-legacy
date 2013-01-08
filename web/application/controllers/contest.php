@@ -126,6 +126,12 @@ class Contest extends CI_Controller {
 			$data = $this->contests->load_contest_submission($cid, $row_begin, $submission_per_page,
 												$info->running, $this->session->userdata('username'), $this->user->is_admin());
 			$this->submission->format_data($data);
+			foreach ($data as $row)
+				foreach ($info->problemset as $problem)
+					if ($row->pid == $problem->pid){
+						$row->id = $problem->id;
+						break;
+					}
 
 			$this->load->library('pagination');
 			$config['base_url'] = base_url() . "index.php#contest/status/$cid/";

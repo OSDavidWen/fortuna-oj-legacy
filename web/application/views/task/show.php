@@ -117,8 +117,13 @@
 		$('#trigger').popover({html: true, content: dataconf, trigger: 'hover', placement: 'bottom'}),
 		$('#trigger').click(function(){
 			$('#trigger').popover('hide')
+		}),
+		$('#page_content').one('DOMNodeInserted', function(){
+			document.title = "<?=OJ_TITLE?>";
 		})
 	})
+	
+	document.title = "<?=$data->pid . '. ' . $data->title . ' ' . $IO?>";
 </script>
 
 <!-- End of file show.php -->

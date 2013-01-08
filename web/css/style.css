@@ -21,8 +21,6 @@ a:hover {color: #0088cc; text-decoration: none;}
 	margin: auto;
 }
 
-.popover, .popover-inner { width: 300px; }
-
 #settings .control-label { width: 75px; }
 #settings .controls { margin-left: 85px; }
 

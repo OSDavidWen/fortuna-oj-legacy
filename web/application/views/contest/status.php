@@ -14,7 +14,8 @@
 	<tbody><?php
 		foreach ($data as $row){
 			if ($row->isShowed = 0 && ! $is_admin) continue;
-			echo "<tr><td>$row->sid</td><td><a href=\"#main/show/$row->pid\">$row->pid</a></td><td>" . 
+			echo "<tr><td>$row->sid</td><td><a href=\"#main/show/$row->pid\">" . 
+				($info->contestMode == 'ACM' ? chr(65 + $row->id) : $row->id) . '</a></td><td>' . 
 				"<span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
 			if ($row->status == -1) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
@@ -24,12 +25,12 @@
 				}else{
 					$sname = $row->result;
 					if ($info->contestMode == 'OI'){
-						if (round($row->score, 0) == 100)
-							$sname .= '<span class="badge badge-success">' . round($row->score, 1) . '</span>';
-						elseif (round($row->score, 0) == 0)
-							$sname .= '<span class="badge badge-important">' . round($row->score, 1) . '</span>';
-						else
-							$sname .= '<span class="badge badge-info">' . round($row->score, 1) . '</span>';
+				//		if (round($row->score, 0) == 100)
+				//			$sname .= '<span class="badge badge-success">' . round($row->score, 1) . '</span>';
+				//		elseif (round($row->score, 0) == 0)
+				//			$sname .= '<span class="badge badge-important">' . round($row->score, 1) . '</span>';
+				//		else
+						$sname .= ' <span class="badge badge-info">' . round($row->score, 1) . '</span>';
 					}
 					echo "<a href=\"#main/result/$row->sid\">$sname</a>";
 				}
@@ -50,7 +51,7 @@
 
 
 <script type="text/javascript">
-	setTimeout("refresh_page()", 10000);
+//	setTimeout("refresh_page()", 10000);
 </script>
 
 <!-- End of file status.php -->

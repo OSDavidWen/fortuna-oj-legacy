@@ -23,6 +23,7 @@ class Submission extends CI_Model{
 	function format_data(&$data){
 		foreach ($data as $row){
 			switch ($row->status){
+				case -2: $row->result = '<span class="label label-important">Running</span>'; break;
 				case -1: $row->result = '<span class="label">Pending</span>'; break;
 				case 0: $row->result = '<span class="label label-success">Accepted</span>'; break;
 				case 1: $row->result = '<span class="label label-important">Presentation Error</span>'; break;
@@ -51,15 +52,16 @@ class Submission extends CI_Model{
 	}
 	
 	function statistic_count($pid){
-		return $this->db->query("SELECT COUNT(DISTINCT uid) AS count FROM Submission WHERE pid=?", array($pid))->row()->count;
+		return $this->db->query("SELECT COUNT(DISTINCT uid) AS count FROM Submission WHERE pid=? AND status>=0", array($pid))->row()->count;
 	}
 	
 	function load_statistic($pid, $row_begin, $count){
 		return $this->db->query("SELECT *, COUNT(DISTINCT A.uid) FROM
 			(SELECT sid, uid, status, name, score, time, memory, codeLength, submitTime, language, 
-			-score*1e15+time*1e10+memory*1e5+sid val FROM Submission WHERE pid=?) A
-			RIGHT JOIN
-			(SELECT uid, min(-score*1e15+time*1e10+memory*1e5+sid) eval, COUNT(*) count FROM Submission WHERE pid=? GROUP BY uid) B
+					-score*100000000000000+time*10000000000+memory*100000+sid val FROM Submission WHERE pid=? AND status>=0) A
+			INNER JOIN
+			(SELECT uid, min(-score*100000000000000+time*10000000000+memory*100000+sid) eval, COUNT(*) AS count
+			 FROM Submission WHERE pid=? AND status>=0 GROUP BY uid) B
 			ON A.val=B.eval AND A.uid=B.uid GROUP BY A.uid ORDER BY A.val LIMIT ?,?;",
 			array($pid, $pid, $row_begin, $count))->result();
 	}

@@ -4,7 +4,7 @@
 
 	foreach ($data as $row){
 		echo '<tr><td>' .
-			($info->contestMode == 'ACM' ? 1000 + $row->id : $row->id) .
+			($info->contestMode == 'ACM' ? chr(65 + $row->id) : $row->id) .
 			"</td><td><a href=\"#contest/show/$cid/$row->id\">$row->title</a></td><td>" .
 			($info->contestMode == 'OI' ? '' : $row->statistic->solvedCount . '/' . $row->statistic->submitCount) .
 			'</td></tr>';

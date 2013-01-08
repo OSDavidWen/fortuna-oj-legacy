@@ -138,7 +138,7 @@
 			echo "<tr><td>$row->sid</td><td><a href=\"#main/show/$row->pid\">$row->pid</a></td><td>" . 
 				 "<span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
 
-			if ($row->status == -1) echo $row->result;
+			if ($row->status < 0) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
 				//if (round($row->score, 0) == 100)
@@ -243,21 +243,23 @@
 		}),
 		
 		$('.pagination a').click(function(){
-			filter(hash_to_url($(this).attr('href')));
+			filter(hash_to_url($(this).attr('href')), $(this).attr('href').substr(1));
 			return false;
 		}),
 		
 		$('#btn_filter').click(function(){
-			filter("index.php/main/status/<?=$this->uri->segment(3, 1)?>");
+			filter("index.php/main/status", "main/status");
 			return false;
 		})
 	});
 	
-	function filter(url){
+	function filter(url, hash){
 		$('#form_filter').ajaxSubmit({
 			url: url,
 			success: function(responseText){
 				$('#page_content').html(responseText);
+				window.preventHashchange = true;
+				window.location.hash = hash;
 			}
 		});
 	}
@@ -268,8 +270,8 @@
 	}
 	
 	function add_user(name){
-		$('#users').append("<span class='label label-info' data=user_'" + name + "'>" + name + "<span class='close' style='line-height:14px'>&times;</span></span> ");
-		$('#users').append("<input type='hidden' name='users[]' id=user_'" + name + "' value='" + name + "' />");
+		$('#users').append("<span class='label label-info' data='user_" + name + "'>" + name + "<span class='close' style='line-height:14px'>&times;</span></span> ");
+		$('#users').append("<input type='hidden' name='users[]' id='user_" + name + "' value='" + name + "' />");
 	}
 	
 	//refresh_flag = setTimeout("refresh_page()", 30000);

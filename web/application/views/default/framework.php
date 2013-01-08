@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>Fortuna Online Judge System</title>
+		<title><?=OJ_TITLE?></title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content="Fortuna Online Judge System Default Framework" />
 		<meta name="author" content="moreD" />
@@ -93,8 +93,8 @@
 				if ( ! $logged_in) echo 'var logged_in = false;';
 				else echo 'load_userinfo(); var logged_in = true;';
 			?>
+			
 			var hash = window.location.hash;
-			var response_to_hash_change = 0;
 			if (hash.indexOf('main/problemset') != -1) $('#nav_problemset').addClass('active');
 			else if (hash.indexOf('main/status') != -1) $('#nav_status').addClass('active');
 			else if (hash.indexOf('task') != -1) $('#nav_task').addClass('active');

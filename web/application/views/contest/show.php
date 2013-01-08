@@ -2,10 +2,13 @@
 	<div id="header"><?php
 		$average = 0;
 		if ($data->submitCount > 0) $average = number_format($data->scoreSum / $data->submitCount, 2);
-		if ($data->data->IOMode == 0) $data->title .= '<sub> (Standard IO)</sub>';
-		else if ($data->data->IOMode == 1) $data->title .= '<sub> (File IO)</sub>';
 		
-		echo "<div style='text-align:center'><h2>$data->id.  $data->title</h2>";
+		if (!isset($data->data) || $data->data->IOMode == 0) $IO = '(Standard IO)';
+		else if ($data->data->IOMode == 1) $IO = '(File IO)';
+		else if ($data->data->IOMode == 2) $IO = '(Output Only)';
+		else if ($data->data->IOMode == 3) $IO = '(Interactive)';
+		echo '<div style="text-align:center">';
+		echo "<h2>$data->title <sub>$IO</sub></h2>";
 		
 		echo '<div>';
 		if (isset($data->timeLimit)){
@@ -108,8 +111,16 @@
 		}
 		echo '</pre>';
 	?>";
-	$('#trigger').popover({html: true, content: dataconf, trigger: 'hover', placement: 'bottom'});
-	$('#trigger').click(function(){
-		$('#trigger').popover('hide')
+	
+	$(document).ready(function(){
+		$('#trigger').popover({html: true, content: dataconf, trigger: 'hover', placement: 'bottom'}),
+		$('#trigger').click(function(){
+			$('#trigger').popover('hide')
+		}),
+		$('#page_content').one('DOMNodeInserted', function(){
+			document.title = "<?=OJ_TITLE?>";
+		})
 	});
+	
+	document.title = "<?=$data->title . ' ' . $IO?>";
 </script>

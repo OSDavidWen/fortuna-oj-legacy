@@ -6,18 +6,6 @@ CREATE SCHEMA IF NOT EXISTS `OnlineJudgeSystem` DEFAULT CHARACTER SET utf8 ;
 USE `OnlineJudgeSystem` ;
 
 -- -----------------------------------------------------
--- Table `OnlineJudgeSystem`.`School`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `OnlineJudgeSystem`.`School` (
-  `idSchool` INT NOT NULL AUTO_INCREMENT ,
-  `name` VARCHAR(128) NOT NULL ,
-  PRIMARY KEY (`idSchool`) ,
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
-ENGINE = InnoDB
-AUTO_INCREMENT = 1000;
-
-
--- -----------------------------------------------------
 -- Table `OnlineJudgeSystem`.`User`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `OnlineJudgeSystem`.`User` (
@@ -26,7 +14,7 @@ CREATE  TABLE IF NOT EXISTS `OnlineJudgeSystem`.`User` (
   `password` VARCHAR(32) NOT NULL ,
   `description` MEDIUMTEXT NULL ,
   `email` VARCHAR(128) NULL ,
-  `idSchool` INT NULL ,
+  `School` VARCHAR(128) NULL ,
   `isEnabled` TINYINT(1) NOT NULL DEFAULT 0 ,
   `submitCount` INT NULL DEFAULT 0 ,
   `solvedCount` INT NULL DEFAULT 0 ,
@@ -39,17 +27,15 @@ CREATE  TABLE IF NOT EXISTS `OnlineJudgeSystem`.`User` (
   `showCategory` TINYINT(1) NULL DEFAULT 1 ,
   `LastIP` VARCHAR(64) NULL ,
   `lastLogin` DATETIME NULL ,
+  `registrationTime` DATETIME NULL ,
+  `problemsPerPage` SMALLINT NULL ,
+  `submissionPerPage` SMALLINT NULL ,
+  `contestsPerPage` SMALLINT NULL ,
   PRIMARY KEY (`uid`) ,
   UNIQUE INDEX `name_UNIQUE` (`name` ASC) ,
   UNIQUE INDEX `uid_UNIQUE` (`uid` ASC) ,
-  INDEX `fk_User_School1_idx` (`idSchool` ASC) ,
-  INDEX `name_INDEX` (`name` ASC) ,
-  CONSTRAINT `fk_User_School1`
-    FOREIGN KEY (`idSchool` )
-    REFERENCES `OnlineJudgeSystem`.`School` (`idSchool` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB PARTITION BY HASH() PARTITIONS 1;
+  INDEX `name_INDEX` (`name` ASC) )
+ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------

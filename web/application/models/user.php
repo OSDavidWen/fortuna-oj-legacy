@@ -56,13 +56,7 @@ class User extends CI_Model{
 			'email' => $post['email'],
 			'priviledge' => 'user',
 		);
-		$query = $this->db->query("SELECT * FROM School WHERE name=?", array($post['school']));
-		if (isset($post['school']) && $query->num_rows() == 0){
-			$query = $this->db->insert_string('School', array('name' => $post['school']));
-			$this->db->query($query);
-		}
-		$query = $this->db->query("SELECT idSchool FROM School WHERE name=?", array($post['school']));
-		$data['idSchool'] = $query->row()->idSchool;
+		if (isset($post['school'])) $data['school'] = $post['school'];
 		if (isset($post['description'])) $data['description'] = $post['description'];
 		
 		$sql = $this->db->insert_string('User', $data);
@@ -98,16 +92,12 @@ class User extends CI_Model{
 	}
 	
 	function load_user($uname){
-		return $this->db->query("SELECT uid, email, description, idSchool, submitCount, solvedCount
+		return $this->db->query("SELECT uid, email, description, school, submitCount, solvedCount
 								FROM User WHERE name=?", array($uname))->row();
 	}
 	
 	function load_accepted($uid){
 		return $this->db->query("SELECT DISTINCT pid FROM Submission WHERE uid=? AND status=0", array($uid))->result();
-	}
-	
-	function load_school($idSchool){
-		return $this->db->query("SELECT name FROM School WHERE idSchool=?", array($idSchool))->row()->name;
 	}
 	
 	function load_rank($uid){
@@ -135,7 +125,7 @@ class User extends CI_Model{
 	}
 	
 	function load_users_list(){
-		return $this->db->query("SELECT uid, name, idSchool, isEnabled, priviledge FROM User")->result();
+		return $this->db->query("SELECT uid, name, school, isEnabled, priviledge FROM User ORDER BY uid DESC")->result();
 	}
 	
 	function load_user_groups($uid, &$groups){

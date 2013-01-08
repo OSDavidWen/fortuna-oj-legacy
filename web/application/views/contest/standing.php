@@ -2,7 +2,7 @@
 	<?php if ($data != FALSE){
 		echo '<button onclick="download_result()" class="btn btn-small pull-right"><strong>export</strong></button>';
 	}?>
-	<table class="table table-condensed table-striped table-bordered">
+	<table class="table table-striped table-bordered">
 		<thead>
 			<tr>
 				<th>Rank</th><th>Name</th>

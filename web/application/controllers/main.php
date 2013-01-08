@@ -82,7 +82,7 @@ class Main extends CI_Controller {
 	public function index(){
 		$theme = $this->input->cookie('theme');
 		if ( ! $theme) $theme = 'default';
-		$this->load->view("$theme/framework", array('logged_in' => $this->session->userdata('uid')));
+		$this->load->view("$theme/framework", array('logged_in' => $this->user->is_logged_in()));
 	}
 	
 	public function home(){

@@ -64,10 +64,11 @@ void init(){
         query += sidStr;
         mysql_query(&db, query.c_str());
         sqlResult = mysql_store_result(&db);
-        
-        query = "";
-        query = query + "rm -R " + runPath + "/*" + " >/dev/null";
+    
+        query = string("rm -f -R ") + runPath + "/* >/dev/null";
         system(query.c_str());
+		query = string("mkdir -p ") + runPath + " >/dev/null";
+		system(query.c_str());
         
         MYSQL_ROW row = mysql_fetch_row(sqlResult);
         
@@ -77,7 +78,7 @@ void init(){
         mysql_query(&db, query.c_str());
         query = string("UPDATE User SET solvedCount=solvedCount-") + solved + " WHERE uid=" + row[5];
         mysql_query(&db, query.c_str());
-        query = string("UPDATE Submission SET score=0, status=-1 WHERE sid=") + sidStr;
+        query = string("UPDATE Submission SET score=0, status=-2 time=0, memory=0, judgeResult='' WHERE sid=") + sidStr;
         mysql_query(&db, query.c_str());
         
         chdir(runPath);
@@ -165,13 +166,13 @@ void runTest(){
                 sprintf(command, "gcc Main.c %s -o %s/Main 2>&1", problem.compiler["C"].c_str(), runPath);
         
         else if (language == "C++")
-                sprintf(command, "g++ Main.cpp %s -o %s/Main 2>&1", problem.compiler["C++"].c_str(), runPath);
+                sprintf(command, "g++ Main.cpp %s -O2 -o %s/Main 2>&1", problem.compiler["C++"].c_str(), runPath);
 		
         else if (language == "C++11")
-                sprintf(command, "g++ Main.cpp %s -std=c++11 -o %s/Main 2>&1", problem.compiler["C++"].c_str(), runPath);
+                sprintf(command, "g++ Main.cpp %s -O2 -std=c++11 -o %s/Main 2>&1", problem.compiler["C++"].c_str(), runPath);
         
         else if (language == "Pascal")
-                sprintf(command, "fpc Main.pas %s -o%s/Main 2>&1", problem.compiler["Pascal"].c_str(), runPath);
+                sprintf(command, "fpc Main.pas %s -O2 -Co -Ci -o%s/Main 2>&1", problem.compiler["Pascal"].c_str(), runPath);
         
         FILE *ret = popen(command, "r");
         while (fscanf(ret, "%[^\n]\n", msg) > 0) result["compileMessage"] = result["compileMessage"].asString() + msg + '\n';
@@ -275,12 +276,14 @@ void writeResult(){
         if (judgeStatus){
                 sout << "UPDATE Submission SET status=9, score=0, time=0, memory=0, score=0" << " WHERE sid=" << sid;
         }else{
-                string strtmp = result["compileMessage"].asString();
-                int cnt = mysql_escape_string(cmsg, strtmp.c_str(), strtmp.length());
+                std::string strtmp = result["compileMessage"].asString();
+                int cnt = mysql_real_escape_string(&db, cmsg, strtmp.c_str(), strtmp.length());
                 cmsg[cnt] = '\0';
                 strtmp = result.toStyledString();
-                cnt = mysql_escape_string(rmsg, strtmp.c_str(), strtmp.length());
-                rmsg[cnt] = '\0';       
+				while (strtmp.find("\342\200\231") != -1) strtmp.replace(strtmp.find("\342\200\231"), 3, "\'");
+				while (strtmp.find("\342\200\230") != -1) strtmp.replace(strtmp.find("\342\200\230"), 3, "\'");
+                cnt = mysql_real_escape_string(&db, rmsg, strtmp.c_str(), strtmp.length());
+                rmsg[cnt] = '\0';
                 sout << "UPDATE Submission SET status=" << Rstatus << ", score=" << Rscore << ", time=" << Rtime << ", memory=" << Rmemory
                          << ", judgeResult='" << rmsg << "' WHERE sid=" << sid << ";";
         }

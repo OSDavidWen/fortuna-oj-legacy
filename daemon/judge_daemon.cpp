@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <syslog.h>
@@ -11,42 +12,42 @@
 
 using namespace std;
 
-const int SETTINGS_COUNT = 4, MAX_RUNNING = 16;
+const int SETTINGS_COUNT = 6, MAX_RUNNING = 16;
 MYSQL db;
-int rows_count, running;
+int rows_count, running, max_running, id;
 string settings[SETTINGS_COUNT];
 struct judgement{
-        int no;
-        string runPath;
+	int no;
+	string runPath;
 } info[MAX_RUNNING];
 
 int daemon_init(void){ 
-        pid_t pid; 
-        if ((pid = fork()) < 0) return -1; 
-        else if (pid != 0) exit(0);
+	pid_t pid; 
+	if ((pid = fork()) < 0) return -1; 
+	else if (pid != 0) exit(0);
         
-        setsid();
-        chdir("/");
-        umask(0);
-        //close(0);
-        //close(1);
-        //close(2);
-        return 0; 
+	setsid();
+	chdir("/");
+	umask(0);
+	//close(0);
+	//close(1);
+	//close(2);
+	return 0; 
 }
 
 void sigterm_handler(int signo){ 
-        if (signo == SIGTERM){
-                mysql_close(&db);
-                syslog(LOG_INFO, "Judge daemon terminated."); 
-                closelog(); 
-                exit(0); 
-        } 
+	if (signo == SIGTERM){
+		mysql_close(&db);
+		syslog(LOG_INFO, "Judge daemon terminated."); 
+		closelog(); 
+		exit(0); 
+	} 
 }
 
 void sigchld_handler(int signo){
-        if (signo == SIGCHLD){
-                running--;
-        }
+	if (signo == SIGCHLD){
+		while (waitpid(-1, NULL, WNOHANG) > 0) running--;
+	}
 }
 
 void init(){
@@ -57,7 +58,7 @@ void init(){
         openlog("judge_daemon", LOG_PID, LOG_USER); 
         syslog(LOG_INFO, "Judge daemon started."); 
         signal(SIGTERM, sigterm_handler);
-        //signal(SIGCHLD, sigchld_handler);
+        signal(SIGCHLD, sigchld_handler);
         
         ifstream fin("/etc/foj_judged.conf");
         int cnt = 0;
@@ -70,14 +71,15 @@ void init(){
                 if (settings[cnt][0] != '#') cnt++;
         }
         fin.close();
+		sscanf(settings[5].c_str(), "%d", &max_running);
+		if (max_running > MAX_RUNNING) max_running = MAX_RUNNING;
         
         mysql_init(&db);
         if (!mysql_real_connect(&db, settings[0].c_str(), settings[1].c_str(), settings[2].c_str(), settings[3].c_str(), 0, NULL, 0)){
-                syslog(LOG_ERR, "Failed to connec to database!");
-                exit(1);
+			syslog(LOG_ERR, "Failed to connec to database!");
+			exit(1);
         }
         
-        system("mkdir /tmp/foj > /dev/null");
         srand(time(0));
         running = 0;
 }
@@ -90,21 +92,40 @@ bool run(){
         }
         MYSQL_RES *result = mysql_store_result(&db);
         rows_count = mysql_num_rows(result);
-        if (rows_count == 0) return false;
+        if (rows_count == 0){
+			mysql_free_result(result);
+			return false;
+		}
         
-        MYSQL_ROW row = mysql_fetch_row(result);
-        int sid = atoi(row[0]), run = rand();
-        char command[255];
-        sprintf(command, "mkdir /tmp/foj/%d > /dev/null", run);
-        system(command);
-        sprintf(command, "judge_runner %d /tmp/foj/%d/ > /dev/null", sid, run);
-        system(command);
-        sprintf(command, "rm -f -R /tmp/foj/%d > /dev/null", run);
-        system(command);
-        running++;
+		if (running < max_running){
+			MYSQL_ROW row = mysql_fetch_row(result);
+			int sid = atoi(row[0]), run = rand();
+			query = string("UPDATE Submission SET status=-2 WHERE sid=") + row[0];
+			mysql_free_result(result);
+			if (mysql_query(&db, query.c_str())) return false;	
+			
+			int pid = fork();
+			if (pid < 0){
+				syslog(LOG_ERR, "Unable to fork!");
+				return false;
+			}
+			running++; id++;
+			if (pid == 0){
+				
+				char command[255];
+				sprintf(command, "mkdir /tmp/foj/%d/%d -p > /dev/null", id, run);
+				system(command);
+				sprintf(command, "judge_runner %d /tmp/foj/%d/%d/ > /dev/null", sid, id, run);
+				system(command);
+				sprintf(command, "rm -f -R /tmp/foj/%d > /dev/null", id, run);
+				system(command);
+				exit(0);
+			} else syslog(LOG_INFO, "Run judge_runner once.");
+		}else{
+			mysql_free_result(result);
+			return false;
+		}
 
-        syslog(LOG_INFO, "Run judge_runner once.");
-        mysql_free_result(result);
         return true;
 }
 

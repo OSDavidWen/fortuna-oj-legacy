@@ -4,8 +4,8 @@
 	</thead>
 	<tbody><?php
 		foreach ($data as $row){
-			echo "<tr><td>$row->uid</td><td><span class='label label-info'>$row->name</span></td><td>$row->idSchool</td><td>";
-			echo "<span onclick=\"access_page('admin/change_user_status/$row->uid');\" ";
+			echo "<tr><td>$row->uid</td><td><span class='label label-info'>$row->name</span></td><td>$row->school</td><td>";
+			echo "<span style='width:55px; text-align:center' onclick=\"user_change_status($row->uid, $(this))\"";
 			if ($row->isEnabled) echo 'class="label label-success">Enabled';
 			else echo 'class="label label-important">Disabled';
 			echo '</span></td><td>';
@@ -41,5 +41,19 @@
 		});
 		$('#modal_confirm #info').html(uid + '. ' + name);
 		$('#modal_confirm').modal({backdrop: 'static'});
+	}
+	
+	function user_change_status(uid, selector){
+		access_page('admin/change_user_status/' + uid, function(){
+			if (selector.hasClass('label-success')){
+				selector.removeClass('label-success');
+				selector.addClass('label-important');
+				selector.html('Disabled');
+			} else {
+				selector.removeClass('label-important');
+				selector.addClass('label-success');
+				selector.html('Enabled');
+			}
+		}, false);
 	}
 </script>

@@ -1,13 +1,19 @@
-	<form class="well form-inline form-search" id="action_form">
-		<div id="goto" class="control-group input-append">
+	<form class="form-inline form-search" id="action_form" style="margin-left:10px; margin-right:10px">
+		<div id="div_goto_pid" class="control-group input-prepend input-append">
 			<span class="add-on">Problem ID</span>
-			<input type="text" name="goto_pid" id="goto_pid" class="input-mini" />
+			<input type="text" id="goto_pid" class="input-mini" />
 			<button id="goto_button" class="btn">Go</button>
 		</div>
 		
-		<div id="search" class="control-group input-append">
-			<input type="text" name="search_content" id="search_content" class="input-medium" />
+		<div id="div_search" class="control-group input-append">
+			<input type="text" id="search_content" class="input-medium" placeholder="Title or Source..." />
 			<button id="search_button" class="btn">Search</button>
+		</div>
+		
+		<div id="div_goto_page" class="control-group input-prepend input-append pull-right">
+			<span class="add-on">Page</span>
+			<input type="number" id="goto_page" min=1 class="input-mini" />
+			<button id="btn_goto_page" class="btn">Go</button>
 		</div>
 	</form>
 
@@ -15,8 +21,8 @@
 		<thead><tr>
 			<th class="status">Status</th>
 			<th class="pid">Problem ID</th>
-			<th id="title">Title</th>
-			<th id="source">Source</th>
+			<th class="title">Title</th>
+			<th class="source">Source</th>
 			<th class="solvedCount">Solved</th>
 			<th class="submitCount">Submit</th>
 			<th class="avg">Average</th>
@@ -56,6 +62,12 @@ $(document).ready(function(){
 		return false;
 	}),
 	
+	$('#btn_goto_page').live('click', function(){
+		var page = $('#goto_page').val();
+		load_page("main/problemset/" + page);
+		return false;
+	}),
+	
 	$('#goto_pid').live('focus', function(){
 		$('#action_form').die();
 		$('#action_form').live('keypress', function(event){
@@ -71,6 +83,16 @@ $(document).ready(function(){
 		$('#action_form').live('keypress', function(event){
 			if (event.keyCode == 13 && $('#search_content').val() != ''){
 				$('#search_button').click();
+				return false;
+			}
+		})
+	}),
+	
+	$('#goto_page').live('focus', function(){
+		$('#action_form').die();
+		$('#action_form').live('keypress', function(event){
+			if (event.keyCode == 13 && $('#goto_page').val() != ''){
+				$('#btn_goto_page').click();
 				return false;
 			}
 		})
