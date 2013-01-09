@@ -6,6 +6,15 @@ class Submission extends CI_Model{
 		parent::__construct();
 	}
 	
+	function rejudge($sid){
+		$data = $this->db->query("SELECT pid, uid, status, score FROM Submission WHERE sid=?", array($sid))->row();
+		if ($data->status == 0){
+			$this->db->query("UPDATE ProblemSet SET solvedCount=solvedCount-1,scoreSum=scoreSum-? WHERE pid=?", array($data->score, $data->pid));
+			$this->db->query("UPDATE User SET solvedCount=solvedCount-1 WHERE uid=?", array($data->uid));
+		}
+		$this->db->query("UPDATE Submission SET score=0,status=-1,time=0,memory=0,judgeResult='' WHERE sid=?", array($sid));
+	}
+	
 	function change_status($sid){
 		$this->db->query("UPDATE Submission SET isShowed=1-isShowed WHERE sid=?", array($sid));
 	}

@@ -14,7 +14,7 @@
 	<tbody><?php
 		foreach ($data as $row){
 			if ($row->isShowed = 0 && ! $is_admin) continue;
-			echo "<tr><td>$row->sid</td><td><a href=\"#main/show/$row->pid\">" . 
+			echo "<tr><td>$row->sid</td><td><a href='#contest/show/$info->cid/$row->id'>" . 
 				($info->contestMode == 'ACM' ? chr(65 + $row->id) : $row->id) . '</a></td><td>' . 
 				"<span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
 			if ($row->status == -1) echo $row->result;
@@ -30,7 +30,7 @@
 				//		elseif (round($row->score, 0) == 0)
 				//			$sname .= '<span class="badge badge-important">' . round($row->score, 1) . '</span>';
 				//		else
-						$sname .= ' <span class="badge badge-info">' . round($row->score, 1) . '</span>';
+						$sname .= ' <span class="badge badge-info">' . round($row->score, 0) . '</span>';
 					}
 					echo "<a href=\"#main/result/$row->sid\">$sname</a>";
 				}

@@ -360,7 +360,7 @@ $config['proxy_ips'] = '';
 // Password Suffix
 $config['password_suffix'] = 'foj_jzoj';
 
-// Data Path
+// Data Path (Don't forget trailing slash!)
 $config['data_path'] = '/home/judge/data/';
 
 /* End of file config.php */

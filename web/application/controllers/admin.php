@@ -12,9 +12,19 @@ class Admin extends CI_Controller {
 	public function _remap($method, $params = array()){
 		$this->load->model('user');
 		
-		if ($this->user->is_logged_in() && $this->user->is_admin())
-			$this->_redirect_page($method, $params);
-		else
+		$allowed_methods = array('addproblem', 'problemset');
+		$restrcited_methods = array('delete_problem', 'dataconf', 'scan', 'upload', 'change_problem_status');
+		if ($this->user->is_logged_in()){
+			if ($this->user->is_admin() || in_array($method, $allowed_methods)) $this->_redirect_page($method, $params);
+			else if (in_array($method, $restrcited_methods)){
+				$this->load->model('problems');
+				if (isset($params[0]) && $this->problems->uid($params[0]) == $this->user->uid())
+					$this->_redirect_page($method, $params);
+				else
+					$this->load->view('information', array('data' => '<h5 class="alert">Operation not permitted!</h5>'));
+			}else
+				$this->load->view('information', array('data' => '<h5 class="alert">You are not administrators!</h5>'));
+		}else
 			$this->login();
 	}
 	
@@ -104,13 +114,15 @@ class Admin extends CI_Controller {
 	
 	public function problemset($page = 1){
 		$problems_per_page = 20;
+		$uid = FALSE;
+		if ( ! $this->user->is_admin()) $uid = $this->user->uid();
 	
 		$this->load->model('problems');
-		$count = $this->problems->count();
+		$count = $this->problems->count($uid);
 		if ($count > 0 && ($count + $problems_per_page - 1) / $problems_per_page < $page)
 			$page = ($count + $problems_per_page - 1) / $problems_per_page;
 		$row_begin = ($page - 1) * $problems_per_page;
-		$data = $this->problems->load_problemset($row_begin, $problems_per_page, TRUE);
+		$data = $this->problems->load_problemset($row_begin, $problems_per_page, TRUE, $uid);
 		foreach ($data as $row)
 			if ($row->isShowed == 1) $row->isShowed = '<span class="label label-success">Showed</span>';
 			else $row->isShowed = '<span class="label label-important">Hidden</span>';
@@ -184,15 +196,29 @@ class Admin extends CI_Controller {
 	
 	public function upload($pid){
 		$temp_file = $_FILES['Filedata']['tmp_name'];
-		$target_path = $this->config->item('data_path') . '/' . $pid . '/';
+		$target_path = $this->config->item('data_path') . $pid . '/';
 		if (! is_dir($target_path)) mkdir($target_path);
 		$target_file = $target_path . $_FILES['Filedata']['name'];
 
-	//	$file_types = array('', 'c', 'cpp', 'pas', 'in', 'out', 'ans', 'std');
-	//	$file_parts = pathinfo($_FILES['Filedata']['name']);
+		$file_types = array('c', 'cpp', 'pas');
+		$file_parts = pathinfo($_FILES['Filedata']['name']);
+		$basename = $file_parts['basename'];
+		$filename = $file_parts['filename'];
+		$extension = $file_parts['extension'];
 	
 	//	if (in_array($file_parts['extension'],$file_types))
-			move_uploaded_file($temp_file,$target_file);
+		if ( ! is_executable($temp_file))
+			move_uploaded_file($temp_file, $target_file);
+			
+		if (in_array($extension, $file_types)){
+			chdir($target_path);
+			if ($extension == 'c')
+				exec("gcc $basename -o $filename");
+			if ($extension == 'cpp')
+				exec("g++ $basename -o $filename");
+			if ($extension == 'pas')
+				exec("fpc $basename -o$filename");
+		}
 	}
 	
 	public function scan($pid){
@@ -365,6 +391,34 @@ class Admin extends CI_Controller {
 	function change_submission_status($sid){
 		$this->load->model('submission');
 		$this->submission->change_status($sid);
+	}
+	
+	private function _set_pending($sid){
+		$this->submission->rejudge($sid);
+
+	}
+	
+	function rejudge(){
+		$this->load->library('form_validation');
+		$this->load->model('problems');
+		$this->load->model('submission');
+		$this->form_validation->set_error_delimiters('<div class="alert alert-error">', '</div>');
+		
+		$this->form_validation->set_rules('type', 'Type', 'required');
+		$this->form_validation->set_rules('id', 'ID', 'required');
+		if ($this->form_validation->run() == FALSE)
+			$this->load->view('admin/rejudge');
+		else{
+			$data = $this->input->post(NULL, TRUE);
+			if ($data['type'] == 'submission'){
+				$this->submission->rejudge($data['id']);
+			}else{
+				$data = $this->problems->load_problem_submission($data['id']);
+				foreach ($data as $row)
+					$this->submission->rejudge($row->sid);
+			}
+			$this->load->view('success');
+		}
 	}
 }
 

@@ -10,17 +10,33 @@ class Problems extends CI_Model{
 		$this->db->query("UPDATE ProblemSet SET isShowed=1-isShowed WHERE pid=?", array($pid));
 	}
 	
-	function count(){
-		return $this->db->query("SELECT COUNT(*) AS count FROM ProblemSet")->row()->count;
+	function uid($pid){
+		return $this->db->query("SELECT uid FROM ProblemSet WHERE pid=?", array($pid))->row()->uid;
 	}
 	
-	function load_problemset($row_begin, $count, $rev = FALSE){
-		if ($rev)
-			return $this->db->query("SELECT pid, title, source, solvedCount, submitCount, scoreSum AS average, isShowed
-									FROM ProblemSet ORDER BY pid DESC LIMIT ?, ?", array($row_begin, $count))->result();			
+	function count($uid = FALSE){
+		if ( ! $uid)
+			return $this->db->query("SELECT COUNT(*) AS count FROM ProblemSet")->row()->count;
 		else
-			return $this->db->query("SELECT pid, title, source, solvedCount, submitCount, scoreSum AS average, isShowed
-									FROM ProblemSet LIMIT ?, ?", array($row_begin, $count))->result();
+			return $this->db->query("SELECT COUNT(*) AS count FROM ProblemSet WHERE uid=?", array($uid))->row()->count;
+	}
+	
+	function load_problemset($row_begin, $count, $rev = FALSE, $uid = FALSE){
+		if ( ! $uid){
+			if ($rev)
+				return $this->db->query("SELECT pid, title, source, solvedCount, submitCount, scoreSum AS average, isShowed
+										FROM ProblemSet ORDER BY pid DESC LIMIT ?, ?", array($row_begin, $count))->result();
+			else
+				return $this->db->query("SELECT pid, title, source, solvedCount, submitCount, scoreSum AS average, isShowed
+										FROM ProblemSet LIMIT ?, ?", array($row_begin, $count))->result();
+		} else {
+			if ($rev)
+				return $this->db->query("SELECT pid, title, source, solvedCount, submitCount, scoreSum AS average, isShowed
+										FROM ProblemSet WHERE uid=? ORDER BY pid DESC LIMIT ?, ?", array($uid, $row_begin, $count))->result();
+			else
+				return $this->db->query("SELECT pid, title, source, solvedCount, submitCount, scoreSum AS average, isShowed
+										FROM ProblemSet WHERE uid=? LIMIT ?, ?", array($uid, $row_begin, $count))->result();
+		}
 	}
 	
 	function load_problemset_status($uid, $start, $end){
@@ -77,8 +93,10 @@ class Problems extends CI_Model{
 		if ($cnt == 1) $cnt = 1000;
 		$this->db->query('ALTER TABLE ProblemSet AUTO_INCREMENT=?', array($cnt));
 
-		if ($pid == 0) $sql = $this->db->insert_string('ProblemSet', $data);
-		else $sql = $this->db->update_string('ProblemSet', $data, "pid=$pid");
+		if ($pid == 0){
+			$data['uid'] = $this->user->uid();
+			$sql = $this->db->insert_string('ProblemSet', $data);
+		}else $sql = $this->db->update_string('ProblemSet', $data, "pid=$pid");
 		$this->db->query($sql);
 		
 		return $pid == 0 ? $this->db->insert_id() : $pid;
@@ -90,5 +108,9 @@ class Problems extends CI_Model{
 	
 	function is_showed($pid){
 		return $this->db->query("SELECT isShowed FROM ProblemSet WHERE pid=?", array($pid))->row()->isShowed;
+	}
+	
+	function load_problem_submission($pid){
+		return $this->db->query("SELECT sid FROM Submission WHERE pid=?", array($pid))->result();
 	}
 }

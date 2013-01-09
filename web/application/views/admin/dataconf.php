@@ -9,7 +9,10 @@
 
 <form id="data_configuration" class="form-horizontal" action="index.php/admin/dataconf/<?=$pid?>">
 	<div class="control-group">
-		<label for="file_upload" class="control-label">Upload Data</label>
+		<label for="file_upload" class="control-label">
+			Upload Data
+			<i id="file_upload_tips" class="icon-info-sign" title="File will be auto compiled if has c/cpp/pas extension."></i>
+		</label>
 		<div class="controls">
 			<div style="float:left"><input type="file" name="file_upload" id="file_upload" multiple="true"></div>
 			<button id="scan" class="btn btn-primary" style="margin-left:20px" onclick="return false;">Scan Data</button>
@@ -70,7 +73,7 @@
 			</select>
 		</div>
 		
-		<label for="spjFile" class="spjFile control-label">Special Judge File</label>
+		<label for="spjFile" class="spjFile control-label">Special Judge Filename</label>
 		<div class="controls">
 			<input type="text" class="spjFile" id="spjFile" name="spjFile" />
 		</div>
@@ -92,6 +95,7 @@
 <!-- <script src='/js/admin.js'></script> -->
 <script type="text/javascript">
 	$(document).ready(
+	//	$("#file_upload_tips").tooltip({placement: 'bottom'}),
 
 		$("#addcase").live("click", function(){
 			add_case();

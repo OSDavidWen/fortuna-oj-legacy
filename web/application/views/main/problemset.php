@@ -1,7 +1,13 @@
+<?php
+	function strtrim($str){
+		if (mb_strlen($str, 'UTF8') > 18) return (mb_substr($str, 0, 18, 'UTF8') . '..'); else return $str;
+	}
+?>
+
 	<form class="form-inline form-search" id="action_form" style="margin-left:10px; margin-right:10px">
 		<div id="div_goto_pid" class="control-group input-prepend input-append">
 			<span class="add-on">Problem ID</span>
-			<input type="text" id="goto_pid" class="input-mini" />
+			<input type="number" min="1000" id="goto_pid" class="input-mini" />
 			<button id="goto_button" class="btn">Go</button>
 		</div>
 		
@@ -38,7 +44,7 @@
 				if ($category || $row->ac){
 					foreach ($row->category as $tag) echo "<span class=\"label pull-right\">$tag</span>";
 				}
-				echo "</td><td class=\"source\">$row->source</td><td>" . 
+				echo '</td><td class=\"source\">' . strtrim($row->source) . '</td><td>' . 
 					"<a href=\"#main/statistic/$pid\"><span class=\"badge badge-info\">$row->solvedCount</span></a></td><td>" .
 					"<a href=\"#main/statistic/$pid\"><span class=\"badge badge-info\">$row->submitCount</span></a></td>" . 
 					"<td><span class=\"badge badge-info\">$row->average pts</span></td></tr>";
@@ -52,13 +58,15 @@
 $(document).ready(function(){
 	$('#goto_button').live('click', function(){
 		var pid = $('#goto_pid').val();
-		window.location.hash = '#main/show/' + pid;
+		if (pid != '')
+			load_page('main/show/' + pid);
 		return false;
 	}),
 	
 	$('#search_button').live('click', function(){
 		var content = $('#search_content').val();
-		window.location.hash = "#main/problemset?search=" + content;
+		if (content != '')
+			load_page("main/problemset?search=" + content);
 		return false;
 	}),
 	

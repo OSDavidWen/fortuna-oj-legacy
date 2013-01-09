@@ -37,9 +37,9 @@ int builtin_comp(char* file_std, char* file_user){
 		if (fgets(buffer[0], 65535, std) == NULL) len0 = 0; else len0 = strlen(buffer[0]);
 		if (fgets(buffer[1], 65535, user) == NULL) len1 = 0; else len1 = strlen(buffer[1]);
 		
-		while (len0 && (buffer[0][len0 - 1] == ' ' || buffer[0][len0 - 1] == '\n' || buffer[0][len0 - 1] == '\r')) len0--;
+		while (len0 && (buffer[0][len0 - 1] == ' ' || buffer[0][len0 - 1] == '\n' || buffer[0][len0 - 1] == '\r'|| buffer[0][len0 - 1] == '\t')) len0--;
 		buffer[0][len0] = '\0';
-		while (len1 && (buffer[1][len1 - 1] == ' ' || buffer[1][len1 - 1] == '\n' || buffer[1][len1 - 1] == '\r')) len1--;
+		while (len1 && (buffer[1][len1 - 1] == ' ' || buffer[1][len1 - 1] == '\n' || buffer[1][len1 - 1] == '\r'|| buffer[1][len0 - 1] == '\t')) len1--;
 		buffer[1][len1] = '\0';
 		
 		if (feof(std) && feof(user) && ! len0 && ! len1) break;
@@ -183,10 +183,10 @@ int main(int argc, char* argv[]){
 								result(7, 0, time_usage, 0, "SIGSEGV_EXIT");
 								break;
 							case SIGXFSZ:
-								result(4, 0, 0, mem_usage, "SIGXFSZ_EXIT");
+								result(4, 0, 0, 0, "SIGXFSZ_EXIT");
 								break;
 							default:
-								result(4, 0, 0, mem_usage, "RE");
+								result(6, 0, 0, 0, "RE");
 						}
 						ptrace(PTRACE_KILL, pid, NULL, NULL);
 						break;

@@ -99,7 +99,7 @@
 			if ($is_accepted) echo ' <button id="add_tag_btn" class="btn btn-mini pull-right">add</button>';
 			echo '</h5></legend>';
 			foreach ($data->category as $id => $name)
-				echo "<span class=\"label tag\" id=\"$id\" style=\"margin-right:11px\">" . 
+				echo "<span class=\"label tag\" id=\"$id\" style=\"margin-right:5px\">" .
 					'<button class="close delete_tag" style="color: white;font-size:14px;opacity:0.8;height:14px">&times;</button>' .
 					$name . '</span> ';
 			

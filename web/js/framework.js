@@ -103,8 +103,8 @@ function init_framework(){
 		set_page_content('#page_content', hash_to_url(window.location.hash));
 	}else load_page('main/home');
 	var priviledge = get_cookie('priviledge');
-	if (priviledge == 'admin') $('#nav_admin').attr({style:"display:block"});
-	else $('#nav_admin').attr({style:"display:none"});
+	if (priviledge == 'admin') $('.nav_admin').attr({style:"display:block"});
+	else $('.nav_admin').attr({style:"display:none"});
 }
 
 function load_userinfo(){
@@ -119,8 +119,8 @@ function login_submit(){
 				load_userinfo();
 				set_page_content('#page_content', hash_to_url(window.location.hash));
 				var priviledge = get_cookie('priviledge');
-				if (priviledge == 'admin') $('#nav_admin').attr({style:"display:block"});
-				else $('#nav_admin').attr({style:"display:none"});
+				if (priviledge == 'admin') $('.nav_admin').attr({style:"display:block"});
+				else $('.nav_admin').attr({style:"display:none"});
 			} else $('#page_content').html(responseText);
 		}
 	});
@@ -141,18 +141,6 @@ function register_submit(){
 function code(){hljs.initHighlightingOnLoad();}
 
 $(document).ready(function(){
-	$('#toggle_editor').live('change', function (){
-		if ($('#toggle_editor').attr("checked")){
-			$('.CodeMirror').css({"visibility" : "visible", "display" : "block"});
-			$('#texteditor').css({"visibility" : "hidden", "display" : "none", "zIndex" : -10000});
-			editor.setValue($('#texteditor').val());
-		}else{
-			$('.CodeMirror').css({"visibility" : "hidden", "display" : "none"});
-			$('#texteditor').css({"visibility" : "visible", "display" : "block", "zIndex" : 10000});
-			editor.save();
-		}
-	}),
-	
 	$('.case').click(function(){
 		var attr = "." + $(this).attr("id");
 		$(this).siblings(attr).slideToggle(5);

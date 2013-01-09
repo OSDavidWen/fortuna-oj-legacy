@@ -7,7 +7,7 @@
 	<form class="accordion form form-inline" id="form_filter" method="post">
 		<div class="accordion-group">
 			<div class="accordion-heading">
-				<a class="accordion-toggle" data-toggle="collapse" data-parent="#form_filter" data-target="#filters">
+				<a id="filter_toggle" class="accordion-toggle" data-toggle="collapse" data-parent="#form_filter" data-target="#filters">
 					<span>
 						<b>Status Filters</b>
 						<i id="filter_tips" class="icon-info-sign" title="Select none means select all!"></i>
@@ -111,7 +111,7 @@
 						</label> 
 					</div>
 				</div>
-				<button class="btn btn-primary btn-mini pull-right" id="btn_filter">Filter</button>
+				<button class="btn btn-primary btn-mini pull-right" id="btn_filter" style="margin:5px 10px">Filter</button>
 			</div>
 		</div>
 	</form>
@@ -146,7 +146,7 @@
 				//elseif (round($row->score, 0) == 0)
 				//	$sname = "$row->result<span class=\"label label-important\">" . round($row->score, 1) . '</span>';
 				//else
-					$sname = "$row->result<span class=\"label label-info\">" . round($row->score, 1) . '</span>';
+					$sname = "$row->result<span class=\"label label-info\">" . round($row->score, 0) . '</span>';
 				echo "<a href=\"#main/result/$row->sid\"> $sname</a>";
 			}
 			echo "</td><td><span class=\"label label-info\">$row->time</span></td>" . 
@@ -250,6 +250,16 @@
 		$('#btn_filter').click(function(){
 			filter("index.php/main/status", "main/status");
 			return false;
+		}),
+		
+		$('#filter_toggle').click(function(){
+			if ($(this).children('i').hasClass('icon-chevron-down')){
+				$(this).children('i').removeClass('icon-chevron-down');
+				$(this).children('i').addClass('icon-chevron-up');
+			}else{
+				$(this).children('i').removeClass('icon-chevron-up');
+				$(this).children('i').addClass('icon-chevron-down');
+			}
 		})
 	});
 	

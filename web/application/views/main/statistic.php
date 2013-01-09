@@ -20,7 +20,9 @@
 			echo "<a href=\"#main/result/$row->sid\">$sname</a>";
 		}
 		echo "</td><td>$row->time</td>
-			<td>$row->memory</td><td>$row->language</td><td>$row->codeLength</td><td>$row->submitTime</td></tr>";
+			<td>$row->memory</td>
+			<td><a href=\"#main/code/$row->sid\">$row->language</a></td>
+			<td>$row->codeLength</td><td>$row->submitTime</td></tr>";
 	}
 	
 	echo '</tbody></table></div>';

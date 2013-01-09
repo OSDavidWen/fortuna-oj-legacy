@@ -54,6 +54,19 @@
 	
 	
 <script type="text/javascript">
+	$(document).ready(function(){
+		$('#toggle_editor').change(function (){
+			if ($('#toggle_editor').attr("checked")){
+				$('.CodeMirror').css({"visibility" : "visible", "display" : "block"});
+				$('#texteditor').css({"visibility" : "hidden", "display" : "none", "zIndex" : -10000});
+				editor.setValue($('#texteditor').val());
+			}else{
+				$('.CodeMirror').css({"visibility" : "hidden", "display" : "none"});
+				$('#texteditor').css({"visibility" : "visible", "display" : "block", "zIndex" : 10000});
+				editor.save();
+			}
+		})
+	})
 
 	function language_on_change(){
 		var language = $('#language').val();
@@ -69,7 +82,7 @@
 			alert("You should specify the Problem ID!");
 			return false;
 		}
-		editor.save();
+		if ($('#toggle_editor').attr("checked")) editor.save();
 		if ($('#texteditor').val().length == 0){
 			alert("You are attempting to submit empty code!");
 			return false;

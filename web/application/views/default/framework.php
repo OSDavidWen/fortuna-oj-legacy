@@ -48,13 +48,14 @@
 							<li class="nav_bar" id="nav_task"><a href="#task/task_list">Task</a></li>
 							<li class="nav_bar" id="nav_group"><a href="#group/group_list">Groups</a></li>
 							<li class="nav_bar" id="nav_ranklist"><a href="#main/ranklist">Ranklist</a></li>
-							<li id="nav_admin" class="dropdown" style="display:none">
+							<li id="nav_admin" class="dropdown">
 								<a href="#" class="dropdown-toggle" data-toggle="dropdown">Administer</a>
 								<ul class="dropdown-menu">
 									<li class="nav_bar"><a href="#admin/problemset">Problemset</a></li>
-									<li class="nav_bar"><a href="#admin/contestlist">Contest List</a></li>
-									<li class="nav_bar"><a href="#admin/task_list">Task List</a></li>
-									<li class="nav_bar"><a href="#admin/users">Manage User</a></li>
+									<li class="nav_bar nav_admin" style="display:none"><a href="#admin/contestlist">Contest List</a></li>
+									<li class="nav_bar nav_admin" style="display:none"><a href="#admin/task_list">Task List</a></li>
+									<li class="nav_bar nav_admin" style="display:none"><a href="#admin/users">Manage User</a></li>
+									<li class="nav_bar nav_admin" style="display:none"><a href="#admin/rejudge">Rejudge</a></li>
 								</ul>
 							</li>
 							<li>
@@ -82,12 +83,13 @@
 		</div>
 		
 		<script type="text/javascript">
-			timer = Date.parse('<?=date(DATE_ATOM);?>');
+			timer = <?=mktime() * 1000?>;
 			setInterval("server_time.innerHTML=('Server Time: ' + (new Date(timer).toString())); timer += 1000;", 1000);
 			
 			var browser = navigator.userAgent;
-			if (browser.indexOf('MSIE 6.0') > 0 || browser.indexOf('MSIE 7.0') > 0) $('#scroll_tip').affix();
-			else $('#navigation').affix();
+		//	if (browser.indexOf('MSIE 6.0') > 0 || browser.indexOf('MSIE 7.0') > 0) 
+			$('#scroll_tip').affix();
+			//else $('#navigation').affix();
 			//$('#scroll_tip').tooltip({placement:'right'});
 			<?php
 				if ( ! $logged_in) echo 'var logged_in = false;';
