@@ -92,7 +92,7 @@ class User extends CI_Model{
 	}
 	
 	function load_user($uname){
-		return $this->db->query("SELECT uid, email, description, school, submitCount, solvedCount
+		return $this->db->query("SELECT uid, email, description, school, acCount, submitCount, solvedCount
 								FROM User WHERE name=?", array($uname))->row();
 	}
 	
@@ -101,11 +101,11 @@ class User extends CI_Model{
 	}
 	
 	function load_rank($uid){
-		$result = $this->db->query("SELECT solvedCount, submitCount FROM User WHERE uid=?", array($uid))->row();
+		$result = $this->db->query("SELECT acCount, solvedCount, submitCount FROM User WHERE uid=?", array($uid))->row();
 		if ($result->submitCount == 0) $rate = 0;
 		else $rate = $result->solvedCount / $result->submitCount;
-		return $this->db->query("SELECT count(*) AS rank FROM User WHERE solvedCount > ? OR
-			(solvedCount = ? AND solvedCount / submitCount > ?)", array($result->solvedCount, $result->solvedCount, $rate))->row()->rank;
+		return $this->db->query("SELECT count(*) AS rank FROM User WHERE acCount>? OR
+			(acCount=? AND solvedCount/submitCount>?)", array($result->acCount, $result->acCount, $rate))->row()->rank + 1;
 	}
 	
 	function load_configuration($uid){

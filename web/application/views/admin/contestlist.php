@@ -14,14 +14,15 @@
 		<tbody><?php
 			foreach ($data as $row){
 				$cid = $row->cid;
-				echo "<tr><td>$cid</td><td class=\"title\">" . 
-					(isset($row->running) ? "<a href=\"#contest/problems/$cid\">$row->title</a>" : "<a href=\"#contest/home/$cid\">$row->title</a>") .
+				echo "<tr><td>$cid</td><td>" . 
+					(isset($row->running) ? "<a class='title' href=\"#contest/problems/$cid\">$row->title</a>"
+											: "<a class='title' href=\"#contest/home/$cid\">$row->title</a>") .
 					"</td><td>$row->startTime</td><td>$row->endTime</td><td>$row->status</td>" . 
 					"<td><div class=\"badge badge-info\">$row->contestMode</div></td>" . 
 					'<td><div class="badge badge-info">' . ($row->private ? 'Private' : 'Public') .
 					"</div></td><td><div class=\"badge badge-info\"><i class=\"icon-user icon-white\"></i>x$row->count</div></td>" . 
 					"<td><button class=\"btn btn-mini\" onclick='window.location.href=\"#admin/newcontest/$cid\"'>Edit</button></td>" . 
-					"<td><button class=\"close\" onclick=\"delete_contest($cid, '$row->title')\">&times;</button></td></tr>";
+					"<td><button class=\"close\" onclick=\"delete_contest($cid, $(this))\">&times;</button></td></tr>";
 			}
 		?></tbody>
 	</table>
@@ -45,12 +46,12 @@
 </div>
 
 <script type="text/javascript">
-	function delete_contest(cid, title){
+	function delete_contest(cid, selector){
 		$('#modal_confirm #delete').live('click', function(){
 			$('#modal_confirm').modal('hide');
 			access_page('admin/delete_contest/' + cid);
 		});
-		$('#modal_confirm #info').html(cid + '. ' + title);
+		$('#modal_confirm #info').html(cid + '. ' + selector.parent().parent().find('.title').html());
 		$('#modal_confirm').modal({backdrop: 'static'});
 	}
 </script>

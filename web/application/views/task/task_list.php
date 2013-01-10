@@ -26,7 +26,7 @@
 						<?php
 							foreach ($task->problems as $problem){
 								echo "<tr><td><a href='#task/show/$problem->pid/$task->gid/$task->tid'>$problem->title</a></td>";
-								if ($problem->status != '')
+								if (isset($problem->status))
 									echo "<td><span class='badge badge-info'>$problem->status</span></td></tr>";
 								else
 									echo '<td></td></tr>';

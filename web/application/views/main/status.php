@@ -4,7 +4,7 @@
 	}
 ?>
 <div class="status_table">
-	<form class="accordion form form-inline" id="form_filter" method="post">
+	<form class="accordion form form-inline" id="form_filter" method="get">
 		<div class="accordion-group">
 			<div class="accordion-heading">
 				<a id="filter_toggle" class="accordion-toggle" data-toggle="collapse" data-parent="#form_filter" data-target="#filters">
@@ -135,8 +135,13 @@
 		foreach ($data as $row){
 			if ($row->isShowed == 0 && ! $this->user->is_admin()) continue;
 				
-			echo "<tr><td>$row->sid</td><td><a href=\"#main/show/$row->pid\">$row->pid</a></td><td>" . 
-				 "<span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
+			echo "<tr><td>$row->sid</td>";
+			
+			if ( ! isset($row->tid) || $row->tid == NULL)
+				echo "<td><a href=\"#main/show/$row->pid\">$row->pid</a></td>";
+			else 
+				echo "<td><a title='Please goto Task page to submit'>$row->pid</a></td>";
+			echo "<td><span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
 
 			if ($row->status < 0) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
@@ -187,14 +192,14 @@
 		if (isset($filter['users']))
 			foreach ($filter['users'] as $pid) echo "'$pid',";
 	?>];
+	var url = "<?=$filter['url']?>";
+	if (url != window.location.hash.substr(1)){
+		window.preventHashchange = true;
+		window.location.hash = url;
+	}
 
 	for (pid in problems) add_problem(problems[pid]);
 	for (name in users) add_user(users[name]);
-	//$('.label').removeClass('label');
-	//$('.label-info').removeClass('label-info');
-	//$('.label-success').removeClass('label-success');
-	//$('.label-warning').removeClass('label-warning');
-	//$('.label-important').removeClass('label-important');
 	
 	$(document).ready(function(){
 		$('#filter_tips').tooltip({placement: 'right'}),
@@ -267,9 +272,11 @@
 		$('#form_filter').ajaxSubmit({
 			url: url,
 			success: function(responseText){
+				if (hash != window.location.hash.substr(1)){
+					window.preventHashchange = true;
+					window.location.hash = hash;
+				}
 				$('#page_content').html(responseText);
-				window.preventHashchange = true;
-				window.location.hash = hash;
 			}
 		});
 	}
@@ -284,7 +291,7 @@
 		$('#users').append("<input type='hidden' name='users[]' id='user_" + name + "' value='" + name + "' />");
 	}
 	
-	//refresh_flag = setTimeout("refresh_page()", 30000);
+	//refresh_flag = setTimeout("refresh_page()", 10000);
 </script>
 
 <!-- End of file status.php -->

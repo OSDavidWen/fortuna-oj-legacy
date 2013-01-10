@@ -29,8 +29,8 @@ function get_cookie(name){
 }
 
 function randomize(url){
-	if (url.indexOf('?') == -1) url += '?';
-	url += '&seed=' + Math.random();
+	//if (url.indexOf('?') == -1) url += '?';
+	//url += '&seed=' + Math.random();
 	return url;
 }
 
@@ -84,7 +84,7 @@ function refresh_page(){
 }
 
 function on_hash_change(){
-	if (window.preventHashchange == true){
+	if (window.preventHashchange){
 		window.preventHashchange = false;
 		return;
 	}

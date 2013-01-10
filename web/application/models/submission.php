@@ -107,7 +107,7 @@ class Submission extends CI_Model{
 	
 	function load_status($row_begin, $count, $filter = NULL){
 		$conditions = self::filter_to_string($filter);
-		return $this->db->query("SELECT sid, uid, name, pid, status, score, time, memory, codeLength, submitTime, language, isShowed, private 
+		return $this->db->query("SELECT sid, uid, tid, name, pid, status, score, time, memory, codeLength, submitTime, language, isShowed, private 
 								FROM Submission WHERE cid IS NULL $conditions ORDER BY sid DESC LIMIT ?, ?", array($row_begin, $count))->result();
 	}
 	

@@ -83,6 +83,7 @@ class Admin extends CI_Controller {
 			$this->load->view("admin/addproblem", $data);
 		}else{
 			$data = $this->input->post(NULL);
+			$data['codeSizeLimit'] = (int)$data['codeSizeLimit'];
 			$data['isShowed'] = 0;
 			$this->load->model('problems');
 			if ($pid == 0){

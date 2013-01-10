@@ -36,10 +36,10 @@ int builtin_comp(char* file_std, char* file_user){
 		int len0, len1;
 		if (fgets(buffer[0], 65535, std) == NULL) len0 = 0; else len0 = strlen(buffer[0]);
 		if (fgets(buffer[1], 65535, user) == NULL) len1 = 0; else len1 = strlen(buffer[1]);
-		
-		while (len0 && (buffer[0][len0 - 1] == ' ' || buffer[0][len0 - 1] == '\n' || buffer[0][len0 - 1] == '\r'|| buffer[0][len0 - 1] == '\t')) len0--;
+	
+		while (len0 && (buffer[0][len0 - 1] <= 32)) len0--;
 		buffer[0][len0] = '\0';
-		while (len1 && (buffer[1][len1 - 1] == ' ' || buffer[1][len1 - 1] == '\n' || buffer[1][len1 - 1] == '\r'|| buffer[1][len0 - 1] == '\t')) len1--;
+		while (len1 && (buffer[1][len1 - 1] <= 32)) len1--;
 		buffer[1][len1] = '\0';
 		
 		if (feof(std) && feof(user) && ! len0 && ! len1) break;
@@ -85,8 +85,8 @@ int main(int argc, char* argv[]){
                       
 			//set resources limit
 			struct rlimit limit;
-			limit.rlim_cur = (time_limit - 1) / 1000 + 2;
-			limit.rlim_max = time_limit / 1000 + 2;
+			limit.rlim_cur = (time_limit - 1) / 1000 + 3;
+			limit.rlim_max = time_limit / 1000 + 3;
 			alarm(limit.rlim_cur * 4);
 			setrlimit(RLIMIT_CPU, &limit);
 			limit.rlim_cur = limit.rlim_max = 104857600;

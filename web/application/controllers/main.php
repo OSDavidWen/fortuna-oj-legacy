@@ -99,17 +99,17 @@ class Main extends CI_Controller {
 	
 	static function _convert_status($status){
 		switch ($status){
-			case -1: return '<span class="label label-info">waiting</span>';
+			case -1: return '<span class="label label-info">PD</span>';
 			case 0: return '<span class="label label-success">AC</span>';
 			case 1: return '<span class="label label-important">PE</span>';
 			case 2: return '<span class="label label-important">WA</span>';
-			case 3: return '<span class="label">Chk Err</span>';
+			case 3: return '<span class="label">ChkE</span>';
 			case 4: return '<span class="label label-warning">OLE</span>';
 			case 5: return '<span class="label label-warning">MLE</span>';
 			case 6: return '<span class="label label-warning">TLE</span>';
 			case 7: return '<span class="label label-important">RE</span>';
 			case 8: return '<span class="label">CE</span>';
-			case 9: return '<span class="label">IE</span>';
+			case 9: return '<span class="label">InlE</span>';
 			default: return '';
 		}
 	}
@@ -284,7 +284,7 @@ class Main extends CI_Controller {
 				'uid'	=>	$uid,
 				'name'	=>	$this->session->userdata('username'),
 				'pid'	=>	$this->input->post('pid', TRUE),
-				'code'	=>	$this->input->post('texteditor', TRUE),
+				'code'	=>	$this->input->post('texteditor'),
 				'codeLength'	=>	strlen($this->input->post('texteditor', TRUE)),
 				'language'	=>	$language,
 				'submitTime'	=>	date("Y-m-d H:i:s")
@@ -298,6 +298,7 @@ class Main extends CI_Controller {
 				$this->load->model('misc');
 				$info = $this->misc->load_task_info($data['gid'], $data['tid']);
 				if (strtotime($info->startTime) > time() || strtotime($info->endTime) < time()) return;
+				unset($data['gid']);
 				$languages = explode(',', $info->language);
 				if ( ! in_array($language, $languages)) return;
 			}
@@ -348,7 +349,7 @@ class Main extends CI_Controller {
 	public function status($page = 1){
 		$submissions_per_page = 20;
 		
-		$filter = (array)$this->input->post(NULL, TRUE);
+		$filter = (array)$this->input->get(NULL, TRUE);
 		
 		$this->load->model('submission');
 		$row_begin = ($page - 1) * $submissions_per_page;
@@ -364,7 +365,8 @@ class Main extends CI_Controller {
 		$config['last_link'] = FALSE;
 		$this->pagination->initialize($config);
 
-		$filter = array_merge(array('status' => array(), 'languages' =>array()), $filter);
+		$url = uri_string() . ($_SERVER['QUERY_STRING'] == '' ? '' : ('?' . $_SERVER['QUERY_STRING']));
+		$filter = array_merge(array('status' => array(), 'languages' => array(), 'url' => $url), $filter);
 		$this->load->view('main/status', array('data'	=>	$data, 'filter' => $filter));
 	}
 	

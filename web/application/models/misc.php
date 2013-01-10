@@ -143,17 +143,19 @@ class Misc extends CI_Model{
 	}
 	
 	function load_tasks_submissions($uid){
-		$result = $this->db->query("SELECT tid, pid, score FROM Submission WHERE uid=?", array($uid))->result();
+		$result = $this->db->query("SELECT tid, pid, score FROM Submission WHERE uid=? AND tid IS NOT NULL", array($uid))->result();
 		$data = array();
 		foreach ($result as $row){
-			if ( ! isset($data[$row->tid][$row->pid])) $data[$row->tid][$row->pid] = $row->score;
-			else $data[$row->tid][$row->pid] = max($data[$row->tid][$row->pid], $row->score);
+			if ( ! isset($data[$row->tid][$row->pid])) $data[$row->tid][$row->pid] = (int)$row->score;
+			else $data[$row->tid][$row->pid] = max($data[$row->tid][$row->pid], (int)$row->score);
 		}
 		return $data;
 	}
 	
 	function load_task_info($gid, $tid){
-		return $this->db->query("SELECT * FROM Group_has_Task WHERE gid=? AND tid=?", array($gid, $tid))->row();
+		$data = $this->db->query("SELECT * FROM Group_has_Task WHERE gid=? AND tid=?", array($gid, $tid))->row();
+		$data->language = $this->db->query("SELECT language FROM Task WHERE tid=?", array($tid))->row()->language;
+		return $data;
 	}
 	
 	function load_task($tid){

@@ -50,7 +50,7 @@ class Task extends CI_Controller {
 			$group->tasks = $this->misc->load_group_tasks($group->gid);
 			foreach ($group->tasks as $task)
 				foreach ($task->problems as $problem)
-					$problem->status = isset($submissions[$task->tid][$problem->pid]) ? $submissions[$task->tid][$problem->pid] : '';
+					if (isset($submissions[$task->tid][$problem->pid])) $problem->status = $submissions[$task->tid][$problem->pid];
 		}
 		
 		$this->load->view('task/task_list', array('data' => $data));

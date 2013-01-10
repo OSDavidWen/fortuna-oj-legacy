@@ -3,12 +3,12 @@
 		$average = 0;
 		if ($data->submitCount > 0) $average = number_format($data->scoreSum / $data->submitCount, 2);
 		
-		if (!isset($data->data) || $data->data->IOMode == 0) $data->title .= '<sub> (Standard IO)</sub>';
-		else if ($data->data->IOMode == 1) $data->title .= '<sub> (File IO)</sub>';
-		else if ($data->data->IOMode == 2) $data->title .= '<sub> (Output Only)</sub>';
-		else if ($data->data->IOMode == 3) $data->title .= '<sub> (Interactive)</sub>';
-		echo "<div style='text-align:center'>";
-		echo "<h2>$data->pid. $data->title</h2>";
+		if (!isset($data->data) || $data->data->IOMode == 0) $IO = '(Standard IO)';
+		else if ($data->data->IOMode == 1) $IO = '(File IO)';
+		else if ($data->data->IOMode == 2) $IO = '(Output Only)';
+		else if ($data->data->IOMode == 3) $IO = '(Interactive)';
+		echo '<div style="text-align:center">';
+		echo "<h2>$data->pid. $data->title <sub>$IO</sub></h2>";
 		
 		$is_accepted = $this->misc->is_accepted($this->session->userdata('uid'), $data->pid);
 

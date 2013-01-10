@@ -4,7 +4,7 @@
 	</thead>
 	<tbody><?php
 		foreach ($data as $row){
-			echo "<tr><td>$row->uid</td><td><span class='label label-info'>$row->name</span></td><td>$row->school</td><td>";
+			echo "<tr><td>$row->uid</td><td><span class='label label-info name'>$row->name</span></td><td>$row->school</td><td>";
 			echo "<span style='width:55px; text-align:center' onclick=\"user_change_status($row->uid, $(this))\"";
 			if ($row->isEnabled) echo 'class="label label-success">Enabled';
 			else echo 'class="label label-important">Disabled';
@@ -13,7 +13,7 @@
 			else echo '<span class="label">User</span>';
 			echo '</td><td>';
 			foreach ($row->groups as $group) echo "<span class=\"label\">$group->name</span> ";
-			echo "</td><td><button class='close' onclick=\"delete_user($row->uid, '$row->name')\">&times;</button></td></tr>";
+			echo "</td><td><button class='close' onclick=\"delete_user($row->uid, $(this))\">&times;</button></td></tr>";
 		}
 	?></tbody>
 </table>
@@ -34,12 +34,12 @@
 </div>
 
 <script type="text/javascript">
-	function delete_user(uid, name){
+	function delete_user(uid, selector){
 		$('#modal_confirm #delete').live('click', function(){
 			$('#modal_confirm').modal('hide');
 			access_page('admin/delete_user/<?=$row->uid?>');
 		});
-		$('#modal_confirm #info').html(uid + '. ' + name);
+		$('#modal_confirm #info').html(uid + '. ' + selector.parent().parent().find('.name').html());
 		$('#modal_confirm').modal({backdrop: 'static'});
 	}
 	

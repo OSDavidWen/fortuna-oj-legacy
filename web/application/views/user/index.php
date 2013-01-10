@@ -6,33 +6,31 @@
 	<ul class="unstyled">
 		<li>
 			<span class="user_specificator">uid</span>
-			<span class="label label-info"><?=$data->uid?></span>
-			<div class="clearfix"></div>
+			<span class="badge badge-info" style="margin-left:20%"><?=$data->uid?></span>
 		</li>
 		<li>
 			<span class="user_specificator">username</span>
-			<span class="label label-info"><?=$data->name?></span>
-			<div class="clearfix"></div>
+			<span class="label label-info" style="margin-left:20%"><?=$data->name?></span>
 		</li>
 		<li>
 			<span class="user_specificator">Rank</span>
-			<span class="badge badge-info"><?=$data->rank + 1?></span>
-			<div class="clearfix"></div>
+			<span class="badge badge-info" style="margin-left:20%"><?=$data->rank?></span>
 		</li>		
 		<li>
-			<span class="user_specificator">Solved</span>
-			<span class="badge badge-info"><?=$data->solvedCount?></span>
-			<div class="clearfix"></div>
+			<span class="user_specificator">AC</span>
+			<span class="badge badge-info" style="margin-left:20%"><?=$data->acCount?></span>
 		</li>
 		<li>
-			<span class="user_specificator">Submit</span>
-			<span class="badge badge-info"><?=$data->submitCount?></span>
-			<div class="clearfix"></div>
+			<span class="user_specificator">Submission Solved</span>
+			<span class="badge badge-info" style="margin-left:20%"><?=$data->solvedCount?></span>
+		</li>
+		<li>
+			<span class="user_specificator">Submission </span>
+			<span class="badge badge-info" style="margin-left:20%"><?=$data->submitCount?></span>
 		</li>
 		<li>
 			<span class="user_specificator">Rate</span>
-			<span class="badge badge-info"><?=$data->rate . '%'?></span>
-			<div class="clearfix"></div>
+			<span class="badge badge-info" style="margin-left:20%"><?=$data->rate . '%'?></span>
 		</li>
 	</ul>
 </div>

@@ -24,6 +24,7 @@
 <script type="text/javascript">
 	$(document).ready(function(){
 		$("#btn_rejudge").click(function(){
+			$("#btn_rejudge").addClass('disabled');
 			$("#form_rejudge").ajaxSubmit({
 				success: function(responseText){
 					if (responseText == 'success'){

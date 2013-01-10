@@ -55,57 +55,57 @@
 	<?=$this->pagination->create_links()?>
 	
 <script type="text/javascript">
-$(document).ready(function(){
-	$('#goto_button').live('click', function(){
-		var pid = $('#goto_pid').val();
-		if (pid != '')
-			load_page('main/show/' + pid);
-		return false;
-	}),
-	
-	$('#search_button').live('click', function(){
-		var content = $('#search_content').val();
-		if (content != '')
-			load_page("main/problemset?search=" + content);
-		return false;
-	}),
-	
-	$('#btn_goto_page').live('click', function(){
-		var page = $('#goto_page').val();
-		load_page("main/problemset/" + page);
-		return false;
-	}),
-	
-	$('#goto_pid').live('focus', function(){
-		$('#action_form').die();
-		$('#action_form').live('keypress', function(event){
-			if (event.keyCode == 13 && $('#goto_pid').val() != ''){
-				$('#goto_button').click();
-				return false;
-			}
-		})
-	}),
-	
-	$('#search_content').live('focus', function(){
-		$('#action_form').die();
-		$('#action_form').live('keypress', function(event){
-			if (event.keyCode == 13 && $('#search_content').val() != ''){
-				$('#search_button').click();
-				return false;
-			}
-		})
-	}),
-	
-	$('#goto_page').live('focus', function(){
-		$('#action_form').die();
-		$('#action_form').live('keypress', function(event){
-			if (event.keyCode == 13 && $('#goto_page').val() != ''){
-				$('#btn_goto_page').click();
-				return false;
-			}
+	$(document).ready(function(){
+		$('#goto_button').live('click', function(){
+			var pid = $('#goto_pid').val();
+			if (pid != '')
+				load_page('main/show/' + pid);
+			return false;
+		}),
+		
+		$('#search_button').live('click', function(){
+			var content = $('#search_content').val();
+			if (content != '')
+				load_page("main/problemset?search=" + content);
+			return false;
+		}),
+		
+		$('#btn_goto_page').live('click', function(){
+			var page = $('#goto_page').val();
+			load_page("main/problemset/" + page);
+			return false;
+		}),
+		
+		$('#goto_pid').live('focus', function(){
+			$('#action_form').die();
+			$('#action_form').live('keypress', function(event){
+				if (event.keyCode == 13 && $('#goto_pid').val() != ''){
+					$('#goto_button').click();
+					return false;
+				}
+			})
+		}),
+		
+		$('#search_content').live('focus', function(){
+			$('#action_form').die();
+			$('#action_form').live('keypress', function(event){
+				if (event.keyCode == 13 && $('#search_content').val() != ''){
+					$('#search_button').click();
+					return false;
+				}
+			})
+		}),
+		
+		$('#goto_page').live('focus', function(){
+			$('#action_form').die();
+			$('#action_form').live('keypress', function(event){
+				if (event.keyCode == 13 && $('#goto_page').val() != ''){
+					$('#btn_goto_page').click();
+					return false;
+				}
+			})
 		})
 	})
-})
 </script>
 	
 <!-- End of file problemset.php -->
