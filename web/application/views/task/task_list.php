@@ -8,7 +8,7 @@
 ?>
 	<div class="well span4" style="padding:10px">
 		<fieldset>
-			<legend><h5 style="margin:0"><?=$group->name?></h5></legend>
+			<legend><h5 style="margin:0"><a href="#group/group_view/<?=$group->gid?>"><?=$group->name?></a></h5></legend>
 			<?php
 				foreach ($group->tasks as $task){
 					if (strtotime($task->startTime) > time()) continue;
@@ -26,9 +26,10 @@
 						<?php
 							foreach ($task->problems as $problem){
 								echo "<tr><td><a href='#task/show/$problem->pid/$task->gid/$task->tid'>$problem->title</a></td>";
-								if (isset($problem->status))
-									echo "<td><span class='badge badge-info'>$problem->status</span></td></tr>";
-								else
+								if (isset($problem->status)) {
+									$score = round($problem->status, 1);
+									echo "<td><span class='badge badge-info'>$score</span></td></tr>";
+								} else
 									echo '<td></td></tr>';
 							}
 						?>

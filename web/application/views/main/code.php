@@ -18,8 +18,10 @@
 	}
 ?>"><?=htmlentities($code);?></code></pre></div>
 
-<script>
-$(document).ready(function() {
-	$('#src').each(function(i, e) {hljs.highlightBlock(e)});
-});
+<script type="text/javascript">
+	function code(){ hljs.initHighlightingOnLoad(); }
+	
+	$(document).ready(function() {
+		$('#src').each(function(i, e) {hljs.highlightBlock(e)});
+	});
 </script>

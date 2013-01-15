@@ -56,6 +56,7 @@
 				echo '<table class="table table-condensed table-hover table-bordered clear">';
 				echo '<caption>';
 				if ($task->new_title != 'NULL' && $task->new_title != '') echo $task->new_title; else echo $task->title;
+				echo "<br /><a href='#task/statistic/$grouping->gid/$task->tid'>Statistic</a>";
 				echo '</caption>';
 				foreach ($task->problems as $problem) 
 					echo "<tr><td><a href='#task/show/$problem->pid/$grouping->gid/$task->tid'>$problem->title</a></td></tr>";

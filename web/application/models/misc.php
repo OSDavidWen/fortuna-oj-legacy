@@ -1,5 +1,11 @@
 <?php
 
+function task_cmp($a, $b) {
+	if ($a[0] < $b[0]) return 1;
+	if ($a[0] > $b[0]) return -1;
+	return 0;
+}
+
 class Misc extends CI_Model{
 
 	function __construct(){
@@ -121,6 +127,11 @@ class Misc extends CI_Model{
 		$this->db->query("UPDATE `Group` SET count=count-1 WHERE gid=?", array($gid));
 	}
 	
+	function is_in_group($uid, $gid) {
+		return $this->db->query("SELECT COUNT(*) AS count FROM Group_has_User WHERE uid=? AND gid=?",
+								array($uid, $gid))->row()->count > 0;
+	}
+	
 	function is_group_admin($gid){
 		$uid = $this->session->userdata('uid');
 		$result = $this->db->query("SELECT priviledge FROM Group_has_User WHERE gid=? AND uid=?", array($gid, $uid));
@@ -231,5 +242,29 @@ class Misc extends CI_Model{
 	
 	function group_delete_task($gid, $tid){
 		$this->db->query("DELETE FROM Group_has_Task WHERE gid=? AND tid=?", array($gid, $tid));
+	}
+	
+	function load_task_statistic($gid, $tid) {
+		$result = $this->db->query("SELECT uid, name, pid, score, submitTime FROM Submission WHERE gid=? AND tid=?",
+								array($gid, $tid))->result();
+		foreach ($result as $submission) {
+			if ( ! isset($data[$submission->uid][$submission->pid]) )
+				$data[$submission->uid][$submission->pid] = $submission;
+			else if ($data[$submission->uid][$submission->pid]->score < $submission->score)
+				$data[$submission->uid][$submission->pid] = $submission;
+		}
+		
+		foreach ($data as $user) {
+			$score = 0;
+			foreach ($user as $problem) {
+				$score += $problem->score; 
+				$uid = $problem->uid;
+				$data[$uid][1] = $problem->name;
+			}
+			$data[$uid][0] = $score;
+		}
+		uasort($data, "task_cmp");
+		
+		return $data;
 	}
 }

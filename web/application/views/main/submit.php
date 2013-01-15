@@ -46,7 +46,7 @@
 	</div>
 	
 	<div class="form-action">
-		<input type="checkbox" value="codemirror" id="toggle_editor" name="toggle_editor" checked/>
+		<input type="checkbox" value="codemirror" id="toggle_editor" name="toggle_editor" checked />
 		<label for="editor">Toggle CodeMirror</label>
 		<button type="submit" class="btn btn-primary pull-right">Submit</button>
 	</div>
@@ -67,6 +67,7 @@
 			}
 		})
 	})
+	$(".CodeMirror-linenumbers").width(28);
 
 	function language_on_change(){
 		var language = $('#language').val();

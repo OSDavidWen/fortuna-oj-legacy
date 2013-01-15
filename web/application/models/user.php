@@ -7,8 +7,16 @@ class User extends CI_Model{
 	}
 	
 	function is_logged_in(){
-		if ( ! $this->session->userdata('uid')) return FALSE;
-		return TRUE;
+		if ($this->session->userdata('uid') != FALSE) return TRUE;
+		if ($this->input->cookie('username') != FALSE){
+			$username = $this->input->cookie('username');
+			$password = $this->input->cookie('password');
+			if (self::login_check($username, $password)){
+				self::login_success(array('username' => $username));
+				return TRUE;
+			}
+		}
+		return FALSE;
 	}
 	
 	function uid(){
@@ -45,6 +53,14 @@ class User extends CI_Model{
 		$this->session->set_userdata('priviledge', $result->row()->priviledge);
 		$this->session->set_userdata('show_category', $result->row()->showCategory);
 		$this->input->set_cookie(array('name' => 'priviledge', 'value' => $result->row()->priviledge, 'expire' => '86400'));
+		if (isset($post['remember']) && (int)$post['remember'] == 1){
+			$this->input->set_cookie(array('name' => 'username', 'value' => $post['username'], 'expire' => '2592000'));//, 'secure' => TRUE
+			$password = md5(md5($post['password']) . $this->config->item('password_suffix'));
+			$this->input->set_cookie(array('name' => 'password', 'value' => $password, 'expire' => '2592000'));
+		} else {
+			$this->input->set_cookie(array('name' => 'username', 'value' => ''));
+			$this->input->set_cookie(array('name' => 'password', 'value' => ''));
+		}
 		
 		$this->db->query("UPDATE User SET lastLogin=now(), lastIP=? WHERE uid=?", array($this->session->userdata('ip_address'), (int)$result->row()->uid));
 	}
@@ -64,11 +80,13 @@ class User extends CI_Model{
 	}
 	
 	function logout(){
+		$this->input->set_cookie(array('name' => 'priviledge', 'value' => ''));
+		$this->input->set_cookie(array('name' => 'username', 'value' => ''));
+		$this->input->set_cookie(array('name' => 'password', 'value' => ''));
 		$this->session->unset_userdata('username');
 		$this->session->unset_userdata('uid');
 		$this->session->unset_userdata('priviledge');
 		$this->session->unset_userdata('show_category');
-		$this->input->set_cookie(array('name' => 'priviledge', 'value' => '', 'expire' => ''));
 	}
 	
 	function submit(){

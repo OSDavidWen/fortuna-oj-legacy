@@ -67,6 +67,7 @@
 				if ($task->new_title != 'NULL' && $task->new_title != '') echo $task->new_title; else echo $task->title;
 				echo "<button class='close' onclick=\"access_page('group/group_delete_task/$grouping->gid/$task->tid')\">&times;</button>
 					<i class='icon-cog' onclick=\"task_config($grouping->gid, $task->tid)\"></i>
+					<br /><a href='#task/statistic/$grouping->gid/$task->tid'>Statistic</a>
 					</caption>";
 					
 				foreach ($task->problems as $problem)

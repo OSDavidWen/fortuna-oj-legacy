@@ -285,7 +285,7 @@ class Main extends CI_Controller {
 				'name'	=>	$this->session->userdata('username'),
 				'pid'	=>	$this->input->post('pid', TRUE),
 				'code'	=>	$this->input->post('texteditor'),
-				'codeLength'	=>	strlen($this->input->post('texteditor', TRUE)),
+				'codeLength'	=>	strlen($this->input->post('texteditor')),
 				'language'	=>	$language,
 				'submitTime'	=>	date("Y-m-d H:i:s")
 			);
@@ -298,7 +298,7 @@ class Main extends CI_Controller {
 				$this->load->model('misc');
 				$info = $this->misc->load_task_info($data['gid'], $data['tid']);
 				if (strtotime($info->startTime) > time() || strtotime($info->endTime) < time()) return;
-				unset($data['gid']);
+				//unset($data['gid']);
 				$languages = explode(',', $info->language);
 				if ( ! in_array($language, $languages)) return;
 			}

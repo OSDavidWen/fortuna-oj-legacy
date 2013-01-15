@@ -17,11 +17,14 @@
 		if ($count_control == 0) echo '<div class="row-fluid">';
 		
 		echo '<div class="well span3"><fieldset>';
-		echo "<legend><h5><a href='#group/group_view/$row->gid'>$row->gid. $row->name " . 
-			 "<span class='badge badge-info'><i class='icon-user'></i>x$row->count</span></a> ";
-		if ($row->status == 'admin') echo "<a href='#group/group_setting/$row->gid'><i class='icon-cog'\"></i></a>";
-		else if ($row->status == 'pending') echo '<span class="label">Pending</span>';
-		else if ($row->status == 'stranger') echo " <button class='btn btn-mini btn-primary' onclick=\"join('$row->gid', $(this))\">Join</button>";
+		$title = "$row->gid $row->name <span class='badge badge-info'> <i class='icon-user'></i>x$row->count</span>";
+		echo "<legend><h5>";
+		if ($row->status == 'admin') echo "<a href='#group/group_setting/$row->gid'>$title <i class='icon-cog'\"></i></a>";
+		else {
+			echo "<a href='#group/group_view/$row->gid'>$title </a>";
+			if ($row->status == 'pending') echo "<span class='label'>Pending</span>";
+			else if ($row->status == 'stranger') echo " <button class='btn btn-mini btn-primary' onclick=\"join('$row->gid', $(this))\">Join</button>";
+		}
 		if ($this->user->is_admin())
 			echo "<button class='close pull-right' onclick=\"delete_group($row->gid, '$row->name')\">&times;</button>";
 		echo '</h5></legend>';

@@ -138,8 +138,6 @@ function register_submit(){
 	return false;
 }
 
-function code(){hljs.initHighlightingOnLoad();}
-
 $(document).ready(function(){
 	$('.case').click(function(){
 		var attr = "." + $(this).attr("id");
@@ -152,7 +150,7 @@ $(document).ready(function(){
 	}),
 	
 	$('#logout').live('click', function(){
-		access_page('main/logout');
+		access_page('main/logout', load_userinfo);
 	})
 })
 

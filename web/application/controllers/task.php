@@ -59,6 +59,12 @@ class Task extends CI_Controller {
 	public function show($pid, $gid, $tid){
 		$this->load->model('problems');
 		$this->load->model('misc');
+		
+		if ( ! $this->misc->is_in_group($this->user->uid(), $gid)) {
+			$this->load->view('information', array('data' => '<p class="alert alert-error">You are not in this group!<p>'));
+			return;
+		}
+		
 		$data = $this->problems->load_problem($pid);
 		if ($data != FALSE){
 			$data->data = json_decode($data->dataConfiguration);
@@ -95,4 +101,11 @@ class Task extends CI_Controller {
 			$this->load->view('task/show', array('data' => $data));
 	}
 
+	function statistic($gid, $tid) {
+		$data = $this->misc->load_task_statistic($gid, $tid);
+		$problems = $this->misc->load_task_problems($tid);
+		$info = $this->misc->load_task_info($gid, $tid);
+		
+		$this->load->view('task/statistic', array('data' => $data, 'info' => $info, 'problems' => $problems));
+	}
 }

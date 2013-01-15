@@ -14,6 +14,11 @@
 				<input type="password" name="password" placeholder="Password" style="margin-left:90px" />
 				<?=form_error('password')?>
 			</div>
+			
+			<div>
+				<input type="checkbox" name="remember" style="margin-left:90px" value="1" />
+				Remember me for a month
+			</div>			
 		</div>
 
 		<div class="modal-footer">

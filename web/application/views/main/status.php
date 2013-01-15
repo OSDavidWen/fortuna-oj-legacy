@@ -42,6 +42,10 @@
 							<span class="label">Pending</span>
 						</label>
 						<label for="status">
+							<input type="checkbox" name="status[]" value="-2" <?=my_set_checkbox($filter['status'], -2)?> />
+							<span class="label label-important">Running</span>
+						</label>
+						<label for="status">
 							<input type="checkbox" name="status[]" value="0" <?=my_set_checkbox($filter['status'], 0)?> />
 							<span class="label label-success">Accepted</span>
 						</label>
@@ -140,7 +144,7 @@
 			if ( ! isset($row->tid) || $row->tid == NULL)
 				echo "<td><a href=\"#main/show/$row->pid\">$row->pid</a></td>";
 			else 
-				echo "<td><a title='Please goto Task page to submit'>$row->pid</a></td>";
+				echo "<td><a href=\"#task/show/$row->pid/$row->gid/$row->tid\">$row->pid</a><i class='icon-info-sign' title='Task: $row->tid'></i></td>";
 			echo "<td><span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
 
 			if ($row->status < 0) echo $row->result;
@@ -151,8 +155,8 @@
 				//elseif (round($row->score, 0) == 0)
 				//	$sname = "$row->result<span class=\"label label-important\">" . round($row->score, 1) . '</span>';
 				//else
-					$sname = "$row->result<span class=\"label label-info\">" . round($row->score, 0) . '</span>';
-				echo "<a href=\"#main/result/$row->sid\"> $sname</a>";
+				$sname = "$row->result<span class=\"label label-info\">" . round($row->score, 1) . '</span>';
+				echo "<a href=\"#main/result/$row->sid\"> $sname </a>";
 			}
 			echo "</td><td><span class=\"label label-info\">$row->time</span></td>" . 
 				"<td><span class=\"label label-info\">$row->memory</span></td>" . 
