@@ -157,8 +157,8 @@ class Misc extends CI_Model{
 		$result = $this->db->query("SELECT tid, pid, score FROM Submission WHERE uid=? AND tid IS NOT NULL", array($uid))->result();
 		$data = array();
 		foreach ($result as $row){
-			if ( ! isset($data[$row->tid][$row->pid])) $data[$row->tid][$row->pid] = (int)$row->score;
-			else $data[$row->tid][$row->pid] = max($data[$row->tid][$row->pid], (int)$row->score);
+			if ( ! isset($data[$row->tid][$row->pid])) $data[$row->tid][$row->pid] = (double)$row->score;
+			else $data[$row->tid][$row->pid] = max($data[$row->tid][$row->pid], (double)$row->score);
 		}
 		return $data;
 	}
@@ -208,6 +208,10 @@ class Misc extends CI_Model{
 		}
 	}
 	
+	function delete_task($tid) {
+		$this->db->query("DELETE FROM Task WHERE tid=?", array($tid));
+	}
+	
 	function count_tasks(){
 		return $this->db->query("SELECT COUNT(*) AS count FROM Task")->row()->count;
 	}
@@ -246,7 +250,10 @@ class Misc extends CI_Model{
 	
 	function load_task_statistic($gid, $tid) {
 		$result = $this->db->query("SELECT uid, name, pid, score, submitTime FROM Submission WHERE gid=? AND tid=?",
-								array($gid, $tid))->result();
+								array($gid, $tid));
+		if ($result->num_rows() == 0) return FALSE;
+		else $result = $result->result();
+		
 		foreach ($result as $submission) {
 			if ( ! isset($data[$submission->uid][$submission->pid]) )
 				$data[$submission->uid][$submission->pid] = $submission;

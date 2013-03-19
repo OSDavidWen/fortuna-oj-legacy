@@ -1,12 +1,13 @@
 <div class="row-fluid">
 	<div id="header"><?php
 		$average = 0;
+		$IOMode = $data->data->IOMode;
 		if ($data->submitCount > 0) $average = number_format($data->scoreSum / $data->submitCount, 2);
 		
 		if (!isset($data->data) || $data->data->IOMode == 0) $IO = '(Standard IO)';
-		else if ($data->data->IOMode == 1) $IO = '(File IO)';
-		else if ($data->data->IOMode == 2) $IO = '(Output Only)';
-		else if ($data->data->IOMode == 3) $IO = '(Interactive)';
+		else if ($IOMode == 1) $IO = '(File IO)';
+		else if ($IOMode == 2) $IO = '(Output Only)';
+		else if ($IOMode == 3) $IO = '(Interactive)';
 		echo '<div style="text-align:center">';
 		echo "<h2>$data->pid. $data->title <sub>$IO</sub></h2>";
 		
@@ -16,7 +17,11 @@
 		if (isset($data->timeLimit)){
 			echo "Time Limit: <span class=\"badge badge-info\">$data->timeLimit ms</span> &nbsp;";
 			echo "Memory Limit: <span class=\"badge badge-info\">$data->memoryLimit KB</span>";
-		}else echo "Time & Memory Limits";
+		} else if ($IOMode != 2) {
+			echo "Time & Memory Limits";
+		} else {
+			echo "<a href='/index.php/main/download/$data->pid' target='_blank'>Download Input</a>";
+		}
 		
 		echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"#main/limits/$data->pid\" style=\"text-align:left\">";
 		echo '<span id="trigger"><i class="icon-chevron-down"></i></span></a>';
@@ -82,13 +87,16 @@
 		<div class="well"><?php
 			echo '<fieldset><legend>';
 			echo '<h5><em>Statistic</em>';
-			echo "<a class=\"pull-right\" href=\"#main/statistic/$data->pid\">more...</a>";
 			echo '</h5></legend>';
-			echo "Solved: <span class=\"badge badge-info\">$data->solvedCount</span><br />";
-			echo "Submit: <span class=\"badge badge-info\">$data->submitCount</span><br />";
-			echo "Average: <span class=\"badge badge-info\">$average pts</span><br />";
+			echo "Solved: <a class=\"pull-right\" href=\"#main/statistic/$data->pid\"><span class=\"badge badge-info\">$data->solvedCount</span></a><br />";
+			echo "Submit: <a class=\"pull-right\" href=\"#main/statistic/$data->pid\"><span class=\"badge badge-info\">$data->submitCount</span></a><br />";
+			echo "Ave: <a class=\"pull-right\" href=\"#main/statistic/$data->pid\"><span class=\"badge badge-info\">$average pts</span></a><br />";
 			echo '<div style="text-align:center; margin-top: 15px">';
-			echo "<button class=\"btn btn-primary\" onclick=\"window.location.href='#main/submit/$data->pid'\">Submit</button>";
+			if ($IOMode != 2) {
+				echo "<button class=\"btn btn-primary\" onclick=\"window.location.href='#main/submit/$data->pid'\">Submit</button>";
+			} else {
+				echo "<button class=\"btn btn-primary\" onclick=\"window.location.href='#main/upload/$data->pid'\">Submit</button>";
+			}
 			echo '</div></section></fieldset>';
 		?></div>
 		<?php
@@ -96,7 +104,7 @@
 			echo '<div class="well">';
 			echo '<fieldset id="tags">';
 			echo '<legend><h5><em>Tags</em>';
-			if ($is_accepted) echo ' <button id="add_tag_btn" class="btn btn-mini pull-right">add</button>';
+			if ($is_accepted || $this->user->is_admin()) echo ' <button id="add_tag_btn" class="btn btn-mini pull-right">add</button>';
 			echo '</h5></legend>';
 			foreach ($data->category as $id => $name)
 				echo "<span class=\"label tag\" id=\"$id\" style=\"margin-right:5px\">" .
@@ -114,7 +122,7 @@
 		<div class="well">
 			<fieldset id="solutions">
 				<legend><h5><em>Solutions</em>
-				<?php if ($is_accepted) echo ' <button id="add_solution_btn" class="btn btn-mini pull-right">add</button>';?>
+				<?php if ($is_accepted || $this->user->is_admin()) echo ' <button id="add_solution_btn" class="btn btn-mini pull-right">add</button>';?>
 				</h5></legend>
 			</fieldset>
 		</div>
@@ -137,8 +145,10 @@
 				echo "Case $caseCnt: " . number_format($case->score, 2) . ' pts<br />';
 				$testCnt = 1;
 				foreach ($case->tests as $test){
-					echo "<i class='icon-arrow-right'></i>Test $testCnt:<span class='badge badge-info'>$test->timeLimit ms</span>";
-					echo "<span class='badge badge-info'>$test->memoryLimit KB</span><br />";
+					if ($IOMode != 2) {
+						echo "<i class='icon-arrow-right'></i>Test $testCnt:<span class='badge badge-info'>$test->timeLimit ms</span>";
+						echo "<span class='badge badge-info'>$test->memoryLimit KB</span><br />";
+					}
 					$testCnt++;
 				}
 				$caseCnt++;

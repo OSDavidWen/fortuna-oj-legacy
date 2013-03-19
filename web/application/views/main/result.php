@@ -4,28 +4,81 @@
 	
 	if ($result->compileStatus){
 		echo '<table class="table table-bordered table-condensed table-striped">' .
-			'<thead><tr><th>Case</th><th id="score">Score</th><th id="result">Result</th><th id="time">Time</th><th id="memory">Memory</th></tr></thead>';
+			'<thead><tr>
+				<th>Case</th>
+				<th>Test</th>
+				<th id="score">Score</th>
+				<th id="result">Result</th>
+				<th id="time">Time</th>
+				<th id="memory">Memory</th>
+			</tr></thead>';
 		
 		$case_no = 1;
+		$ok = true;
 		foreach ($result->cases as $row1 => $case){
-			echo "<tbody class=\"case\" id=\"toggle$row1\"><tr><td>$case_no</td><td>" . $case->score . '</td>';
 			$case_memory = $case_time = $case_status = -1;
-			$case_result = '<span style="color:green">Accepted</span>';
+			$case_result = '';
+			$test_cnt = 0;
 			foreach ($case->tests as $row2 => $test){
 				if ($test->status > $case_status) $case_result = $test->result;
 				$case_time = max($case_time, $test->time);
 				$case_memory = max($case_memory, $test->memory);
+				$test_cnt++;
+			}
+			
+			if ($test_cnt == 1) {
+				echo "<tbody class=\"case\"><tr><td>$case_no</td><td></td>
+						<td><span class='badge badge-info'>" . $case->score . "</span></td><td>$case_result\t";
+				
+				if ($test->status > 0 && $ok) {
+					$infile = $data['cases'][$case_no - 1]->tests[0]->input;
+					$outfile = $data['cases'][$case_no - 1]->tests[0]->output;
+					
+					echo "<a href='index.php/main/download/$pid/$infile' target='_blank'>Input</a> ";
+					echo "<a href='index.php/main/download/$pid/$outfile' target='_blank'>Output</a> ";
+					
+					$ok = false;
+				}
+				
+				echo "</td><td>$case_time</td><td>$case_memory</td></tr></tbody>";
+				
+			} else {
+				echo "<tbody class=\"case\"><tr>
+					<td>$case_no<i id=\"toggle$row1\" class='icon-resize-vertical pull-right'></i></td>
+					<td></td><td><span class='badge badge-info'>" . $case->score . '</span></td>';
+				
+				echo "<td>$case_result</td><td>$case_time</td><td>$case_memory</td></tr></tbody>";
+				
+				echo "<tbody class=\"toggle$row1\" style=\"display: none;\">";
+				$test_no = 1;
+				foreach ($case->tests as $row2 => $test) {
+					echo "<tr><td></td><td>$test_no</td><td></td><td>$test->result\t";
+					if ($test->status > 0 && $ok) {
+						$infile = $data['cases'][$case_no - 1]->tests[$test_no - 1]->input;
+						$outfile = $data['cases'][$case_no - 1]->tests[$test_no - 1]->output;
+						
+						echo "<a href='#main/download/$pid/$infile'>Input</a> ";
+						echo "<a href='#main/download/$pid/$outfile'>Output</a> ";
+						
+						$ok = false;
+					}
+					echo "</td><td>$test->time</td><td>$test->memory</td></tr>";
+					$test_no++;
+				}
+				echo '</tbody>';
 			}
 			$case_no++;
-			echo "<td>$case_result</td><td>$case_time</td><td>$case_memory</td></tr></tbody>";
-			
-			echo "<tbody class=\"toggle$row1\" style=\"display: none;\">";
-			foreach ($case->tests as $row2 => $test)
-				echo "<tr><td></td><td></td><td>$test->result</td><td>$test->time</td><td>$test->memory</td></tr>";
-			echo '</tbody>';
 		}
 		echo '</table>';
 	} else
 		echo "<pre>$result->compileMessage</pre>";
 
 	echo '</div>';
+?>
+
+<script type="text/javascript">
+	$("i").click(function() {
+		id = $(this).attr('id');
+		$("." + id).fadeToggle('fast');
+	})
+</script>

@@ -26,7 +26,9 @@ class Submission extends CI_Model{
 	function save_submission($data){
 		$sql = $this->db->insert_string('Submission', $data);
 		$this->db->query($sql);
+		$sid = $this->db->insert_id();
 		$this->db->query("UPDATE ProblemSet SET submitCount=submitCount+1 WHERE pid=?", array($data['pid']));
+		return $sid;
 	}
 	
 	function format_data(&$data){
@@ -122,7 +124,7 @@ class Submission extends CI_Model{
 	}
 	
 	function load_result($sid){
-		$result = $this->db->query("SELECT uid, judgeResult AS result FROM Submission WHERE sid=?", array($sid));
+		$result = $this->db->query("SELECT uid, pid, judgeResult AS result FROM Submission WHERE sid=?", array($sid));
 		if ($result->num_rows() == 0) return FALSE;
 		if ($result->row()->uid == $this->session->userdata('uid') || $this->session->userdata('priviledge') == 'admin') return $result->row();
 		return FALSE;

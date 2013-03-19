@@ -1,12 +1,13 @@
 <div class="row-fluid">
 	<div id="header"><?php
 		$average = 0;
+		$IOMode = $data->data->IOMode;
 		if ($data->submitCount > 0) $average = number_format($data->scoreSum / $data->submitCount, 2);
 		
 		if (!isset($data->data) || $data->data->IOMode == 0) $IO = '(Standard IO)';
-		else if ($data->data->IOMode == 1) $IO = '(File IO)';
-		else if ($data->data->IOMode == 2) $IO = '(Output Only)';
-		else if ($data->data->IOMode == 3) $IO = '(Interactive)';
+		else if ($IOMode == 1) $IO = '(File IO)';
+		else if ($IOMode == 2) $IO = '(Output Only)';
+		else if ($IOMode == 3) $IO = '(Interactive)';
 		echo '<div style="text-align:center">';
 		echo "<h2>$data->title <sub>$IO</sub></h2>";
 		
@@ -14,7 +15,11 @@
 		if (isset($data->timeLimit)){
 			echo "Time Limit: <span class=\"badge badge-info\">$data->timeLimit ms</span> &nbsp;";
 			echo "Memory Limit: <span class=\"badge badge-info\">$data->memoryLimit KB</span>";
-		}else echo "Time & Memory Limits";
+		} else if ($IOMode != 2) {
+			echo "Time & Memory Limits";
+		} else {
+			echo "<a href='/index.php/main/download/$data->pid' target='_blank'>Download Input</a>";
+		}
 		
 		echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"#main/limits/$data->pid\" style=\"text-align:left\">";
 		echo '<span id="trigger"><i class="icon-chevron-down"></i></span></a>';
@@ -28,7 +33,12 @@
 		}
 		
 		if (strtotime($info->endTime) > time()){
-			echo "<button style='margin-top:3px' class='btn btn-primary' onclick=\"load_page('main/submit/$data->pid/$cid')\">Submit</button>";
+			if ($IOMode != 2) {
+				echo "<button style='margin-top:3px' class='btn btn-primary' onclick=\"load_page('main/submit/$data->pid/$cid')\">Submit</button>";
+			} else {
+				echo "<button style='margin-top:3px' class='btn btn-primary' onclick=\"load_page('main/upload/$data->pid/$cid')\">Submit</button>";
+			}
+			
 		}
 		
 		echo '</div>';
@@ -102,8 +112,10 @@
 				echo "Case $caseCnt: " . number_format($case->score, 2) . ' pts<br />';
 				$testCnt = 1;
 				foreach ($case->tests as $test){
-					echo "<i class='icon-arrow-right'></i>Test $testCnt:<span class='badge badge-info'>$test->timeLimit ms</span>";
-					echo "<span class='badge badge-info'>$test->memoryLimit KB</span><br />";
+					if ($IOMode != 2) {
+						echo "<i class='icon-arrow-right'></i>Test $testCnt:<span class='badge badge-info'>$test->timeLimit ms</span>";
+						echo "<span class='badge badge-info'>$test->memoryLimit KB</span><br />";
+					}
 					$testCnt++;
 				}
 				$caseCnt++;

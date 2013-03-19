@@ -8,11 +8,10 @@ class User extends CI_Model{
 	
 	function is_logged_in(){
 		if ($this->session->userdata('uid') != FALSE) return TRUE;
-		if ($this->input->cookie('username') != FALSE){
-			$username = $this->input->cookie('username');
-			$password = $this->input->cookie('password');
-			if (self::login_check($username, $password)){
-				self::login_success(array('username' => $username));
+		if ($this->input->cookie('identifier') != FALSE){
+			$identifier = $this->input->cookie('identifier', TRUE);
+			if (($username = self::identifier_check($identifier)) != FALSE){
+				self::login_success(array('username' => $username, 'remember' => 1));
 				return TRUE;
 			}
 		}
@@ -44,7 +43,13 @@ class User extends CI_Model{
 		$result = self::password_check($username, $password);
 		if ($result == FALSE || ($admin && $query->row()->priviledge != 'admin')) return FALSE;
 		return TRUE;
-	}	
+	}
+	
+	function identifier_check($identifier) {
+		$result = $this->db->query("SELECT name FROM User WHERE identifier=?", array($identifier));
+		if ($result->num_rows() == 0) return FALSE;
+		return $result->row()->name;
+	}
 	
 	function login_success($post = array()){
 		$result = $this->db->query("SELECT priviledge, uid, showCategory FROM User WHERE name=?", array($post['username']));
@@ -54,12 +59,12 @@ class User extends CI_Model{
 		$this->session->set_userdata('show_category', $result->row()->showCategory);
 		$this->input->set_cookie(array('name' => 'priviledge', 'value' => $result->row()->priviledge, 'expire' => '86400'));
 		if (isset($post['remember']) && (int)$post['remember'] == 1){
-			$this->input->set_cookie(array('name' => 'username', 'value' => $post['username'], 'expire' => '2592000'));//, 'secure' => TRUE
-			$password = md5(md5($post['password']) . $this->config->item('password_suffix'));
-			$this->input->set_cookie(array('name' => 'password', 'value' => $password, 'expire' => '2592000'));
+			$identifier = md5(rand() + $result->row()->uid);
+			$this->db->query("UPDATE User SET identifier=? WHERE uid=?", array($identifier, $result->row()->uid));
+			$this->input->set_cookie(array('name' => 'identifier', 'value' => $identifier, 'expire' => '2592000'));
 		} else {
-			$this->input->set_cookie(array('name' => 'username', 'value' => ''));
-			$this->input->set_cookie(array('name' => 'password', 'value' => ''));
+			//$this->db->query("UPDATE User SET identifier='' WHERE uid=?", array($result->row()->uid));
+			$this->input->set_cookie(array('name' => 'identifier', 'value' => '', 'expire' => '0'));
 		}
 		
 		$this->db->query("UPDATE User SET lastLogin=now(), lastIP=? WHERE uid=?", array($this->session->userdata('ip_address'), (int)$result->row()->uid));
@@ -80,9 +85,8 @@ class User extends CI_Model{
 	}
 	
 	function logout(){
-		$this->input->set_cookie(array('name' => 'priviledge', 'value' => ''));
-		$this->input->set_cookie(array('name' => 'username', 'value' => ''));
-		$this->input->set_cookie(array('name' => 'password', 'value' => ''));
+		$this->input->set_cookie(array('name' => 'priviledge', 'value' => '', 'expire' => '0'));
+		$this->input->set_cookie(array('name' => 'identifier', 'value' => '', 'expire' => '0'));
 		$this->session->unset_userdata('username');
 		$this->session->unset_userdata('uid');
 		$this->session->unset_userdata('priviledge');

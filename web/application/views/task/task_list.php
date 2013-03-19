@@ -17,9 +17,10 @@
 						<caption>
 							<h5 style="margin-bottom: 3px"><a class="title" title="<?=$task->description?>"><?php
 								if ($task->new_title != 'NULL' && $task->new_title != '') echo $task->new_title; else echo $task->title;
-							?></a></h5>
+							?></a>
 							<?=strtotime($task->endTime) >= time() ?
-								"<span class='label'>Deadline</span> $task->endTime" : '<span class="label">End</span>'?>
+								"<br /><span class='label'>Deadline</span> $task->endTime" : '<span class="label">End</span>'?>
+							</h5>
 						</caption>
 						
 						<tbody>

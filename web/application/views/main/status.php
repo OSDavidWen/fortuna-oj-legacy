@@ -150,18 +150,14 @@
 			if ($row->status < 0) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
-				//if (round($row->score, 0) == 100)
-				//	$sname = "$row->result<span class=\"label label-success\">" . round($row->score, 1) . '</span>';
-				//elseif (round($row->score, 0) == 0)
-				//	$sname = "$row->result<span class=\"label label-important\">" . round($row->score, 1) . '</span>';
-				//else
 				$sname = "$row->result<span class=\"label label-info\">" . round($row->score, 1) . '</span>';
 				echo "<a href=\"#main/result/$row->sid\"> $sname </a>";
 			}
-			echo "</td><td><span class=\"label label-info\">$row->time</span></td>" . 
-				"<td><span class=\"label label-info\">$row->memory</span></td>" . 
-				"<td><a href=\"#main/code/$row->sid\">$row->language</a></td>" . 
-				"<td>$row->codeLength</td><td>$row->submitTime</td>";
+			echo "</td><td><span class=\"label label-info\">$row->time</span></td>";
+			echo "<td><span class=\"label label-info\">$row->memory</span></td>";
+			if ($row->codeLength > 0) echo "<td><a href=\"#main/code/$row->sid\">$row->language</a></td>";
+			else echo '<td></td>';
+			echo "<td>$row->codeLength</td><td>$row->submitTime</td>";
 			
 			echo '<td>';
 			if ($this->user->uid() == $row->uid || $this->user->is_admin()){

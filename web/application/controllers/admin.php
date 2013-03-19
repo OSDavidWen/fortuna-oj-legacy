@@ -173,10 +173,16 @@ class Admin extends CI_Controller {
 					
 					$test['input'] = $post['infile'][$i];
 					$test['output'] = $post['outfile'][$i];
-					$test['userInput'] = $post['user_input'];
-					$test['userOutput'] = $post['user_output'];
-					$test['timeLimit'] = (int)$post['time'][$i];
-					$test['memoryLimit'] = (int)$post['memory'][$i];
+					
+					if ($data['IOMode'] != 2) {
+						$test['timeLimit'] = (int)$post['time'][$i];
+						$test['memoryLimit'] = (int)$post['memory'][$i];
+						$test['userInput'] = $post['user_input'];
+						$test['userOutput'] = $post['user_output'];
+						
+					} else {
+						$test['userOutput'] = $post['user_output'][$i];
+					}
 					
 					$data['cases'][(int)$post['case_no'][$i]]['tests'][] = $test;
 				}
@@ -188,45 +194,79 @@ class Admin extends CI_Controller {
 			}
 			if ($data['IOMode'] == 3) $data['framework'] = $post['framework'];
 			
+			$path = $this->config->item('data_path') . $pid;
+			$IOMode = $data['IOMode'];
 			$data = json_encode($data);
 			$this->problems->save_dataconf($this->input->post('pid'), $data);
 			
+			if ($IOMode == 2) {
+				$cmd = "zip $path/data.zip -q ";
+				foreach ($post['infile'] as $infile) $cmd .= " $path/$infile";
+				$info = exec($cmd);
+				if ( ! is_dir($path . '/submission')) $mkdir($path . '/submission');
+			}			
+
 			$this->load->view('success');
 		}
 	}
 	
 	public function upload($pid){
-		$temp_file = $_FILES['Filedata']['tmp_name'];
-		$target_path = $this->config->item('data_path') . $pid . '/';
-		if (! is_dir($target_path)) mkdir($target_path);
-		$target_file = $target_path . $_FILES['Filedata']['name'];
+		if ( !isset($_FILES['files'])) return;
+		$count = count($_FILES['files']['tmp_name']);
+		for ($i = 0; $i < $count; $i++) {
+			$temp_file = $_FILES['files']['tmp_name'][$i];
+			$target_path = $this->config->item('data_path') . $pid . '/';
+			if (! is_dir($target_path)) mkdir($target_path);
+			$target_file = $target_path . $_FILES['files']['name'][$i];
 
-		$file_types = array('c', 'cpp', 'pas');
-		$file_parts = pathinfo($_FILES['Filedata']['name']);
-		$basename = $file_parts['basename'];
-		$filename = $file_parts['filename'];
-		$extension = $file_parts['extension'];
-	
-	//	if (in_array($file_parts['extension'],$file_types))
-		if ( ! is_executable($temp_file))
-			move_uploaded_file($temp_file, $target_file);
+			$file_types = array('c', 'cpp', 'pas', 'dpr');
+			$file_parts = pathinfo($_FILES['files']['name'][$i]);
+			$basename = $file_parts['basename'];
+			$filename = $file_parts['filename'];
+			$extension = $file_parts['extension'];
+		
+		//	if (in_array($file_parts['extension'],$file_types))
+			if ( ! is_executable($temp_file))
+				move_uploaded_file($temp_file, $target_file);
+				
+			if (in_array($extension, $file_types)){
+				chdir($target_path);
+				if ($extension == 'c')
+					exec("gcc $basename -o $filename");
+				if ($extension == 'cpp')
+					exec("g++ $basename -o $filename");
+				if ($extension == 'pas' || $extension == 'dpr')
+					exec("fpc $basename -o$filename");
+			}
 			
-		if (in_array($extension, $file_types)){
-			chdir($target_path);
-			if ($extension == 'c')
-				exec("gcc $basename -o $filename");
-			if ($extension == 'cpp')
-				exec("g++ $basename -o $filename");
-			if ($extension == 'pas')
-				exec("fpc $basename -o$filename");
+			if (in_array($extension, array('tar', 'tar.gz', 'zip', 'rar', '7z', 'bz2', 'gz')))
+				exec("extract.sh $basename");
 		}
+	}
+		
+	public function wipedata($pid){
+		$target_path = $this->config->item('data_path') . $pid . '/';
+		chdir($target_path);
+		echo $target_path;
+		exec("rm -f *");
 	}
 	
 	public function scan($pid){
+		$this->load->model('problems');
 		$target_path = $this->config->item('data_path') . '/' . $pid . '/';
 		chdir($target_path);
 		$dir = scandir('.');
-		
+		$data = (array)json_decode($this->problems->load_dataconf($pid)->dataConfiguration);
+		$hash = array();
+			
+		foreach ($data['cases'] as $case)
+			foreach ($case->tests as $test){
+				if (file_exists($test->input) && file_exists($test->output)) {
+					$hash['input'][$test->input] = true;
+					$hash['output'][$test->output] = true;
+				}
+			}
+			
 		$cnts = 0;
 		foreach ($dir as $file){
 			if (is_file($file)){
@@ -236,7 +276,11 @@ class Admin extends CI_Controller {
 				$outfile1 = str_ireplace('.in', '.out', $infile);
 				$outfile2 = str_ireplace('.in', '.ans', $infile);
 				$outfile3 = str_ireplace('.in', '.ou', $infile);
-				if (is_file($outfile1) || is_file($outfile2) || is_file($outfile3)) $cnts++;
+				$outfile4 = str_ireplace('.in', '.sol', $infile);
+				$outfile = '';
+				if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) || file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4)) {
+					if ( ! $hash['input'][$infile] || ! $hash['output'][$outfile] ) $cnts++;
+				}
 			}
 		}
 
@@ -248,13 +292,15 @@ class Admin extends CI_Controller {
 				$outfile1 = str_ireplace('.in', '.out', $infile);
 				$outfile2 = str_ireplace('.in', '.ans', $infile);
 				$outfile3 = str_ireplace('.in', '.ou', $infile);
-				if (is_file($outfile1) || is_file($outfile2) || is_file($outfile3)){
+				$outfile4 = str_ireplace('.in', '.sol', $infile);
+				$outfile = '';
+				
+				if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) || file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4)){
+					if ($hash['input'][$infile] && $hash['output'][$outfile]) continue;
 					if (isset($test)) unset($test);
 					if (isset($case)) unset($case);
 					$test['input'] = $infile;
-					if (is_file($outfile1)) $test['output'] = $outfile1;
-					else if (is_file($outfile2)) $test['output'] = $outfile2;
-					else if (is_file($outfile3)) $test['output'] = $outfile3;
+					$test['output'] = $outfile;
 					$case['tests'][] = $test;
 					$data['cases'][] = $case;
 				}
@@ -370,6 +416,11 @@ class Admin extends CI_Controller {
 		}
 	}
 	
+	function delete_task($tid) {
+		$this->load->model('misc');
+		$this->misc->delete_task($tid);
+	}
+	
 	function task_list($page = 1){
 		$tasks_per_page = 20;
 		
@@ -396,7 +447,6 @@ class Admin extends CI_Controller {
 	
 	private function _set_pending($sid){
 		$this->submission->rejudge($sid);
-
 	}
 	
 	function rejudge(){
@@ -419,6 +469,18 @@ class Admin extends CI_Controller {
 					$this->submission->rejudge($row->sid);
 			}
 			$this->load->view('success');
+		}
+	}
+	
+	function statistic() {
+		$this->load->library('form_validation');
+		$this->load->model('problems');
+		$this->load->model('submission');
+		
+		if ($this->form_validation->run() == FALSE)
+			$this->load->view('admin/statistic');
+		else{
+
 		}
 	}
 }

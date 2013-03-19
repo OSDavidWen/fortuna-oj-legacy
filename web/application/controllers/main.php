@@ -180,24 +180,26 @@ class Main extends CI_Controller {
 		if ($data != FALSE){
 			$data->data = json_decode($data->dataConfiguration);
 			
-			$data->timeLimit = $data->memoryLimit = 0;
-			if (isset($data->data)){
-				foreach ($data->data->cases as $case){
-					foreach ($case->tests as $test){
-						if ($data->timeLimit == 0){
-							$data->timeLimit = $test->timeLimit;
-							$data->memoryLimit = $test->memoryLimit;
-						} elseif ($data->timeLimit != $test->timeLimit || $data->memoryLimit != $test->memoryLimit)
-							$data->timeLimit = -1;
-							
+			if ($data->data->IOMode != 2) {
+				$data->timeLimit = $data->memoryLimit = 0;
+				if (isset($data->data->cases)){
+					foreach ($data->data->cases as $case){
+						foreach ($case->tests as $test){
+							if ($data->timeLimit == 0){
+								$data->timeLimit = $test->timeLimit;
+								$data->memoryLimit = $test->memoryLimit;
+							} elseif ($data->timeLimit != $test->timeLimit || $data->memoryLimit != $test->memoryLimit)
+								$data->timeLimit = -1;
+								
+							if ($data->timeLimit < 0) break;
+						}
 						if ($data->timeLimit < 0) break;
 					}
-					if ($data->timeLimit < 0) break;
 				}
-			}
-			if ($data->timeLimit < 0){
-				unset($data->timeLimit);
-				unset($data->memoryLimit);
+				if ($data->timeLimit < 0){
+					unset($data->timeLimit);
+					unset($data->memoryLimit);
+				}
 			}
 			
 			$categorization = $this->misc->load_categorization();
@@ -208,6 +210,15 @@ class Main extends CI_Controller {
 			$this->load->view('error', array('message' => 'Problem not available!'));
 		else
 			$this->load->view('main/show', array('data' => $data, 'category' => $categorization));
+	}
+	
+	public function download($pid, $filename = 'data.zip') {
+		$file = $this->config->item('data_path') . $pid . "/$filename";
+		if ( ! is_file($file)) {
+			$this->load->view('information', array('data' => 'File Not Found!'));
+		} else {
+			$this->load->view('main/download', array('file' => $file, 'filename' => $filename));
+		}
 	}
 	
 	public function limits($pid){
@@ -325,6 +336,75 @@ class Main extends CI_Controller {
 			$this->load->view('success');
 		}
 	}
+	
+	public function upload($pid = 0, $cid = 0, $gid = 0, $tid = 0){
+		$this->load->library('form_validation');
+		$this->load->helper('cookie');
+		$this->form_validation->set_error_delimiters('<div class="alert alert-error">', '</div>');
+
+		$this->form_validation->set_rules('pid', 'Problem ID', 'required');
+		
+		if ($this->form_validation->run() == FALSE){
+			$data = array(
+				'pid' => $pid,
+				'language' => $this->input->cookie('language'),
+				'code' => ''
+			);
+			if ($cid > 0) $data['cid'] = $cid;
+			if ($tid > 0) $data['tid'] = $tid;
+			if ($gid > 0) $data['gid'] = $gid;
+			$this->load->view('main/upload', $data);
+			
+		} else {
+			$uid = $this->session->userdata('uid');
+
+			$data = array(
+				'uid'	=>	$uid,
+				'name'	=>	$this->session->userdata('username'),
+				'pid'	=>	$this->input->post('pid', TRUE),
+				'code'	=>	'output file',
+				'codeLength'	=>	0,
+				'submitTime'	=>	date("Y-m-d H:i:s")
+			);
+			if ($this->input->post('cid') != '') $data['cid'] = $this->input->post('cid');
+			if ($this->input->post('gid') != '') $data['gid'] = $this->input->post('gid');
+			if ($this->input->post('tid') != '') $data['tid'] = $this->input->post('tid');			
+			
+			if (isset($data['tid'])){
+				$this->load->model('misc');
+				$info = $this->misc->load_task_info($data['gid'], $data['tid']);
+				if (strtotime($info->startTime) > time() || strtotime($info->endTime) < time()) return;
+			}
+			
+			if (isset($data['cid'])){
+				$this->load->model('contests');
+				$info = $this->contests->load_contest_status($data['cid']);
+				if (strtotime($info->startTime) > time() || strtotime($info->endTime) < time()) return;
+			}
+			
+			$this->load->model('problems');
+			$showed = $this->problems->is_showed($data['pid']);
+			if ($showed == 0){
+				if ($this->user->is_admin()) $data['isShowed'] = 0;
+				else return;
+			}
+			
+			if ( !isset($_FILES['file'])) return;
+			
+			$this->load->model('submission');
+			$sid = $this->submission->save_submission($data);
+			$this->user->submit();
+			
+			$temp_file = $_FILES['file']['tmp_name'];
+			$target_path = $this->config->item('data_path') . $pid . '/submission';
+			if (! is_dir($target_path)) mkdir($target_path);
+			$target_file = $target_path . "/$sid.compressed";
+			if ( ! is_executable($temp_file))
+				move_uploaded_file($temp_file, $target_file);
+			
+			$this->load->view('success');
+		}
+	}
 
 	public function statistic($pid, $page = 1){
 		$users_per_page = 20;
@@ -388,16 +468,18 @@ class Main extends CI_Controller {
 	
 	public function result($sid){
 		$this->load->model('submission');
+		$this->load->model('problems');
 		$data = $this->submission->load_result($sid);
 
 		if ($data == FALSE){
 			$this->load->view('error', array('message' => 'You have NO priviledge to see this result.'));
 		} else {
+			$dataconf = (array)json_decode($this->problems->load_dataconf($data->pid)->dataConfiguration);
 			$result = json_decode($data->result);
 			if ($result->compileStatus)
 				foreach ($result->cases as $row => $value)
 					$this->submission->format_data($value->tests);
-			$this->load->view('main/result', array('result' => $result));
+			$this->load->view('main/result', array('result' => $result, 'pid' => $data->pid, 'data' => $dataconf));
 		}
 	}
 	

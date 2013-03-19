@@ -17,7 +17,7 @@
 			
 			<div>
 				<input type="checkbox" name="remember" style="margin-left:90px" value="1" />
-				Remember me for a month
+				Remember me
 			</div>			
 		</div>
 

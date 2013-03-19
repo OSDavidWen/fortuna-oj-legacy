@@ -37,7 +37,7 @@
 	function delete_user(uid, selector){
 		$('#modal_confirm #delete').live('click', function(){
 			$('#modal_confirm').modal('hide');
-			access_page('admin/delete_user/<?=$row->uid?>');
+			access_page('admin/delete_user/' + uid);
 		});
 		$('#modal_confirm #info').html(uid + '. ' + selector.parent().parent().find('.name').html());
 		$('#modal_confirm').modal({backdrop: 'static'});
