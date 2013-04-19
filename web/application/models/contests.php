@@ -25,16 +25,25 @@ class Contests extends CI_Model{
 	}
 	
 	function is_valid($cid){
-		if ($this->db->query("SELECT * FROM Contest WHERE cid=? AND private=0", array($cid))->num_rows() > 0) return TRUE;
+		if ($this->db->query("SELECT * FROM Contest
+							WHERE cid=? AND private=0",
+							array($cid))
+							->num_rows() > 0) 
+			return TRUE;
+			
 		$uid = $this->session->userdata('uid');
 		$result = $this->db->query("SELECT * FROM Team
-			WHERE (idParticipant0=? OR idParticipant1=? OR idParticipant2=?) AND cid=?", array($uid, $uid, $uid, $cid));
+								WHERE (idParticipant0=? OR idParticipant1=? OR idParticipant2=?) AND cid=?",
+								array($uid, $uid, $uid, $cid));
+		
 		if ($result->num_rows() > 0) return TRUE;
 		return FALSE;
 	}
 	
 	function load_contest_status($cid){
-		$result = $this->db->query("SELECT * FROM Contest WHERE cid=?", array($cid));
+		$result = $this->db->query("SELECT * FROM Contest
+									WHERE cid=?",
+									array($cid));
 		if ($result->num_rows() == 0) return FALSE;
 		else{
 			$data = $result->row();
@@ -49,7 +58,8 @@ class Contests extends CI_Model{
 				$data->running = TRUE;
 			}
 			$data->problemset = $this->db->query("SELECT * FROM Contest_has_ProblemSet
-												WHERE cid=? ORDER BY id", array($cid));
+												WHERE cid=? ORDER BY id",
+												array($cid));
 			$data->count = $data->problemset->num_rows();
 			$data->problemset = $data->problemset->result();
 			return $data;
@@ -57,64 +67,106 @@ class Contests extends CI_Model{
 	}
 	
 	function count(){
-		return $this->db->query("SELECT COUNT(*) AS count FROM Contest WHERE isShowed = 1;")->row()->count;
+		return $this->db->query("SELECT COUNT(*) AS count FROM Contest
+								WHERE isShowed = 1;")
+								->row()->count;
 	}
 	
 	function load_contests_list($row_begin, $count){
-		return $this->db->query("SELECT cid, title, startTime, endTime, contestMode, private FROM Contest WHERE isShowed=1 
-								ORDER BY cid DESC LIMIT ?,?", array($row_begin, $count))->result();
+		return $this->db->query("SELECT cid, title, startTime, endTime, contestMode, private FROM Contest
+								WHERE isShowed=1 ORDER BY cid DESC LIMIT ?,?",
+								array($row_begin, $count))
+								->result();
 	}
 	
 	function load_contest_teams_count($cid){
-		return $this->db->query("SELECT COUNT(*) AS count FROM Team WHERE cid=?", array($cid))->row()->count;
+		return $this->db->query("SELECT COUNT(*) AS count FROM Team
+								WHERE cid=?",
+								array($cid))
+								->row()->count;
 	}
 	
 	function load_contest_problemset($cid){
-		return $this->db->query("SELECT * FROM Contest_has_ProblemSet WHERE cid=? ORDER BY id", array($cid))->result();
+		return $this->db->query("SELECT * FROM Contest_has_ProblemSet
+								WHERE cid=? ORDER BY id",
+								array($cid))
+								->result();
 	}
 	
 	function load_contest_problem_name($pid){
-		return $this->db->query("SELECT * FROM ProblemSet WHERE pid=?", array($pid))->row();
+		return $this->db->query("SELECT * FROM ProblemSet
+								WHERE pid=?",
+								array($pid))
+								->row();
 	}
 	
 	function modify_problem(&$data, $cid){
-		$data->submitCount = $this->db->query("SELECT COUNT(sid) AS count FROM Submission WHERE cid=? AND pid=?", array($cid, $data->pid))->row()->count;
-		$data->solvedCount = $this->db->query("SELECT COUNT(sid) AS count FROM Submission WHERE cid=? AND pid=? AND status=0", array($cid, $data->pid))->row()->count;
+		$data->submitCount = $this->db->query("SELECT COUNT(sid) AS count FROM Submission
+											WHERE cid=? AND pid=?",
+											array($cid, $data->pid))
+											->row()->count;
+		$data->solvedCount = $this->db->query("SELECT COUNT(sid) AS count FROM Submission
+											WHERE cid=? AND pid=? AND status=0",
+											array($cid, $data->pid))
+											->row()->count;
 	}
 	
 	function load_contest_problem_statistic($cid, $pid){
 		$data = new stdClass();
-		$data->submitCount = $this->db->query("SELECT COUNT(sid) AS count FROM Submission WHERE cid=? AND pid=?", array($cid, $pid))->row()->count;
-		$data->solvedCount = $this->db->query("SELECT COUNT(sid) AS count FROM Submission WHERE cid=? AND pid=? AND status=0", array($cid, $pid))->row()->count;
+		$data->submitCount = $this->db->query("SELECT COUNT(sid) AS count FROM Submission
+											WHERE cid=? AND pid=?",
+											array($cid, $pid))
+											->row()->count;
+		$data->solvedCount = $this->db->query("SELECT COUNT(sid) AS count FROM Submission
+											WHERE cid=? AND pid=? AND status=0",
+											array($cid, $pid))
+											->row()->count;
 		return $data;
 	}
 	
 	function load_contest_submission_count($cid){
-		return $this->db->query("SELECT COUNT(*) AS count FROM Submission WHERE cid=?", array($cid))->row()->count;
+		return $this->db->query("SELECT COUNT(*) AS count FROM Submission
+								WHERE cid=?",
+								array($cid))
+								->row()->count;
 	}
 	
 	function load_contest_submission($cid, $row_begin, $count, $running, $username, $is_admin){
 		if ($is_admin || ! $running){
-			return $this->db->query("SELECT isShowed, sid, name, pid, status, score, time, memory, codeLength, submitTime, language 
-							FROM Submission WHERE cid=? ORDER BY sid DESC LIMIT ?, ?", array($cid, $row_begin, $count))->result();
+			return $this->db->query("SELECT isShowed, sid, name, pid, status, score,
+								time, memory, codeLength, submitTime, language FROM Submission
+								WHERE cid=? ORDER BY sid DESC LIMIT ?, ?",
+								array($cid, $row_begin, $count))
+								->result();
 		}else{
-			return $this->db->query("SELECT isShowed, sid, name, pid, status, score, time, memory, codeLength, submitTime, language 
-				FROM Submission WHERE cid=? AND name=? ORDER BY sid DESC LIMIT ?, ?", array($cid, $username, $row_begin, $count))->result();
+			return $this->db->query("SELECT isShowed, sid, name, pid, status, score,
+								time, memory, codeLength, submitTime, language FROM Submission
+								WHERE cid=? AND name=? ORDER BY sid DESC LIMIT ?, ?",
+								array($cid, $username, $row_begin, $count))
+								->result();
 		}
 	}
 
 	function load_contest_pid($cid, $id){
-		$result = $this->db->query("SELECT pid FROM Contest_has_ProblemSet WHERE cid=? AND id=?", array($cid, $id));
+		$result = $this->db->query("SELECT pid FROM Contest_has_ProblemSet
+								WHERE cid=? AND id=?",
+								array($cid, $id));
 		if ($result->num_rows() == 0) return FALSE;
 		return $result->row()->pid;
 	}
 	
 	function load_contest_ranklist_ACM($cid){
-		$info = $this->db->query("SELECT teamMode, startTime FROM Contest WHERE cid=?", array($cid))->row();
+		$info = $this->db->query("SELECT teamMode, startTime FROM Contest
+								WHERE cid=?",
+								array($cid))
+								->row();
 		$teamMode = $info->teamMode;
 		$startTime = strtotime($info->startTime);
 		if ($teamMode == TRUE){
-			$data = $this->db->query("SELECT * FROM Team WHERE cid=? ORDER BY score DESC, penalty DESC", array($cid))->result();
+			$data = $this->db->query("SELECT * FROM Team
+									WHERE cid=? ORDER BY score DESC, penalty DESC",
+									array($cid))
+									->result();
 			foreach ($data as $row){
 				$result[$row->idTeam]->name = $row->name;
 				$result[$row->idTeam]->score = $row->score;
@@ -124,7 +176,9 @@ class Contests extends CI_Model{
 			
 		}else {
 			$data = $this->db->query("SELECT uid, name, pid, submitTime, status FROM Submission
-									  WHERE cid=? ORDER BY sid", array($cid))->result();
+									  WHERE cid=? ORDER BY sid",
+									  array($cid))
+									  ->result();
 			//var_dump($data);
 			foreach ($data as $row){
 				if ( ! isset($result[$row->uid])){
@@ -172,11 +226,17 @@ class Contests extends CI_Model{
 		$now = strtotime('now');
 		if ($now <= $endTime) return FALSE;
 		
-		$info = $this->db->query("SELECT teamMode, startTime FROM Contest WHERE cid=?", array($cid))->row();
+		$info = $this->db->query("SELECT teamMode, startTime FROM Contest
+								WHERE cid=?",
+								array($cid))
+								->row();
 		$teamMode = $info->teamMode;
 		$startTime = strtotime($info->startTime);
 		if ($teamMode == TRUE){
-			$data = $this->db->query("SELECT * FROM Team WHERE cid=? ORDER BY score DESC", array($cid))->result();
+			$data = $this->db->query("SELECT * FROM Team
+									WHERE cid=? ORDER BY score DESC",
+									array($cid))
+									->result();
 			foreach ($data as $row){
 				$result[$row->idTeam]->name = $row->name;
 				$result[$row->idTeam]->score = $row->score;
@@ -186,7 +246,9 @@ class Contests extends CI_Model{
 			
 		}else {
 			$data = $this->db->query("SELECT uid, name, pid, status, score FROM Submission
-									  WHERE cid=? ORDER BY sid DESC", array($cid))->result();
+									  WHERE cid=? ORDER BY sid DESC",
+									  array($cid))
+									  ->result();
 			foreach ($data as $row){
 				if ( ! isset($result[$row->uid])){
 					$result[$row->uid] = new Participant;
@@ -221,20 +283,34 @@ class Contests extends CI_Model{
 	}
 
 	function declaration_count($cid){
-		return $result = $this->db->query('SELECT COUNT(*) AS count FROM Declaration WHERE cid=?', array($cid))->row()->count;
+		return $result = $this->db->query('SELECT COUNT(*) AS count FROM Declaration
+										WHERE cid=?',
+										array($cid))
+										->row()->count;
 	}
 	
 	function load_declaration_list($cid){
-		return $this->db->query('SELECT idDeclaration, title, pid FROM Declaration WHERE cid=?', array($cid))->result();
+		return $this->db->query('SELECT idDeclaration, title, pid FROM Declaration
+								WHERE cid=?',
+								array($cid))
+								->result();
 	}
 	
 	function load_declaration($id){
-		return $this->db->query('SELECT * FROM Declaration WHERE idDeclaration=?', array($id))->result();
+		return $this->db->query('SELECT * FROM Declaration
+								WHERE idDeclaration=?',
+								array($id))
+								->result();
 	}
 	
 	function load_contest_configuration($cid){
-		$data = (array)$this->db->query('SELECT * FROM Contest WHERE cid=?', array($cid))->row();
-		$problems = $this->db->query('SELECT * FROM Contest_has_ProblemSet WHERE cid=? ORDER BY id', array($cid));
+		$data = (array)$this->db->query('SELECT * FROM Contest
+										WHERE cid=?',
+										array($cid))
+										->row();
+		$problems = $this->db->query('SELECT * FROM Contest_has_ProblemSet
+										WHERE cid=? ORDER BY id',
+										array($cid));
 		for ($i = 0; $i < $problems->num_rows(); $i++)
 			$data['problems'][] = $problems->row($i);
 		return $data;
@@ -262,19 +338,26 @@ class Contests extends CI_Model{
 		if ($cid == FALSE) $cid = $this->db->insert_id();
 		
 		if (isset($raw['pid'])){
-			$this->db->query("DELETE FROM Contest_has_ProblemSet WHERE cid=?", array($cid));
+			$this->db->query("DELETE FROM Contest_has_ProblemSet
+							WHERE cid=?",
+							array($cid));
 			$cnt = count($raw['pid']);
 			for ($now = 0; $now < $cnt; $now++){
 				if (isset($problem)) unset($problem);
 				$problem['cid'] = $cid;
 				$pid = $problem['pid'] = $raw['pid'][$now];
 				if ($raw['title'][$now] != '') $problem['title'] = $raw['title'][$now];
-				else $problem['title'] = $this->db->query("SELECT title FROM ProblemSet WHERE pid=?", array($pid))->row()->title;
+				else $problem['title'] = $this->db->query("SELECT title FROM ProblemSet
+														WHERE pid=?",
+														array($pid))
+														->row()->title;
 				$problem['score'] = (int)$raw['score'][$now];
 				$problem['scoreDecreaseSpeed'] = (int)$raw['speed'][$now];
 				$problem['id'] = $now;
 				
-				$result = $this->db->query("SELECT id FROM Contest_has_ProblemSet WHERE cid=? AND pid=?", array($cid, $problem['pid']));
+				$result = $this->db->query("SELECT id FROM Contest_has_ProblemSet
+											WHERE cid=? AND pid=?",
+											array($cid, $problem['pid']));
 				if ($result->num_rows() == 0) $sql = $this->db->insert_string('Contest_has_ProblemSet', $problem);
 				else $sql = $this->db->update_string('Contest_has_ProblemSet', $problem, "cid=$cid AND pid=$pid");
 				$this->db->query($sql);	
@@ -283,9 +366,13 @@ class Contests extends CI_Model{
 	}
 	
 	function delete($cid){
-		$this->db->query("DELETE FROM Contest WHERE cid=?", array($cid));
-		$cnt = $this->db->query('SELECT MAX(cid) AS cnt FROM Contest')->row()->cnt + 1;
+		$this->db->query("DELETE FROM Contest
+						WHERE cid=?",
+						array($cid));
+		$cnt = $this->db->query('SELECT MAX(cid) AS cnt FROM Contest')
+							->row()->cnt + 1;
 		if ($cnt == 1) $cnt = 1000;
-		$this->db->query('ALTER TABLE Contest AUTO_INCREMENT=?', array($cnt));
+		$this->db->query('ALTER TABLE Contest AUTO_INCREMENT=?',
+						array($cnt));
 	}
 }

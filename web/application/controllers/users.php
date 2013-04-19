@@ -13,16 +13,19 @@ class Users extends CI_Controller {
 		$this->load->model('user');
 		$user = $this->user->load_user($params[0]);
 		$user->name = $params[0];
+		
 		$params[0] = $user;
 		if ($this->user->is_logged_in())
 			$this->_redirect_page($method, $params);
 	}
 
-	public function index($user){
+	public function index($user) {
 		if ($user->submitCount == 0) $user->rate = 0;
 		else $user->rate = number_format($user->solvedCount / $user->submitCount * 100, 2);
-			
+		
 		$user->rank = $this->user->load_rank($user->uid);
+		$user->count = $this->user->load_statistic($user->uid);
+		$user->userPicture = $this->user->load_userPicture($user->uid);
 		
 		$this->load->view('user/index', array('data' => $user));
 	}
@@ -40,6 +43,8 @@ class Users extends CI_Controller {
 		$this->form_validation->set_rules('old_password', 'Old Password', 'callback_password_check');
 		$this->form_validation->set_rules('show_category', 'Show Category', '');
 		$this->form_validation->set_rules('email', 'Email', 'email');
+		$this->form_validation->set_rules('problems_per_page', 'Problems', 'required');
+		$this->form_validation->set_rules('submission_per_page', 'Submission', 'required');
 		
 		$this->form_validation->set_message('password_check', 'Wrong Old Password!');
 		
@@ -49,14 +54,38 @@ class Users extends CI_Controller {
 			$this->load->view('user/settings', array('user' => $user, 'config' => $config));
 		}else{
 			$raw = $this->input->post(NULL, TRUE);
-			$config = array();
-			if (isset($raw['show_category'])) $config['showCategory'] = 1; else $config['showCategory'] = 0;
-			if (isset($raw['email'])) $config['email'] = $raw['email'];
-			$this->user->save_configuration($this->session->userdata('uid'), $config);
-			if (isset($raw['old_password']) && isset($raw['new_password']) && $raw['old_password'] != '')
-				$this->user->save_password($this->session->userdata('uid'), md5(md5($raw['new_password']) . $this->config->item('password_suffix')));
 			
+			if (isset($raw['show_category'])) $config['showCategory'] = 1;
+			else $config['showCategory'] = 0;
+			
+			if (isset($raw['email'])) $config['email'] = $raw['email'];
+			
+			$config['problemsPerPage'] = (int)$raw['problems_per_page'];
+			$config['submissionPerPage'] = (int)$raw['submission_per_page'];
+			
+			$this->user->save_configuration($this->session->userdata('uid'), $config);
+			
+			if (isset($raw['old_password']) && isset($raw['new_password']) && $raw['old_password'] != '') {
+				$this->user->save_password($this->session->userdata('uid'),
+										md5(md5($raw['new_password']) . $this->config->item('password_suffix')));
+			}
+
 			$this->load->view('success');
 		}
+	}
+	
+	function statistic($user) {
+		$this->load->model('misc');
+		$this->load->model('submission');
+		
+		$categorization = $this->misc->load_categorization();
+		
+		$statistic = new stdClass();
+		$statistic->verdict = $this->user->load_statistic($user->uid);
+		$statistic->categories = $this->user->load_categories_statistic($user->uid);
+		$statistic->accepted = $this->user->load_accepted($user->uid);
+		$statistic->unaccepted = $this->user->load_unaccepted($user->uid);
+		
+		$this->load->view('user/statistic', array('categorization' => $categorization, 'statistic' => $statistic));
 	}
 } 

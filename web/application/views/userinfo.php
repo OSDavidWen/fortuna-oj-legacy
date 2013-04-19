@@ -1,6 +1,18 @@
 <?php
-	if ($name)
-		echo '<div style="margin: 15px 0">' . 
-			"<a href=\"#users/$name\" id=\"username\"><span class=\"label label-info\">$name</span></a>" . 
-			'<a id="setting" href="#users/' . $name . '/settings"><i class="icon-cog" style="margin: 7px"></i></a>' .
-			'<a id="logout" href="#main/home"><i class="icon-off" style="margin: 5px"></i></a></div>';
+	if ($user) {
+?>
+	<div style="margin: 8px 0">
+		<a href="#users/<?=$user?>" id="username" style="display: inline">
+<!--			<img style='width:24px; height:32px' src='data:image/jpeg;base64,<?=$avatar?>' /> -->
+			<span class="label label-info"><?=$user?></span>
+		</a>
+		<a id="setting" href="#users/<?=$user?>/settings">
+			<i class="icon-cog" style="margin-left: 3px"></i>
+		</a>
+		<a id="logout" href="#main/home">
+			<i class="icon-off" style="margin-left: 3px"></i>
+		</a>
+	</div>
+<?php
+	}
+?>

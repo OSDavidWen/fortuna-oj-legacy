@@ -250,7 +250,7 @@ class Admin extends CI_Controller {
 		echo $target_path;
 		exec("rm -f *");
 	}
-	
+
 	public function scan($pid){
 		$this->load->model('problems');
 		$target_path = $this->config->item('data_path') . '/' . $pid . '/';
@@ -258,7 +258,7 @@ class Admin extends CI_Controller {
 		$dir = scandir('.');
 		$data = (array)json_decode($this->problems->load_dataconf($pid)->dataConfiguration);
 		$hash = array();
-			
+		
 		foreach ($data['cases'] as $case)
 			foreach ($case->tests as $test){
 				if (file_exists($test->input) && file_exists($test->output)) {
@@ -266,8 +266,9 @@ class Admin extends CI_Controller {
 					$hash['output'][$test->output] = true;
 				}
 			}
-			
+		
 		$cnts = 0;
+		$name_array = array();
 		foreach ($dir as $file){
 			if (is_file($file)){
 				$info = pathinfo('./' . $file);
@@ -277,25 +278,32 @@ class Admin extends CI_Controller {
 				$outfile2 = str_ireplace('.in', '.ans', $infile);
 				$outfile3 = str_ireplace('.in', '.ou', $infile);
 				$outfile4 = str_ireplace('.in', '.sol', $infile);
+				$outfile5 = str_ireplace('.in', '.std', $infile);
 				$outfile = '';
-				if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) || file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4)) {
-					if ( ! $hash['input'][$infile] || ! $hash['output'][$outfile] ) $cnts++;
+				if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) ||
+					file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4) ||
+					file_exists($outfile = $outfile5)) {
+					if ( ! $hash['input'][$infile] || ! $hash['output'][$outfile] ) {
+						$cnts++;
+						$name_array[] = $infile;
+					}
 				}
 			}
 		}
+		
+		usort($name_array, "strnatcmp");
 
-		foreach ($dir as $file){
-			if (is_file($file)){
-				$info = pathinfo('./' . $file);
-				$infile = $info['basename'];
-				if (!strpos($infile, '.in')) continue;
+		foreach ($name_array as $infile){
 				$outfile1 = str_ireplace('.in', '.out', $infile);
 				$outfile2 = str_ireplace('.in', '.ans', $infile);
 				$outfile3 = str_ireplace('.in', '.ou', $infile);
 				$outfile4 = str_ireplace('.in', '.sol', $infile);
+				$outfile5 = str_ireplace('.in', '.std', $infile);
 				$outfile = '';
 				
-				if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) || file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4)){
+				if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) ||
+					file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4) ||
+					file_exists($outfile = $outfile5)){
 					if ($hash['input'][$infile] && $hash['output'][$outfile]) continue;
 					if (isset($test)) unset($test);
 					if (isset($case)) unset($case);
@@ -304,7 +312,6 @@ class Admin extends CI_Controller {
 					$case['tests'][] = $test;
 					$data['cases'][] = $case;
 				}
-			}
 		}
 		
 		echo json_encode($data);

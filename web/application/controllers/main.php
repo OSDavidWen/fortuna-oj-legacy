@@ -12,7 +12,8 @@ class Main extends CI_Controller {
 	public function _remap($method, $params = array()){
 		$this->load->model('user');
 		
-		if ($this->user->is_logged_in() || $method == 'index' || $method == 'register' || $method == 'userinfo' || $method == 'logout')
+		$allowed_methods = array('index', 'register', 'userinfo', 'logout');
+		if ($this->user->is_logged_in() || in_array($method, $allowed_methods))
 			$this->_redirect_page($method, $params);
 		else
 			$this->login();
@@ -41,7 +42,7 @@ class Main extends CI_Controller {
 		$this->form_validation->set_rules('password', 'Password', 'required|callback_password_check');
 			
 		$this->form_validation->set_message('required', "%s is required");
-		$this->form_validation->set_message('username_check', 'User NOT exist or DISABLED!');
+		$this->form_validation->set_message('username_check', 'User Error!');
 		$this->form_validation->set_message('password_check', 'Password Error!');
 
 		if ($this->form_validation->run() == FALSE){
@@ -54,8 +55,9 @@ class Main extends CI_Controller {
 	}
 	
 	public function userinfo(){
-		$name = $this->session->userdata('username');
-		$this->load->view('userinfo', array('name' => $name));
+		$user = $this->session->userdata('username');
+		$avatar = $this->user->load_avatar($this->session->userdata('uid'));
+		$this->load->view('userinfo', array('user' => $user, 'avatar' => $avatar));
 	}
 	
 	public function register(){
@@ -99,49 +101,68 @@ class Main extends CI_Controller {
 	
 	static function _convert_status($status){
 		switch ($status){
-			case -1: return '<span class="label label-info">PD</span>';
+			case -1: return '<i class="icon-time"></i>';
 			case 0: return '<span class="label label-success">AC</span>';
 			case 1: return '<span class="label label-important">PE</span>';
 			case 2: return '<span class="label label-important">WA</span>';
-			case 3: return '<span class="label">ChkE</span>';
+			case 3: return '<span class="label">Err</span>';
 			case 4: return '<span class="label label-warning">OLE</span>';
 			case 5: return '<span class="label label-warning">MLE</span>';
 			case 6: return '<span class="label label-warning">TLE</span>';
 			case 7: return '<span class="label label-important">RE</span>';
 			case 8: return '<span class="label">CE</span>';
-			case 9: return '<span class="label">InlE</span>';
+			case 9: return '<span class="label">Err</span>';
 			default: return '';
 		}
 	}
 
 	public function problemset($page = 0){
-		$problems_per_page = 20;
+		$problems_per_page = (int)$this->session->userdata('problems_per_page');
+		if ( ! $problems_per_page) $problems_per_page = 20;
 		
 		$uid = $this->session->userdata('uid');
+		
 		$this->load->model('user');
 		$this->load->model('problems');
 		$this->load->model('misc');
+		
 		if (! ($keyword = $this->input->get('search', TRUE))){
-			if ($page == 0){
-				$page = $this->user->load_last_page($uid);
-			}else $this->user->save_last_page($uid, $page);
+			if (! ($filter = $this->input->get('filter', TRUE))){
+				if ($page == 0) $page = $this->user->load_last_page($uid);
+				else $this->user->save_last_page($uid, $page);
+			} else if ($page == 0) $page = 1;
 		} else if ($page == 0) $page = 1;
 
 		if ($keyword){
 			$keyword = "%" . $keyword . "%";
+			
 			$count = $this->problems->search_count($keyword);
 			if ($count > 0 && ($count + $problems_per_page - 1) / $problems_per_page < $page)
 				$page = ($count + $problems_per_page - 1) / $problems_per_page;
+				
 			$row_begin = ($page - 1) * $problems_per_page;
 			$data = $this->problems->load_search_problemset($keyword, $row_begin, $problems_per_page);
 	
 			$result = $this->problems->load_search_problemset_status($uid, $keyword);
-		}else{
+			
+		} else if ($filter) {
+			$count = $this->problems->filter_count($filter);
+			if ($count > 0 && ($count + $problems_per_page - 1) / $problems_per_page < $page)
+				$page = ($count + $problems_per_page - 1) / $problems_per_page;
+				
+			$row_begin = ($page - 1) * $problems_per_page;
+			$data = $this->problems->load_filter_problemset($filter, $row_begin, $problems_per_page);
+	
+			$result = $this->problems->load_filter_problemset_status($uid, $filter);
+			
+		} else {
 			$count = $this->problems->count();
 			if ($count > 0 && ($count + $problems_per_page - 1) / $problems_per_page < $page)
 				$page = ($count + $problems_per_page - 1) / $problems_per_page;
+				
 			$row_begin = ($page - 1) * $problems_per_page;
 			$data = $this->problems->load_problemset($row_begin, $problems_per_page);
+			
 			$start = $row_begin + 1000;
 			$end = $start + $problems_per_page;
 			$result = $this->problems->load_problemset_status($uid, $start, $end);
@@ -152,10 +173,12 @@ class Main extends CI_Controller {
 		$categorization = $this->misc->load_categorization();
 		foreach ($data as $row){
 			if ($row->submitCount > 0) $row->average = $row->average / $row->submitCount;
+			
 			$row->category = $this->misc->load_problem_category($row->pid, $categorization);
 			$row->average = number_format($row->average, 2);
 			$row->status = '';
 			$row->ac = FALSE;
+			
 			if (isset($status["$row->pid"])){
 				$row->status = self::_convert_status($status["$row->pid"]);
 				if ($status["$row->pid"] == 0) $row->ac = TRUE;
@@ -168,26 +191,35 @@ class Main extends CI_Controller {
 		$config['per_page'] = $problems_per_page;
 		$config['cur_page'] = $page;
 		if ($keyword) $config['suffix'] = '?search=' . $this->input->get('search');
+		if ($filter) $config['suffix'] = '?filter=' . $filter;
 		$this->pagination->initialize($config);
 
-		$this->load->view('main/problemset', array('data' => $data));
+		$this->load->view('main/problemset',
+						array('data' => $data,
+							'category' => $categorization,
+							'keyword' => $keyword,
+							'filter' => $filter));
 	}
 
 	public function show($pid){
 		$this->load->model('problems');
 		$this->load->model('misc');
+		
 		$data = $this->problems->load_problem($pid);
 		if ($data != FALSE){
 			$data->data = json_decode($data->dataConfiguration);
 			
 			if ($data->data->IOMode != 2) {
 				$data->timeLimit = $data->memoryLimit = 0;
-				if (isset($data->data->cases)){
-					foreach ($data->data->cases as $case){
+				if (isset($data->data->cases)) {
+				
+					foreach ($data->data->cases as $case) {
 						foreach ($case->tests as $test){
-							if ($data->timeLimit == 0){
+						
+							if ($data->timeLimit == 0) {
 								$data->timeLimit = $test->timeLimit;
 								$data->memoryLimit = $test->memoryLimit;
+								
 							} elseif ($data->timeLimit != $test->timeLimit || $data->memoryLimit != $test->memoryLimit)
 								$data->timeLimit = -1;
 								
@@ -195,7 +227,9 @@ class Main extends CI_Controller {
 						}
 						if ($data->timeLimit < 0) break;
 					}
+					
 				}
+				
 				if ($data->timeLimit < 0){
 					unset($data->timeLimit);
 					unset($data->memoryLimit);
@@ -214,6 +248,7 @@ class Main extends CI_Controller {
 	
 	public function download($pid, $filename = 'data.zip') {
 		$file = $this->config->item('data_path') . $pid . "/$filename";
+		
 		if ( ! is_file($file)) {
 			$this->load->view('information', array('data' => 'File Not Found!'));
 		} else {
@@ -223,6 +258,7 @@ class Main extends CI_Controller {
 	
 	public function limits($pid){
 		$this->load->model('problems');
+		
 		$data = $this->problems->load_limits($pid);
 		if ($data != FALSE){
 			$data->data = json_decode($data->dataConfiguration);
@@ -230,9 +266,11 @@ class Main extends CI_Controller {
 			$data->timeLimit = $data->memoryLimit = 0;
 			foreach ($data->data->cases as $case){
 				foreach ($case->tests as $test){
+				
 					if ($data->timeLimit == 0){
 						$data->timeLimit = $test->timeLimit;
 						$data->memoryLimit = $test->memoryLimit;
+						
 					} elseif ($data->timeLimit != $test->timeLimit || $data->memoryLimit != $test->memoryLimit)
 						$data->timeLimit = -1;
 						
@@ -240,6 +278,7 @@ class Main extends CI_Controller {
 				}
 				if ($data->timeLimit < 0) break;
 			}
+			
 			if ($data->timeLimit < 0){
 				unset($data->timeLimit);
 				unset($data->memoryLimit);
@@ -270,6 +309,7 @@ class Main extends CI_Controller {
 	public function submit($pid = 0, $cid = 0, $gid = 0, $tid = 0){
 		$this->load->library('form_validation');
 		$this->load->helper('cookie');
+		
 		$this->form_validation->set_error_delimiters('<div class="alert alert-error">', '</div>');
 
 		$this->form_validation->set_rules('pid', 'Problem ID', 'required|callback_submit_check');
@@ -301,6 +341,7 @@ class Main extends CI_Controller {
 				'submitTime'	=>	date("Y-m-d H:i:s")
 			);
 			$data['code'] = html_entity_decode($data['code']);
+			
 			if ($this->input->post('cid') != '') $data['cid'] = $this->input->post('cid');
 			if ($this->input->post('gid') != '') $data['gid'] = $this->input->post('gid');
 			if ($this->input->post('tid') != '') $data['tid'] = $this->input->post('tid');			
@@ -340,6 +381,7 @@ class Main extends CI_Controller {
 	public function upload($pid = 0, $cid = 0, $gid = 0, $tid = 0){
 		$this->load->library('form_validation');
 		$this->load->helper('cookie');
+		
 		$this->form_validation->set_error_delimiters('<div class="alert alert-error">', '</div>');
 
 		$this->form_validation->set_rules('pid', 'Problem ID', 'required');
@@ -427,20 +469,21 @@ class Main extends CI_Controller {
 	}
 
 	public function status($page = 1){
-		$submissions_per_page = 20;
+		$submission_per_page = (int)$this->session->userdata('submission_per_page');
+		if ( ! $submission_per_page) $submission_per_page = 20;
 		
 		$filter = (array)$this->input->get(NULL, TRUE);
 		
 		$this->load->model('submission');
-		$row_begin = ($page - 1) * $submissions_per_page;
+		$row_begin = ($page - 1) * $submission_per_page;
 		$count = $this->submission->count($filter);
-		$data = $this->submission->load_status($row_begin, $submissions_per_page, $filter);
+		$data = $this->submission->load_status($row_begin, $submission_per_page, $filter);
 		$this->submission->format_data($data);
 		
 		$this->load->library('pagination');
 		$config['base_url'] = '#main/status/';
 		$config['total_rows'] = $count;
-		$config['per_page'] = $submissions_per_page;
+		$config['per_page'] = $submission_per_page;
 		$config['first_link'] = 'Top';
 		$config['last_link'] = FALSE;
 		$this->pagination->initialize($config);
@@ -452,7 +495,9 @@ class Main extends CI_Controller {
 	
 	public function submission_change_access($sid){
 		$this->load->model('submission');
-		if ($this->session->userdata('priviledge') == 'admin' || $this->session->userdata('uid') == $this->submission->load_uid($sid))
+		
+		if ($this->session->userdata('priviledge') == 'admin' ||
+			$this->session->userdata('uid') == $this->submission->load_uid($sid))
 			$this->submission->change_access($sid);
 	}
 
@@ -469,6 +514,7 @@ class Main extends CI_Controller {
 	public function result($sid){
 		$this->load->model('submission');
 		$this->load->model('problems');
+		
 		$data = $this->submission->load_result($sid);
 
 		if ($data == FALSE){
@@ -476,9 +522,12 @@ class Main extends CI_Controller {
 		} else {
 			$dataconf = (array)json_decode($this->problems->load_dataconf($data->pid)->dataConfiguration);
 			$result = json_decode($data->result);
-			if ($result->compileStatus)
+			
+			if ($result->compileStatus) {
 				foreach ($result->cases as $row => $value)
 					$this->submission->format_data($value->tests);
+			}
+			
 			$this->load->view('main/result', array('result' => $result, 'pid' => $data->pid, 'data' => $dataconf));
 		}
 	}
@@ -488,12 +537,15 @@ class Main extends CI_Controller {
 		
 		$this->load->model('user');
 		$this->load->model('misc');
+		
 		$count = $this->user->count();
 		if ($count > 0 && ($count + $users_per_page - 1) / $users_per_page < $page)
 			$page = ($count + $users_per_page - 1) / $users_per_page;
+			
 		$row_begin = ($page - 1) * $users_per_page;
 		$data = $this->misc->load_ranklist($row_begin, $users_per_page);
 		$rank = $row_begin;
+		
 		foreach ($data as $row){
 			$row->rank = ++$rank;
 			$row->rate = 0.00;

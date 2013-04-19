@@ -19,7 +19,7 @@
 		<script src="js/jquery.hashchange.min.js"></script>
 		<script src="application/third_party/ckeditor/ckeditor.js"></script>
 		<script src="application/third_party/ckfinder/ckfinder.js"></script>
-		
+
 		<?php if (isset($head)) echo $head?>
 		
 		<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -36,6 +36,7 @@
 			<div class="span12">
 				<div class="well">
 					<div class="tabbable tabs-left">
+					
 						<ul id="navigation" class="nav nav-tabs pull-left">
 							<li>
 								<img src="images/school_logo.png" class="visible-desktop" width="83" style="margin-right: 20px" alt="ZSJZ OJ"/>
@@ -66,14 +67,19 @@
 								</div>
 							</li>
 						</ul>
+						
 						<div id="page_content" class="tab-content" style="float:none; margin-left:123px"></div>
+						
 						<div class="clearfix"></div>
 					</div>
+					
 					<div class="clearfix"></div>
 				</div>
 			</div>
 		</div>
+		
 		<div class="clearfix"></div>
+		
 		<!-- footer -->
 		<div class="row-fluid">
 			<div class="span12" id="copyleft">

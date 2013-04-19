@@ -76,6 +76,26 @@ class Problems extends CI_Model{
 								GROUP BY pid", array($uid, $keyword, $keyword))->result();
 	}
 	
+	function filter_count($filter){
+		return $this->db->query("SELECT COUNT(*) AS count FROM Categorization
+								WHERE idCategory=?", array($filter))->row()->count;
+	}
+	
+	function load_filter_problemset($filter, $row_begin, $count){
+		return $this->db->query("SELECT ProblemSet.pid, title, source, solvedCount, submitCount, scoreSum AS average, isShowed
+								FROM (ProblemSet INNER JOIN
+									(SELECT pid FROM Categorization WHERE idCategory=?)Res
+									ON ProblemSet.pid=Res.pid) 
+								WHERE isShowed=1 LIMIT ?, ?", 
+								array($filter, $row_begin, $count))->result();
+	}
+	
+	function load_filter_problemset_status($uid, $keyword){
+		return $this->db->query("SELECT min(status) AS status, pid FROM Submission WHERE uid=? AND
+								pid in (SELECT pid FROM ProblemSet WHERE (title LIKE ? OR source LIKE ?) AND isShowed=1)
+								GROUP BY pid", array($uid, $keyword, $keyword))->result();
+	}
+	
 	function load_problem($pid){
 		$result = $this->db->query("SELECT * from ProblemSet WHERE pid=?", array($pid));
 		if ($result->num_rows() == 0) return FALSE;

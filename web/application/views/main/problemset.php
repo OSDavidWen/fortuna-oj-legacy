@@ -16,6 +16,21 @@
 			<button id="search_button" class="btn">Search</button>
 		</div>
 		
+		<div id="div_filter" class="control-group input-append">
+			<select id="filter_content" style="width:120px">
+				<option value="0">All</option>
+			<?php
+				foreach ($category as $id => $name) {
+					if ($id == $filter) $selected = 'selected';
+					else $selected = '';
+					
+					echo "<option value='$id' $selected>$name</option>";
+				}
+			?>
+			</select>
+			<button id="filter_button" class="btn">Filter</button>
+		</div>
+		
 		<div id="div_goto_page" class="control-group input-prepend input-append pull-right">
 			<span class="add-on">Page</span>
 			<input type="number" id="goto_page" min=1 class="input-mini" />
@@ -34,22 +49,50 @@
 			<th class="avg">Average</th>
 		</tr></thead>
 		
-		<tbody><?php
+		<tbody>
+		<?php
 			$category = $this->session->userdata('show_category') == 1;
 			foreach ($data as $row){
 				if ($row->isShowed == 0) continue;
 				$pid = $row->pid;
-				echo "<tr><td>$row->status</td><td><a href=\"#main/show/$pid\">$row->pid</a>" . 
-					"</td><td class=\"title\"><a href=\"#main/show/$pid\">$row->title</a>";
-				if ($category || $row->ac){
-					foreach ($row->category as $tag) echo "<span class=\"label pull-right\">$tag</span>";
-				}
-				echo '</td><td class=\"source\">' . strtrim($row->source) . '</td><td>' . 
-					"<a href=\"#main/statistic/$pid\"><span class=\"badge badge-info\">$row->solvedCount</span></a></td><td>" .
-					"<a href=\"#main/statistic/$pid\"><span class=\"badge badge-info\">$row->submitCount</span></a></td>" . 
-					"<td><span class=\"badge badge-info\">$row->average pts</span></td></tr>";
-			}
-		?></tbody>
+		?>
+				<tr>
+					<td><?=$row->status?></td>
+					<td>
+						<a href='#main/show/<?=$pid?>'><?=$pid?></a>
+					</td>
+					<td class="title">
+						<a href="#main/show/<?=$pid?>"><?=$row->title?></a>
+					<?php
+						if ($category || $row->ac) {
+							foreach ($row->category as $id => $tag) {
+					?>
+								<span class='label pull-right' style="cursor:pointer"
+									onclick='window.location.href="#main/problemset?filter=<?=$id?>"'>
+								<?=$tag?>
+								</span>
+					<?php 	
+							}
+						} 
+					?>
+					</td>
+					<td class="source"><?=strtrim($row->source)?></td>
+					<td>
+						<a href="#main/statistic/<?=$pid?>">
+							<span class="badge badge-info"><?=$row->solvedCount?></span>
+						</a>
+					</td>
+					<td>
+						<a href="#main/statistic/<?=$pid?>">
+							<span class="badge badge-info"><?=$row->submitCount?></span>
+						</a>
+					</td>
+					<td>
+						<span class="badge badge-info"><?=$row->average?> pts</span>
+					</td>
+				</tr>
+			<?php } ?>
+		</tbody>
 	</table></div>
 	
 	<?=$this->pagination->create_links()?>
@@ -65,8 +108,14 @@
 		
 		$('#search_button').live('click', function(){
 			var content = $('#search_content').val();
-			if (content != '')
-				load_page("main/problemset?search=" + content);
+			if (content != '') load_page("main/problemset?search=" + content);
+			return false;
+		}),
+		
+		$('#filter_button').live('click', function(){
+			var content = $('#filter_content').val();
+			if (content == 0) load_page('main/problemset/1');
+			else if (content != '') load_page("main/problemset?filter=" + content);
 			return false;
 		}),
 		

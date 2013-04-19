@@ -50,7 +50,7 @@ $active_record = TRUE;
 
 $db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'root';
-$db['default']['password'] = 'jzojjzoj';
+$db['default']['password'] = '';
 $db['default']['database'] = 'OnlineJudgeSystem';
 $db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';

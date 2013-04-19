@@ -99,6 +99,7 @@
 			}
 			echo '</div></section></fieldset>';
 		?></div>
+		
 		<?php
 		if ($this->session->userdata('show_category') == 1 || $is_accepted){
 			echo '<div class="well">';
@@ -111,7 +112,8 @@
 					'<button class="close delete_tag" style="color: white;font-size:14px;opacity:0.8;height:14px">&times;</button>' .
 					$name . '</span> ';
 			
-			echo '<form id="tag_form" ><select style="width:120px" name="tag">';
+			echo '<form id="tag_form" >';
+			echo '<select style="width:120px" name="tag">';
 			foreach ($category as $id => $name) echo "<option value=\"$id\">$name</option>";
 			echo '</select><br />';
 			echo '<button class="btn btn-mini btn" id="cancel_add">cancel</button>';
@@ -119,13 +121,13 @@
 			echo '</form></fieldset></div>';	
 		}
 		?>
-		<div class="well">
+<!--		<div class="well">
 			<fieldset id="solutions">
 				<legend><h5><em>Solutions</em>
 				<?php if ($is_accepted || $this->user->is_admin()) echo ' <button id="add_solution_btn" class="btn btn-mini pull-right">add</button>';?>
 				</h5></legend>
 			</fieldset>
-		</div>
+		</div>-->
 		
 		<?php if ($data->source != ''){ ?>
 			<div class="well"><fieldset>

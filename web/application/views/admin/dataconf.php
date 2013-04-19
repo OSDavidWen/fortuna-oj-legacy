@@ -5,6 +5,8 @@
 <script src="js/jquery.fileupload.js"></script>
 <!--[if gte IE 8]><script src="js/jquery.xdr-transport.js"></script><![endif]-->
 
+<link href="css/jquery.fileupload-ui.css" rel="stylesheet">
+
 <?="<center><h3>$pid . $title <sub>(Data Configuration)</sub></h3></center>";?>
 
 <?php $dataconf = json_decode($data); ?>
@@ -154,7 +156,7 @@
 		}),
 		
 		$("#btn_start").click(function() {
-			$(".btn_upload").click();
+			$(".btn_upload").click()
 			$(".progress").css('display', 'block');
 			return false;
 		}),

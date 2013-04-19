@@ -1,5 +1,5 @@
 /*
- * jQuery File Upload Plugin 5.19.8
+ * jQuery File Upload Plugin 5.26
  * https://github.com/blueimp/jQuery-File-Upload
  *
  * Copyright 2010, Sebastian Tschan
@@ -112,6 +112,8 @@
             progressInterval: 100,
             // Interval in milliseconds to calculate progress bitrate:
             bitrateInterval: 500,
+            // By default, uploads are started automatically when adding files:
+            autoUpload: true,
 
             // Additional form data to be sent along with the file uploads can be set
             // using this option, which accepts an array of objects with name and
@@ -136,36 +138,65 @@
             // handlers using jQuery's Deferred callbacks:
             // data.submit().done(func).fail(func).always(func);
             add: function (e, data) {
-                data.submit();
+                if (data.autoUpload || (data.autoUpload !== false &&
+                        ($(this).data('blueimp-fileupload') ||
+                        $(this).data('fileupload')).options.autoUpload)) {
+                    data.submit();
+                }
             },
 
             // Other callbacks:
+
             // Callback for the submit event of each file upload:
             // submit: function (e, data) {}, // .bind('fileuploadsubmit', func);
+
             // Callback for the start of each file upload request:
             // send: function (e, data) {}, // .bind('fileuploadsend', func);
+
             // Callback for successful uploads:
             // done: function (e, data) {}, // .bind('fileuploaddone', func);
+
             // Callback for failed (abort or error) uploads:
             // fail: function (e, data) {}, // .bind('fileuploadfail', func);
+
             // Callback for completed (success, abort or error) requests:
             // always: function (e, data) {}, // .bind('fileuploadalways', func);
+
             // Callback for upload progress events:
             // progress: function (e, data) {}, // .bind('fileuploadprogress', func);
+
             // Callback for global upload progress events:
             // progressall: function (e, data) {}, // .bind('fileuploadprogressall', func);
+
             // Callback for uploads start, equivalent to the global ajaxStart event:
             // start: function (e) {}, // .bind('fileuploadstart', func);
+
             // Callback for uploads stop, equivalent to the global ajaxStop event:
             // stop: function (e) {}, // .bind('fileuploadstop', func);
+
             // Callback for change events of the fileInput(s):
             // change: function (e, data) {}, // .bind('fileuploadchange', func);
+
             // Callback for paste events to the pasteZone(s):
             // paste: function (e, data) {}, // .bind('fileuploadpaste', func);
+
             // Callback for drop events of the dropZone(s):
             // drop: function (e, data) {}, // .bind('fileuploaddrop', func);
+
             // Callback for dragover events of the dropZone(s):
             // dragover: function (e) {}, // .bind('fileuploaddragover', func);
+
+            // Callback for the start of each chunk upload request:
+            // chunksend: function (e, data) {}, // .bind('fileuploadchunksend', func);
+
+            // Callback for successful chunk uploads:
+            // chunkdone: function (e, data) {}, // .bind('fileuploadchunkdone', func);
+
+            // Callback for failed (abort or error) chunk uploads:
+            // chunkfail: function (e, data) {}, // .bind('fileuploadchunkfail', func);
+
+            // Callback for completed (success, abort or error) chunk upload requests:
+            // chunkalways: function (e, data) {}, // .bind('fileuploadchunkalways', func);
 
             // The plugin options are used as settings object for the ajax calls.
             // The following are jQuery ajax settings required for the file uploads:
@@ -230,10 +261,17 @@
             return total;
         },
 
+        _initProgressObject: function (obj) {
+            obj._progress = {
+                loaded: 0,
+                total: 0,
+                bitrate: 0
+            };
+        },
+
         _onProgress: function (e, data) {
             if (e.lengthComputable) {
                 var now = +(new Date()),
-                    total,
                     loaded;
                 if (data._time && data.progressInterval &&
                         (now - data._time < data.progressInterval) &&
@@ -241,16 +279,19 @@
                     return;
                 }
                 data._time = now;
-                total = data.total || this._getTotal(data.files);
-                loaded = parseInt(
-                    e.loaded / e.total * (data.chunkSize || total),
-                    10
+                loaded = Math.floor(
+                    e.loaded / e.total * (data.chunkSize || data._progress.total)
                 ) + (data.uploadedBytes || 0);
-                this._loaded += loaded - (data.loaded || data.uploadedBytes || 0);
-                data.lengthComputable = true;
-                data.loaded = loaded;
-                data.total = total;
-                data.bitrate = data._bitrateTimer.getBitrate(
+                // Add the difference from the previously loaded state
+                // to the global loaded counter:
+                this._progress.loaded += (loaded - data._progress.loaded);
+                this._progress.bitrate = this._bitrateTimer.getBitrate(
+                    now,
+                    this._progress.loaded,
+                    data.bitrateInterval
+                );
+                data._progress.loaded = data.loaded = loaded;
+                data._progress.bitrate = data.bitrate = data._bitrateTimer.getBitrate(
                     now,
                     loaded,
                     data.bitrateInterval
@@ -261,16 +302,7 @@
                 this._trigger('progress', e, data);
                 // Trigger a global progress event for all current file uploads,
                 // including ajax calls queued for sequential file uploads:
-                this._trigger('progressall', e, {
-                    lengthComputable: true,
-                    loaded: this._loaded,
-                    total: this._total,
-                    bitrate: this._bitrateTimer.getBitrate(
-                        now,
-                        this._loaded,
-                        data.bitrateInterval
-                    )
-                });
+                this._trigger('progressall', e, this._progress);
             }
         },
 
@@ -455,6 +487,21 @@
             return options;
         },
 
+        // jQuery 1.6 doesn't provide .state(),
+        // while jQuery 1.8+ removed .isRejected() and .isResolved():
+        _getDeferredState: function (deferred) {
+            if (deferred.state) {
+                return deferred.state();
+            }
+            if (deferred.isResolved()) {
+                return 'resolved';
+            }
+            if (deferred.isRejected()) {
+                return 'rejected';
+            }
+            return 'pending';
+        },
+
         // Maps jqXHR callbacks to the equivalent
         // methods of the given Promise object:
         _enhancePromise: function (promise) {
@@ -477,6 +524,33 @@
             }
             promise.abort = dfd.promise;
             return this._enhancePromise(promise);
+        },
+
+        // Adds convenience methods to the callback arguments:
+        _addConvenienceMethods: function (e, data) {
+            var that = this;
+            data.submit = function () {
+                if (this.state() !== 'pending') {
+                    data.jqXHR = this.jqXHR =
+                        (that._trigger('submit', e, this) !== false) &&
+                        that._onSend(e, this);
+                }
+                return this.jqXHR || that._getXHRPromise();
+            };
+            data.abort = function () {
+                if (this.jqXHR) {
+                    return this.jqXHR.abort();
+                }
+                return this._getXHRPromise();
+            };
+            data.state = function () {
+                if (this.jqXHR) {
+                    return that._getDeferredState(this.jqXHR);
+                }
+            };
+            data.progress = function () {
+                return this._progress;
+            };
         },
 
         // Parses the Range header from the server response
@@ -521,9 +595,10 @@
                 );
             }
             // The chunk upload method:
-            upload = function (i) {
+            upload = function () {
                 // Clone the options object for each chunk upload:
-                var o = $.extend({}, options);
+                var o = $.extend({}, options),
+                    currentLoaded = o._progress.loaded;
                 o.blob = slice.call(
                     file,
                     ub,
@@ -540,13 +615,15 @@
                 that._initXHRData(o);
                 // Add progress listeners for this chunk upload:
                 that._initProgressListener(o);
-                jqXHR = ($.ajax(o) || that._getXHRPromise(false, o.context))
+                jqXHR = ((that._trigger('chunksend', null, o) !== false && $.ajax(o)) ||
+                        that._getXHRPromise(false, o.context))
                     .done(function (result, textStatus, jqXHR) {
                         ub = that._getUploadedBytes(jqXHR) ||
                             (ub + o.chunkSize);
-                        // Create a progress event if upload is done and
-                        // no progress event has been invoked for this chunk:
-                        if (!o.loaded) {
+                        // Create a progress event if no final progress event
+                        // with loaded equaling total has been triggered
+                        // for this chunk:
+                        if (o._progress.loaded === currentLoaded) {
                             that._onProgress($.Event('progress', {
                                 lengthComputable: true,
                                 loaded: ub - o.uploadedBytes,
@@ -554,6 +631,11 @@
                             }), o);
                         }
                         options.uploadedBytes = o.uploadedBytes = ub;
+                        o.result = result;
+                        o.textStatus = textStatus;
+                        o.jqXHR = jqXHR;
+                        that._trigger('chunkdone', null, o);
+                        that._trigger('chunkalways', null, o);
                         if (ub < fs) {
                             // File upload not yet complete,
                             // continue with the next chunk:
@@ -566,6 +648,11 @@
                         }
                     })
                     .fail(function (jqXHR, textStatus, errorThrown) {
+                        o.jqXHR = jqXHR;
+                        o.textStatus = textStatus;
+                        o.errorThrown = errorThrown;
+                        that._trigger('chunkfail', null, o);
+                        that._trigger('chunkalways', null, o);
                         dfd.rejectWith(
                             o.context,
                             [jqXHR, textStatus, errorThrown]
@@ -588,20 +675,31 @@
                 this._trigger('start');
                 // Set timer for global bitrate progress calculation:
                 this._bitrateTimer = new this._BitrateTimer();
+                // Reset the global progress values:
+                this._progress.loaded = this._progress.total = 0;
+                this._progress.bitrate = 0;
             }
+            if (!data._progress) {
+                data._progress = {};
+            }
+            data._progress.loaded = data.loaded = data.uploadedBytes || 0;
+            data._progress.total = data.total = this._getTotal(data.files) || 1;
+            data._progress.bitrate = data.bitrate = 0;
             this._active += 1;
             // Initialize the global progress values:
-            this._loaded += data.uploadedBytes || 0;
-            this._total += this._getTotal(data.files);
+            this._progress.loaded += data.loaded;
+            this._progress.total += data.total;
         },
 
         _onDone: function (result, textStatus, jqXHR, options) {
-            if (!this._isXHRUpload(options)) {
-                // Create a progress event for each iframe load:
+            var total = options._progress.total;
+            if (options._progress.loaded < total) {
+                // Create a progress event if no final progress event
+                // with loaded equaling total has been triggered:
                 this._onProgress($.Event('progress', {
                     lengthComputable: true,
-                    loaded: 1,
-                    total: 1
+                    loaded: total,
+                    total: total
                 }), options);
             }
             options.result = result;
@@ -618,33 +716,27 @@
             if (options.recalculateProgress) {
                 // Remove the failed (error or abort) file upload from
                 // the global progress calculation:
-                this._loaded -= options.loaded || options.uploadedBytes || 0;
-                this._total -= options.total || this._getTotal(options.files);
+                this._progress.loaded -= options._progress.loaded;
+                this._progress.total -= options._progress.total;
             }
         },
 
         _onAlways: function (jqXHRorResult, textStatus, jqXHRorError, options) {
+            // jqXHRorResult, textStatus and jqXHRorError are added to the
+            // options object via done and fail callbacks
             this._active -= 1;
-            options.textStatus = textStatus;
-            if (jqXHRorError && jqXHRorError.always) {
-                options.jqXHR = jqXHRorError;
-                options.result = jqXHRorResult;
-            } else {
-                options.jqXHR = jqXHRorResult;
-                options.errorThrown = jqXHRorError;
-            }
             this._trigger('always', null, options);
             if (this._active === 0) {
                 // The stop callback is triggered when all uploads have
                 // been completed, equivalent to the global ajaxStop event:
                 this._trigger('stop');
-                // Reset the global progress values:
-                this._loaded = this._total = 0;
-                this._bitrateTimer = null;
             }
         },
 
         _onSend: function (e, data) {
+            if (!data.submit) {
+                this._addConvenienceMethods(e, data);
+            }
             var that = this,
                 jqXHR,
                 aborted,
@@ -675,15 +767,9 @@
                                 options.limitConcurrentUploads > that._sending) {
                             // Start the next queued upload,
                             // that has not been aborted:
-                            var nextSlot = that._slots.shift(),
-                                isPending;
+                            var nextSlot = that._slots.shift();
                             while (nextSlot) {
-                                // jQuery 1.6 doesn't provide .state(),
-                                // while jQuery 1.8+ removed .isRejected():
-                                isPending = nextSlot.state ?
-                                        nextSlot.state() === 'pending' :
-                                        !nextSlot.isRejected();
-                                if (isPending) {
+                                if (that._getDeferredState(nextSlot) === 'pending') {
                                     nextSlot.resolve();
                                     break;
                                 }
@@ -755,12 +841,8 @@
                 var newData = $.extend({}, data);
                 newData.files = fileSet ? element : [element];
                 newData.paramName = paramNameSet[index];
-                newData.submit = function () {
-                    newData.jqXHR = this.jqXHR =
-                        (that._trigger('submit', e, this) !== false) &&
-                        that._onSend(e, this);
-                    return this.jqXHR;
-                };
+                that._initProgressObject(newData);
+                that._addConvenienceMethods(e, newData);
                 result = that._trigger('add', e, newData);
                 return result;
             });
@@ -1034,12 +1116,17 @@
             this._initSpecialOptions();
             this._slots = [];
             this._sequence = this._getXHRPromise(true);
-            this._sending = this._active = this._loaded = this._total = 0;
+            this._sending = this._active = 0;
+            this._initProgressObject(this);
             this._initEventHandlers();
         },
 
-        _destroy: function () {
-            this._destroyEventHandlers();
+        // This method is exposed to the widget API and allows to query
+        // the widget upload progress.
+        // It returns an object with loaded, total and bitrate properties
+        // for the running uploads:
+        progress: function () {
+            return this._progress;
         },
 
         // This method is exposed to the widget API and allows adding files

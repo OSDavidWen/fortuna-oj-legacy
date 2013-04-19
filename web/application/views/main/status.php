@@ -17,7 +17,7 @@
 			</div>
 			<div class="accordion-body collapse" id="filters">
 				<div class="accordion-inner">
-					<div>
+					<div id="problem_filter" class="filter">
 						<span>
 							<b>Problems</b>
 							<i class="icon-plus-sign" id="add_problem" rel="popover"></i>
@@ -26,7 +26,7 @@
 						</span>
 					</div>
 					
-					<div>
+					<div id="user_filter" class="filter">
 						<span>
 							<b>User</b>
 							<i class="icon-plus-sign" id="add_user"></i>
