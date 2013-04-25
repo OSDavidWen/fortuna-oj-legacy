@@ -251,11 +251,12 @@ class Main extends CI_Controller {
 	public function download($pid, $filename = 'data.zip') {
 		$file = $this->config->item('data_path') . $pid . "/$filename";
 		
-		if ( ! is_file($file)) {
-			$this->load->view('information', array('data' => 'File Not Found!'));
-		} else {
+		if ($filename != 'data.zip' && ! strstr($this->session->userdata('download'), $filename))
+			$this->load->view('error', array('message' => 'You are not allowed to download this file!'));
+		else if ( ! is_file($file))
+			$this->load->view('error', array('message' => 'File Not Found!'));
+		else
 			$this->load->view('main/download', array('file' => $file, 'filename' => $filename));
-		}
 	}
 	
 	public function limits($pid){

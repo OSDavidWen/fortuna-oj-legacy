@@ -33,6 +33,8 @@
                 if ($test->status > 0 && $ok) {
                     $infile = $data['cases'][$case_no - 1]->tests[0]->input;
                     $outfile = $data['cases'][$case_no - 1]->tests[0]->output;
+					
+					$this->session->set_userdata('download', $infile . '|' . $outfile);
                     
                     echo "<a href='index.php/main/download/$pid/$infile' target='_blank'>Input</a> ";
                     echo "<a href='index.php/main/download/$pid/$outfile' target='_blank'>Output</a> ";
@@ -56,6 +58,8 @@
                     if ($test->status > 0 && $ok) {
                         $infile = $data['cases'][$case_no - 1]->tests[$test_no - 1]->input;
                         $outfile = $data['cases'][$case_no - 1]->tests[$test_no - 1]->output;
+						
+						$this->session->set_userdata('download', $infile . '|' . $outfile);
                         
                         echo "<a href='#main/download/$pid/$infile'>Input</a> ";
                         echo "<a href='#main/download/$pid/$outfile'>Output</a> ";
