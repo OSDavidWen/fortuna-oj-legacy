@@ -14,6 +14,7 @@ class Admin extends CI_Controller {
 		
 		$allowed_methods = array('addproblem', 'problemset');
 		$restrcited_methods = array('delete_problem', 'dataconf', 'scan', 'upload', 'change_problem_status');
+		
 		if ($this->user->is_logged_in()){
 			if ($this->user->is_admin() || in_array($method, $allowed_methods)) $this->_redirect_page($method, $params);
 			else if (in_array($method, $restrcited_methods)){
@@ -21,9 +22,9 @@ class Admin extends CI_Controller {
 				if (isset($params[0]) && $this->problems->uid($params[0]) == $this->user->uid())
 					$this->_redirect_page($method, $params);
 				else
-					$this->load->view('information', array('data' => '<h5 class="alert">Operation not permitted!</h5>'));
+					$this->load->view('error', array('message' => '<h5 class="alert">Operation not permitted!</h5>'));
 			}else
-				$this->load->view('information', array('data' => '<h5 class="alert">You are not administrators!</h5>'));
+				$this->load->view('error', array('message' => '<h5 class="alert">You are not administrators!</h5>'));
 		}else
 			$this->login();
 	}
@@ -258,60 +259,99 @@ class Admin extends CI_Controller {
 		$dir = scandir('.');
 		$data = (array)json_decode($this->problems->load_dataconf($pid)->dataConfiguration);
 		$hash = array();
+		$hash['input'] = $hash['output'] = array();
 		
-		foreach ($data['cases'] as $case)
-			foreach ($case->tests as $test){
-				if (file_exists($test->input) && file_exists($test->output)) {
-					$hash['input'][$test->input] = true;
-					$hash['output'][$test->output] = true;
+		$input_pattern = $this->input->post('input_file');
+		$output_pattern = $this->input->post('output_file');
+		
+		if (isset($data['cases'])) {
+			foreach ($data['cases'] as $cid => $case) {
+				foreach ($case->tests as $tid => $test){
+					if (file_exists($test->input) && file_exists($test->output)) {
+						$hash['input'][$test->input] = true;
+						$hash['output'][$test->output] = true;
+					} else {
+						unset($data['cases'][$cid]->tests[$tid]);
+					}
+				}
+				if (count($data['cases'][$cid]->tests) == 0) unset($data['cases'][$cid]);
+			}
+		}
+		
+		$name_array = array();
+		if ($input_pattern == '' || $output_pattern == '') {
+			foreach ($dir as $file){
+				if (is_file($file)){
+					$info = pathinfo('./' . $file);
+					$infile = $info['basename'];
+					if (!strpos($infile, '.in')) continue;
+					$outfile1 = str_ireplace('.in', '.out', $infile);
+					$outfile2 = str_ireplace('.in', '.ans', $infile);
+					$outfile3 = str_ireplace('.in', '.ou', $infile);
+					$outfile4 = str_ireplace('.in', '.sol', $infile);
+					$outfile5 = str_ireplace('.in', '.std', $infile);
+					$outfile = '';
+					if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) ||
+						file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4) ||
+						file_exists($outfile = $outfile5)) {
+							if (array_key_exists($infile, $hash['input']) && array_key_exists($outfile, $hash['output'])) continue;
+							$name_array[] = $infile;
+						}
 				}
 			}
-		
-		$cnts = 0;
-		$name_array = array();
-		foreach ($dir as $file){
-			if (is_file($file)){
-				$info = pathinfo('./' . $file);
-				$infile = $info['basename'];
-				if (!strpos($infile, '.in')) continue;
-				$outfile1 = str_ireplace('.in', '.out', $infile);
-				$outfile2 = str_ireplace('.in', '.ans', $infile);
-				$outfile3 = str_ireplace('.in', '.ou', $infile);
-				$outfile4 = str_ireplace('.in', '.sol', $infile);
-				$outfile5 = str_ireplace('.in', '.std', $infile);
-				$outfile = '';
-				if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) ||
-					file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4) ||
-					file_exists($outfile = $outfile5)) {
-					if ( ! $hash['input'][$infile] || ! $hash['output'][$outfile] ) {
-						$cnts++;
+			
+			usort($name_array, "strnatcmp");
+
+			foreach ($name_array as $infile){
+					$outfile1 = str_ireplace('.in', '.out', $infile);
+					$outfile2 = str_ireplace('.in', '.ans', $infile);
+					$outfile3 = str_ireplace('.in', '.ou', $infile);
+					$outfile4 = str_ireplace('.in', '.sol', $infile);
+					$outfile5 = str_ireplace('.in', '.std', $infile);
+					$outfile = '';
+					
+					if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) ||
+						file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4) ||
+						file_exists($outfile = $outfile5)){
+						if (isset($test)) unset($test);
+						if (isset($case)) unset($case);
+						$test['input'] = $infile;
+						$test['output'] = $outfile;
+						$case['tests'][] = $test;
+						$data['cases'][] = $case;
+					}
+			}
+		} else {
+			$input_pattern = '/' . str_replace('*', "(?P<var>\w+)", $input_pattern) . '/';
+
+			foreach ($dir as $file) {
+				if (preg_match($input_pattern, $file, $matches)) {
+					$infile = $matches[0];
+					$outfile = str_replace("*", $matches['var'], $output_pattern);
+					
+					if (file_exists($outfile)) {
+						if (array_key_exists($infile, $hash['input']) && array_key_exists($outfile, $hash['output'])) continue;
 						$name_array[] = $infile;
 					}
 				}
 			}
-		}
-		
-		usort($name_array, "strnatcmp");
+			
+			usort($name_array, "strnatcmp");
 
-		foreach ($name_array as $infile){
-				$outfile1 = str_ireplace('.in', '.out', $infile);
-				$outfile2 = str_ireplace('.in', '.ans', $infile);
-				$outfile3 = str_ireplace('.in', '.ou', $infile);
-				$outfile4 = str_ireplace('.in', '.sol', $infile);
-				$outfile5 = str_ireplace('.in', '.std', $infile);
-				$outfile = '';
-				
-				if (file_exists($outfile = $outfile1) || file_exists($outfile = $outfile2) ||
-					file_exists($outfile = $outfile3) || file_exists($outfile = $outfile4) ||
-					file_exists($outfile = $outfile5)){
-					if ($hash['input'][$infile] && $hash['output'][$outfile]) continue;
-					if (isset($test)) unset($test);
-					if (isset($case)) unset($case);
-					$test['input'] = $infile;
-					$test['output'] = $outfile;
-					$case['tests'][] = $test;
-					$data['cases'][] = $case;
-				}
+			foreach ($name_array as $infile){
+					preg_match($input_pattern, $infile, $matches);
+					$outfile = str_replace("*", $matches['var'], $output_pattern);
+					
+					if (file_exists($outfile)) {
+						if (isset($test)) unset($test);
+						if (isset($case)) unset($case);
+						$test['input'] = $infile;
+						$test['output'] = $outfile;
+						$case['tests'][] = $test;
+						$data['cases'][] = $case;
+					}
+			}
+
 		}
 		
 		echo json_encode($data);
@@ -331,7 +371,7 @@ class Admin extends CI_Controller {
 			$endTime = strtotime($row->endTime);
 			$now = strtotime('now');
 			if ($now > $endTime) $row->status = '<span class="label label-success">Ended</span>';
-			else if ($now < $startTime) $row->status = '<span class="label label-info">Pending</span>';
+			else if ($now < $startTime) $row->status = '<span class="label label-info">Scheduled</span>';
 			else{
 				$row->status = '<span class="label label-important">Running</span>';
 				$row->running = TRUE;
@@ -489,6 +529,9 @@ class Admin extends CI_Controller {
 		else{
 
 		}
+	}
+	
+	function contest_to_task($cid) {
 	}
 }
 

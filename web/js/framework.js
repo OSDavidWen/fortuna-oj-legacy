@@ -29,8 +29,8 @@ function get_cookie(name){
 }
 
 function randomize(url) {
-	//if (url.indexOf('?') == -1) url += '?';
-	//url += '&seed=' + Math.random();
+	if (url.indexOf('?') == -1) url += '?';
+	if (url.indexOf('seed') == -1) url += '&seed=' + Math.random();
 	return url;
 }
 
@@ -150,8 +150,24 @@ $(document).ready( function() {
 	
 	$('#logout').live('click', function() {
 		access_page('main/logout', load_userinfo);
-	})
+	}),
+		
+	$('#nav_toggle').toggle(function() {
+			$('#navigation').animate({ left: '-200px', width: '0' }, 320);
+			$('#icon_nav_toggle').removeClass();
+			$('#icon_nav_toggle').addClass('icon-arrow-right');
+		},
+		function() {
+			$('#navigation').animate({ left: '0', width: '100px' }, 320);
+			$('#icon_nav_toggle').removeClass();
+			$('#icon_nav_toggle').addClass('icon-arrow-left');
+		}
+	);
 })
+
+    $(document).ready(function() {
+
+    });
 
 function initialize() {
     // Radialize the colors
@@ -171,7 +187,8 @@ function render_pie(selector, title, data) {
 	$(selector).highcharts({
 		chart: {
 			plotBorderWidth: null,
-			backgroundColor: 'transparent'
+			backgroundColor: 'transparent',
+			width: 500
 		},
 		title: {
 			text: title
@@ -202,7 +219,8 @@ function render_column(selector, title, data) {
 	$(selector).highcharts({
 		chart: {
 			type: 'column',
-			backgroundColor: 'transparent'
+			backgroundColor: 'transparent',
+			width: 500
 		},
 		title: { text: title },
 		xAxis: { categories: ['Categories'] },

@@ -150,7 +150,18 @@
 			if ($row->status < 0) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
-				$sname = "$row->result<span class=\"label label-info\">" . round($row->score, 1) . '</span>';
+				switch ($row->status) {
+					case 0: $tag = 'label-success'; break;
+					case 1: ;
+					case 2: ;
+					case 7: $tag = 'label-important'; break;
+					case 3: $tag = 'label-info'; break;
+					case 4:
+					case 5:
+					case 6: $tag = 'label-warning'; break;
+					default: $tag = '';
+				}
+				$sname = "$row->result <span class=\"label $tag\">" . round($row->score, 1) . '</span>';
 				echo "<a href=\"#main/result/$row->sid\"> $sname </a>";
 			}
 			echo "</td><td><span class=\"label label-info\">$row->time</span></td>";
@@ -195,7 +206,7 @@
 	var url = "<?=$filter['url']?>";
 	if (url != window.location.hash.substr(1)){
 		window.preventHashchange = true;
-		window.location.hash = url;
+		window.location.hash = '#' + url;
 	}
 
 	for (pid in problems) add_problem(problems[pid]);
@@ -272,10 +283,6 @@
 		$('#form_filter').ajaxSubmit({
 			url: url,
 			success: function(responseText){
-				if (hash != window.location.hash.substr(1)){
-					window.preventHashchange = true;
-					window.location.hash = hash;
-				}
 				$('#page_content').html(responseText);
 			}
 		});

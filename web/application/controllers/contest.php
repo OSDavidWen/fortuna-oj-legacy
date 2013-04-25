@@ -70,7 +70,7 @@ class Contest extends CI_Controller {
 			$endTime = strtotime($row->endTime);
 			$now = strtotime('now');
 			if ($now > $endTime) $row->status = '<span class="label label-success">Ended</span>';
-			else if ($now < $startTime) $row->status = '<span class="label label-info">Pending</span>';
+			else if ($now < $startTime) $row->status = '<span class="label label-info">Scheduled</span>';
 			else{
 				$row->status = '<span class="label label-important">Running</span>';
 				$row->running = TRUE;

@@ -1,3 +1,5 @@
+<link href="css/jquery.fileupload-ui.css" rel="stylesheet">
+
 <div id="user-header" class="row-fluid">
 	<div class="span6"><fieldset id="user-information">
 		<legend>
@@ -8,10 +10,12 @@
 		</legend>
 		
 		<div class="row-fluid">
-			<div id="user-picture" class="span6" style="text-align:center; height:339px; line-height: 339px">
-<!--				<img src="images/avatar/<?=$data->userPicture?>"  -->
-				<img src="images/school_logo.png"
-					style="vertical-align:middle; margin:0 auto" width="225" height="300" />
+			<div id="user-picture" class="span6" style="text-align:center">
+				<div class="well">
+					<img src="images/avatar/<?=$data->userPicture?>" alt="User Avatar" width="225" height="300" >
+				</div>
+
+				<button class="btn btn-small btn-success" id="btn_change">Change Avatar</button>
 			</div>
 			
 			<div class="span6" style="height:339px"><dl class="dl-horizontal">
@@ -51,7 +55,60 @@
 	</div>
 </div>
 
+<div class="modal hide fade" id="modal_avatar">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Change your profile avatar</h3>
+	</div>
+	
+	<div class="modal-body">
+		<div>
+			<img id="preview" width="225px" height="300px"></img>
+		</div>
+		<div class="pull-right">
+			<button class="fileinput-button btn btn-small btn-primary">
+				Select Picture
+				<input type="file" id="avatar" name="avatar" data-url="index.php/users/<?=$data->name?>/avatar_upload" />
+			</button>
+			<button id="btn_upload" class="btn btn-small btn-success">Upload</button>
+		</div>
+	</div>
+</div>
+
+
+<script src="js/jquery-ui.js"></script>
+<script src="js/jquery.ui.widget.js"></script>
+<script src="js/jquery.iframe-transport.js"></script>
+<script src="js/jquery.fileupload.js"></script>
+<!--[if gte IE 8]><script src="js/jquery.xdr-transport.js"></script><![endif]-->
 <script type="text/javascript">
+	$(document).ready(function(){
+		$("#avatar").fileupload({
+			dataType: 'json',
+			add: function(e, data) {
+				$.each(data.files, function(index, file) {
+					var reader = new FileReader();
+					reader.onload = function(e) {
+						$("#preview").attr('src', e.target.result);
+					}
+					reader.readAsDataURL(file);
+						
+					$("#btn_upload").click(function() {
+						data.submit();
+					});
+				})
+			},
+			done: function(e, data) {
+				$("#modal_avatar").modal('hide');
+				location.reload();
+			}
+		}),
+		
+		$("#btn_change").click(function() {
+			$("#modal_avatar").modal()
+		})
+	})
+
 	verdicts = [{
 		type: 'pie',
 		data: [

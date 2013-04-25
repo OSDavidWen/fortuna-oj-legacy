@@ -17,6 +17,11 @@ a:hover {color: #0088cc; text-decoration: none;}
 	font-size: 16px;
 }
 
+#navigation {
+	position: relative;
+	width: 100px;
+}
+
 .sidebar-nav #username, .sidebar-nav #logout {
 	float: left;
 	margin: 5px 8px;

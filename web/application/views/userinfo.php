@@ -2,8 +2,10 @@
 	if ($user) {
 ?>
 	<div style="margin: 8px 0">
-		<a href="#users/<?=$user?>" id="username" style="display: inline">
-<!--			<img style='width:24px; height:32px' src='data:image/jpeg;base64,<?=$avatar?>' /> -->
+		<a href="#users/<?=$user?>" id="username">
+			<div style="text-align:center; padding:3px; margin: 0 auto" class="well">
+				<img src='<?=$avatar?>' />
+			</div>
 			<span class="label label-info"><?=$user?></span>
 		</a>
 		<a id="setting" href="#users/<?=$user?>/settings">

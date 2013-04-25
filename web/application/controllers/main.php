@@ -168,6 +168,8 @@ class Main extends CI_Controller {
 			$result = $this->problems->load_problemset_status($uid, $start, $end);
 		}
 		
+		if ( ! isset($filter)) $filter = false;
+		
 		foreach ($result as $row) $status["$row->pid"] = $row->status;
 
 		$categorization = $this->misc->load_categorization();
@@ -206,7 +208,7 @@ class Main extends CI_Controller {
 		$this->load->model('misc');
 		
 		$data = $this->problems->load_problem($pid);
-		if ($data != FALSE){
+		if ($data != FALSE && ($data->isShowed || $this->user->is_admin())) {
 			$data->data = json_decode($data->dataConfiguration);
 			
 			if ($data->data->IOMode != 2) {
@@ -238,7 +240,7 @@ class Main extends CI_Controller {
 			
 			$categorization = $this->misc->load_categorization();
 			$data->category = $this->misc->load_problem_category($pid, $categorization);
-		}
+		} else $data = FALSE;
 	
 		if ($data == FALSE)
 			$this->load->view('error', array('message' => 'Problem not available!'));
@@ -410,7 +412,14 @@ class Main extends CI_Controller {
 			);
 			if ($this->input->post('cid') != '') $data['cid'] = $this->input->post('cid');
 			if ($this->input->post('gid') != '') $data['gid'] = $this->input->post('gid');
-			if ($this->input->post('tid') != '') $data['tid'] = $this->input->post('tid');			
+			if ($this->input->post('tid') != '') $data['tid'] = $this->input->post('tid');
+			
+			$this->load->model('problems');
+			$dataconf = json_decode($this->problems->load_dataconf($data['pid']));
+			if ($dataconf->IOMode != 2) {
+				$this->load->view('error', array('message' => 'Uploading for this problem is not allowed!'));
+				return;
+			}
 			
 			if (isset($data['tid'])){
 				$this->load->model('misc');
@@ -424,7 +433,6 @@ class Main extends CI_Controller {
 				if (strtotime($info->startTime) > time() || strtotime($info->endTime) < time()) return;
 			}
 			
-			$this->load->model('problems');
 			$showed = $this->problems->is_showed($data['pid']);
 			if ($showed == 0){
 				if ($this->user->is_admin()) $data['isShowed'] = 0;

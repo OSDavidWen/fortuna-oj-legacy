@@ -272,4 +272,16 @@ class User extends CI_Model{
 								array($uid))
 								->row()->avatar;
 	}
+	
+	function save_user_picture($uid, $pic) {
+		$this->db->query("UPDATE User SET userPicture=?
+						WHERE uid=?",
+						array($pic, $uid));
+	}
+	
+	function save_avatar($uid, $avatar) {
+		$this->db->query("UPDATE User SET avatar=?
+						WHERE uid=?",
+						array($avatar, $uid));
+	}
 }

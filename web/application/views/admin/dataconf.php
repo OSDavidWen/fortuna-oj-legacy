@@ -1,4 +1,3 @@
-<script src="application/third_party/uploadify/jquery.uploadify.min.js"></script>
 <script src="js/jquery-ui.js"></script>
 <script src="js/jquery.ui.widget.js"></script>
 <script src="js/jquery.iframe-transport.js"></script>
@@ -27,7 +26,6 @@
 				</span>
 				<input type="submit" id="btn_start" class="btn btn-small btn-primary" value="Start" />
 				<input type="reset" id="btn_clear" class="btn btn-small btn-danger" value="Clear" />
-				<button id="scan" class="btn btn-small btn-primary" onclick="return false;">Scan Server</button>
 				<button id="wipe" class="btn btn-small btn-danger pull-right">Wipe All Data From Server</button>
 <!-- 				<input type="checkbox" class="toggle"> -->
 				<div style="display:none" class="progress progress-info progress-striped">
@@ -41,6 +39,8 @@
 	</div>
 </form>
 
+<fieldset class="span5">
+<legend>Data Configuration</legend>
 <form id="data_configuration" class="form-horizontal" action="index.php/admin/dataconf/<?=$pid?>">
 	<input type="hidden" name="pid" value="<?=$pid?>" />
 	
@@ -65,7 +65,7 @@
 			<input type="number" id="overall_time" class="time" min="0" name="overall_time">
 		</div>
 		
-		<label for="overall_memory" class="memory control-label">Overall Memory Limit (KB)</label>
+		<label for="overall_memory" class="memory control-label">Overall Mem Limit (KB)</label>
 		<div class="controls">
 			<input type="number" id="overall_memory" class="memory" min="0" name="overall_memory">
 		</div>
@@ -108,12 +108,36 @@
 	</div>
 	
 	
-	<div id="data"></div>
+
 	<input type="hidden" name="tcnt" id="tcnt" />
-	<div class="clearfix"></div>
 	<button class="btn btn-info pull-left" id="addcase">Add case</button>
 	<button class="btn btn-primary pull-right" type="submit" id="submit">Submit</button>
 </form>
+</fieldset>
+
+<fieldset class="span5">
+<legend>Data Identification</legend>
+<form id="data_identification" class="form-horizontal" action="index.php/admin/scan/<?=$pid?>">
+	<p class="alert-error">Custom Match: Use * for variables, eg. data*.in</p>
+	
+	<div class="control-group">
+		<label for="input_file" class="control-label">Input File Pattern</label>
+		<div class="controls">
+			<input type="text" id="input_file" min="0" name="input_file">
+		</div>
+		
+		<label for="output_file" class="control-label">Output File Pattern</label>
+		<div class="controls">
+			<input type="text" id="output_file" min="0" name="output_file">
+		</div>
+	</div>
+	
+	<button id="btn_scan" class="btn btn-small btn-primary pull-right" onclick="return false;">Scan Server</button>
+</form>
+</fieldset>
+
+<div class="clearfix"></div>
+<div id="data" style="margin-top:10px"></div>
 
 <script type="text/javascript">
 	var fileId = 0;
@@ -142,7 +166,7 @@
 				$("#div_progress").css('width', progress + '%');
 				if (data.loaded == data.total){
 					$(".progress").css('display', 'none');
-					refresh_data();
+					$("#btn_scan").click();
 				}
 			},
 			done: function(e, data) {
@@ -174,7 +198,18 @@
 		
 		$(".case_close").live("click", remove_case),
 		
-		$("#scan").click(refresh_data),
+		$("#btn_scan").click(function() {
+			$('#data_identification').ajaxSubmit({
+				type: 'POST',
+				success: function(data){
+					$('#data').html('');
+					data = eval("(" + data + ")");
+					if (data != null && data != '') initialize(data);
+					$("#IOMode").trigger("change");
+				}
+			});
+			return false;
+		}),
 		
 		$("#wipe").click(function(){
 			access_page("admin/wipedata/<?=$pid?>", void 0, false);
@@ -277,6 +312,7 @@
 			
 			if ( ! valid) return false;
 			$('#tcnt').val(test_cnt - 1000000000);
+			$('#data_configuration').append($('#data').detach());
 			
 			$('#data_configuration').ajaxSubmit({
 				type: 'post',
@@ -302,19 +338,6 @@
 		$("#spjFile").val(data.spjFile);
 	}else $("#spj").removeAttr("checked");
 	$("#spj").trigger("change");
-	
-	function refresh_data(){
-		$.ajax({
-			type: "GET",
-			url: "index.php/admin/scan/" + pid.toString(),
-			success: function(data){
-				$('#data').html('');
-				data = eval("(" + data + ")");
-				if (data != null && data != '') initialize(data);
-				$("#IOMode").trigger("change");
-			},
-		});
-	}
 
 	function initialize(data){
 		$('#framework').val(data.framework);

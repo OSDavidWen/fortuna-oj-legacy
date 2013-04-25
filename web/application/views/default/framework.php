@@ -29,17 +29,22 @@
 	</head>
 
 <body onload="init_framework()">
+	<div id="nav_toggle" class="well" style="padding: 2px; position:fixed; top: 35px; left:0px">
+		<i id="icon_nav_toggle" class="icon-arrow-left"></i>
+	</div>
+	<div id="scroll_tip" class="well" style="padding: 2px; position:fixed; right:0px; bottom:120px" onclick="javascript:scroll(0,0)">
+		<i class="icon-arrow-up"></i>
+	</div>
+	
 	<div class="container-fluid">
 		<div class="row-fluid">
 		
 			<!-- Header -->
 			<div class="span12">
-				<div class="well">
+				<div class="well" style="padding: 7px; min-height:560px">
 					<div class="tabbable tabs-left">
-					
 						<ul id="navigation" class="nav nav-tabs pull-left">
 							<li>
-								<img src="images/school_logo.png" class="visible-desktop" width="83" style="margin-right: 20px" alt="ZSJZ OJ"/>
 								<div id="userinfo"></div>
 								<div class="clearfix"></div>
 							</li>
@@ -50,6 +55,7 @@
 							<li class="nav_bar" id="nav_task"><a href="#task/task_list">Task</a></li>
 							<li class="nav_bar" id="nav_group"><a href="#group/group_list">Groups</a></li>
 							<li class="nav_bar" id="nav_ranklist"><a href="#main/ranklist">Ranklist</a></li>
+							<li class="nav_bar" id="nav_custom_test"><a href="#customtest/run">CustomTest</a></li>
 							<li id="nav_admin" class="dropdown">
 								<a href="#" class="dropdown-toggle" data-toggle="dropdown">Administer</a>
 								<ul class="dropdown-menu">
@@ -61,14 +67,9 @@
 									<li class="nav_bar nav_admin" style="display:none"><a href="#admin/rejudge">Rejudge</a></li>
 								</ul>
 							</li>
-							<li>
-								<div id="scroll_tip" class="well" style="text-align:center; padding: 7px; position:fixed" onclick="javascript:scroll(0,0)">
-									<i class="icon-arrow-up"></i>
-								</div>
-							</li>
 						</ul>
 						
-						<div id="page_content" class="tab-content" style="float:none; margin-left:123px"></div>
+						<div id="page_content" class="tab-content" style="float:none"></div>
 						
 						<div class="clearfix"></div>
 					</div>
@@ -95,10 +96,7 @@
 			setInterval("server_time.innerHTML=('Server Time: ' + (new Date(timer).toString())); timer += 1000;", 1000);
 			
 			var browser = navigator.userAgent;
-		//	if (browser.indexOf('MSIE 6.0') > 0 || browser.indexOf('MSIE 7.0') > 0) 
 			$('#scroll_tip').affix();
-			//else $('#navigation').affix();
-			//$('#scroll_tip').tooltip({placement:'right'});
 			<?php
 				if ( ! $logged_in) echo 'var logged_in = false;';
 				else echo 'load_userinfo(); var logged_in = true;';
@@ -111,11 +109,9 @@
 			else if (hash.indexOf('group') != -1) $('#nav_group').addClass('active');
 			else if (hash.indexOf('contest') != -1) $('#nav_contest').addClass('active');
 			else if (hash.indexOf('main/ranklist') != -1) $('#nav_ranklist').addClass('active');
+			else if (hash.indexOf('main/customtest') != -1) $('#nav_custom_test').addClass('active');
 			else if (hash.indexOf('main/home') != -1) $('#nav_home').addClass('active');
 			else if (hash.indexOf('admin') != -1) $('#nav_admin').addClass('active');
-			$('.nav_bar').mouseup(function(){
-				if ($(this).hasClass('active')) refresh_page();
-			});
 		</script>
 	</div>
 </body>

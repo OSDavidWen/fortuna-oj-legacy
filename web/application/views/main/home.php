@@ -17,6 +17,16 @@
 			<h4>Changelog</h4>
 <!-- 			Jan.13 2013:	现在管理员可以在Group页面看到Task的统计信息。 -->
 				<dl style="text-align: left" class="dl-horizontal">
+					<dt>Apr.25  2013</dt>
+					<dd>支持上传头像 & minor bugfix</dd>
+					<dt>Apr.24  2013</dt>
+					<dd>UI微调 & minor bugfix</dd>
+					<dt>Apr.24  2013</dt>
+					<dd>现在可以通过CustomTest自行在服务器上测试程序输出</dd>
+					<dt>Apr.23  2013</dt>
+					<dd>上传数据增加自定义匹配文件名功能</dd>
+					<dt>Apr.23  2013</dt>
+					<dd>新增题目数据排序方式变更(使用自然排序)</dd>
 					<dt>Apr.3  2013</dt>
 					<dd>用户信息页面中新增各种统计. (头像功能未实现)</dd>
 					<dt>Apr.3  2013</dt>

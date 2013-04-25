@@ -113,7 +113,7 @@
 	})
 	
 	function delete_problem(pid, selector){
-		$("#modal_confirm #delete").live('click', function(){
+		$("#modal_confirm #delete").click(function(){
 			$("#modal_confirm").modal('hide');
 			access_page("admin/delete_problem/" + pid);
 		});

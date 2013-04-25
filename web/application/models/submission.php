@@ -135,4 +135,9 @@ class Submission extends CI_Model{
 		if ($result->num_rows() == 0) return FALSE;
 		return $result->row()->uid;		
 	}
+	
+	function is_private($sid) {
+		$result = $this->db->query("SELECT private FROM Submission WHERE sid=?", array($sid))->row();
+		return $result->private == 1;
+	}
 }
