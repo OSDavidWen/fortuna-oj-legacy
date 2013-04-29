@@ -23,18 +23,33 @@
 			if ($info->running && $info->contestMode == 'OI' && ! $is_admin){
 					echo '<span class="label label-success">Compiled</span>';
 				}else{
-					$sname = $row->result;
-					if ($info->contestMode == 'OI')
-						$sname .= ' <span class="badge badge-info">' . round($row->score, 0) . '</span>';
+					if ($info->contestMode == 'OI') {
+						switch ($row->status) {
+							case 0: $tag = 'label-success'; break;
+							case 1: ;
+							case 2: ;
+							case 7: $tag = 'label-important'; break;
+							case 3: $tag = 'label-info'; break;
+							case 4:
+							case 5:
+							case 6: $tag = 'label-warning'; break;
+							default: $tag = '';
+						}
+						$sname = "$row->result <span class=\"label $tag\">" . round($row->score, 1) . '</span>';
 						
-					echo "<a href=\"#main/result/$row->sid\">$sname</a>";
+						echo "<a href=\"#main/result/$row->sid\"> $sname</a>";
+					} else {
+						$sname = $row->result;
+						
+						echo "<a href=\"#main/result/$row->sid\">$sname</a>";
+					}
 				}
 			}
 			if ($info->running && $info->contestMode == 'OI' && ! $is_admin){
 				echo "</td><td></td><td></td>";
 			}else{
-				echo "</td><td><span class=\"badge badge-info\">$row->time</span></td>" . 
-				"<td><span class=\"badge badge-info\">$row->memory</span></td>";
+				echo "</td><td><span class=\"label label-info\">$row->time</span></td>";
+				echo "<td><span class=\"label label-info\">$row->memory</span></td>";
 			}
 			echo "<td><a href=\"#main/code/$row->sid\">$row->language</a>" . 
 				"</td><td>$row->codeLength</td><td>$row->submitTime</td></tr>";
@@ -46,7 +61,7 @@
 
 
 <script type="text/javascript">
-	refresh_flag = setTimeout("refresh_page()", 10000);
+	refresh_flag = setTimeout("refresh_page()", 30000);
 </script>
 
 <!-- End of file status.php -->

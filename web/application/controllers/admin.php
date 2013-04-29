@@ -130,7 +130,7 @@ class Admin extends CI_Controller {
 			else $row->isShowed = '<span class="label label-important">Hidden</span>';
 
 		$this->load->library('pagination');
-		$config['base_url'] = base_url() . 'index.php#admin/problemset/';
+		$config['base_url'] = '#admin/problemset/';
 		$config['total_rows'] = $count;
 		$config['per_page'] = $problems_per_page;
 		$config['cur_page'] = $page;
@@ -381,7 +381,7 @@ class Admin extends CI_Controller {
 		}
 
 		$this->load->library('pagination');
-		$config['base_url'] = base_url() . 'index.php#admin/contestlist/';
+		$config['base_url'] = '#admin/contestlist/';
 		$config['total_rows'] = $count;
 		$config['per_page'] = $contests_per_page;
 		$config['cur_page'] = $page;
@@ -478,7 +478,7 @@ class Admin extends CI_Controller {
 		$tasks = $this->misc->load_task_list($begin, $tasks_per_page);
 		
 		$this->load->library('pagination');
-		$config['base_url'] = base_url() . 'index.php#admin/task_list/';
+		$config['base_url'] = '#admin/task_list/';
 		$config['total_rows'] = $count;
 		$config['per_page'] = $tasks_per_page;
 		$config['cur_page'] = $page;

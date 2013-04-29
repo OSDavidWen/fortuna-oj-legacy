@@ -224,7 +224,7 @@ class Contests extends CI_Model{
 	
 	function load_contest_ranklist_OI($cid, $endTime){
 		$now = strtotime('now');
-		if ($now <= $endTime) return FALSE;
+		if ($now <= $endTime && ! $this->user->is_admin()) return FALSE;
 		
 		$info = $this->db->query("SELECT teamMode, startTime FROM Contest
 								WHERE cid=?",
@@ -354,13 +354,10 @@ class Contests extends CI_Model{
 				$problem['score'] = (int)$raw['score'][$now];
 				$problem['scoreDecreaseSpeed'] = (int)$raw['speed'][$now];
 				$problem['id'] = $now;
-				
-				$result = $this->db->query("SELECT id FROM Contest_has_ProblemSet
-											WHERE cid=? AND pid=?",
-											array($cid, $problem['pid']));
-				if ($result->num_rows() == 0) $sql = $this->db->insert_string('Contest_has_ProblemSet', $problem);
-				else $sql = $this->db->update_string('Contest_has_ProblemSet', $problem, "cid=$cid AND pid=$pid");
+
+				$sql = $this->db->insert_string('Contest_has_ProblemSet', $problem);
 				$this->db->query($sql);	
+				$this->db->query("UPDATE ProblemSet SET isShowed=0 WHERE pid=?", array($pid));
 			}
 		}
 	}

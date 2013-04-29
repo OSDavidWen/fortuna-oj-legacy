@@ -26,7 +26,7 @@
 				echo "<tr><td><span class=\"label\">$row->rank</span></td><td><span class=\"label label-info\">$row->name</span></td><td><span class=\"badge badge-info\">$row->score</span></td>";
 				if ($info->contestMode == 'OI'){
 					foreach ($pid as $prob){
-						echo '<td>';
+						echo '<td style="text-align:center">';
 						if (isset($row->acList[$prob])){
 							if ($row->acList[$prob] == 0)
 								echo '<span class="badge badge-important">' . $row->acList[$prob] . '</span>';
