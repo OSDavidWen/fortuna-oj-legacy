@@ -7,11 +7,11 @@
 			<tr>
 				<th>Rank</th><th>Name</th>
 				<?php
-					if ($info->contestMode == 'OI'){
+					if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional'){
 						echo '<th>Score</th>';
 						foreach ($info->problemset as $row){
 							$pid[] = $row->pid;
-							echo "<th>$row->title</th>";
+							echo "<th style='text-align:center'><a href='#contest/show/$info->cid/$row->id'>$row->title</a></th>";
 						}
 					}else if ($info->contestMode == 'ACM'){
 						echo '<th>Solved</th><th>Penalty</th>';
@@ -23,15 +23,21 @@
 		<tbody><?php
 		if ($data != FALSE){
 			foreach ($data as $row){
-				echo "<tr><td><span class=\"label\">$row->rank</span></td><td><span class=\"label label-info\">$row->name</span></td><td><span class=\"badge badge-info\">$row->score</span></td>";
-				if ($info->contestMode == 'OI'){
+				echo "<tr><td><span class=\"label\">$row->rank</span></td>";
+				echo "<td><a href='#users/$row->name'><span class=\"label label-info\">$row->name</span></a></td>";
+				echo "<td><span class=\"badge badge-info\">$row->score</span></td>";
+				
+				if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional'){
 					foreach ($pid as $prob){
-						echo '<td style="text-align:center">';
+						echo "<td style='text-align:center'>";
 						if (isset($row->acList[$prob])){
+							//echo $prob;
+							echo "<a href='#main/code/" . $row->attempt[$prob] . "'>";
 							if ($row->acList[$prob] == 0)
 								echo '<span class="badge badge-important">' . $row->acList[$prob] . '</span>';
 							else
 								echo '<span class="badge badge-success">' . $row->acList[$prob] . '</span>';
+							echo '</a>';
 						}
 						echo '</td>';
 					}
@@ -49,6 +55,7 @@
 						echo '</td>';
 					}
 				}
+				
 				echo '</tr>';
 			}
 		}	

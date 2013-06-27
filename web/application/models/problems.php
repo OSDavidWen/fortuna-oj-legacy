@@ -133,4 +133,33 @@ class Problems extends CI_Model{
 	function load_problem_submission($pid){
 		return $this->db->query("SELECT sid FROM Submission WHERE pid=?", array($pid))->result();
 	}
+	
+	function add_solution($pid, $filename) {
+		$sql = $this->db->insert_string('Solution', array('uid' => $this->user->uid(), 'pid' => $pid, 'filename' => $filename));
+		$this->db->query($sql);
+	}
+	
+	function load_solutions($pid) {
+		//$is_accepted = $this->misc->is_accepted($this->session->userdata('uid'), $pid);
+		
+		//if ($is_accepted)
+			return $this->db->query("SELECT idSolution, uid, filename FROM Solution WHERE pid=?",
+									array($pid))->result();
+	}
+	
+	function delete_solution($idSolution) {
+		$data = $this->db->query("SELECT pid, filename FROM Solution WHERE idSolution=?",
+									array($idSolution))->row();
+		$target_file = $this->config->item('data_path') . $data->pid . '/solution/' . $data->filename;
+		
+		if (file_exists($target_file)) unlink($target_file);
+		
+		$this->db->query("DELETE FROM Solution WHERE idSolution=?",
+						array($idSolution));
+	}
+	
+	function load_solution_uid($idSolution) {
+		return $this->db->query("SELECT uid FROM Solution WHERE idSolution=?",
+								array($idSolution))->row()->uid;
+	}
 }

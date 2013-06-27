@@ -107,9 +107,11 @@ class Contest extends CI_Controller {
 				$row->statistic = $this->contests->load_contest_problem_statistic($cid, $row->pid);
 			}
 		}
-		
+
 		if ($info == FALSE){
 			$this->load->view("error", array('message' => 'Contest NOT exist!'));
+		} else if  (strtotime($info->startTime) > strtotime('now') && ! $this->user->is_admin()) {
+			$this->load->view("information", array('data' => 'Contest NOT start!'));
 		} else {
 			$this->load->view("contest/problems", array('data' => $data, 'info' => $info, 'cid' => $cid));
 		}
@@ -143,7 +145,9 @@ class Contest extends CI_Controller {
 
 		if ($info == FALSE){
 			$this->load->view("error", array('message' => 'Contest NOT exist!'));
-		}else
+		} else if  (strtotime($info->startTime) > strtotime('now') && ! $this->user->is_admin())
+			$this->load->view("information", array('data' => 'Contest NOT start!'));
+		else
 			$this->load->view('contest/status', array('data' => $data, 'info' => $info, 'is_admin' => $this->user->is_admin()));
 	}
 	
@@ -177,16 +181,19 @@ class Contest extends CI_Controller {
 				}
 				$data->id = $id;
 				if ($info->contestMode == 'ACM') $data->id += 1000;
-				if ($info->contestMode == 'OI') $data->id++;
+				if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional') $data->id++;
 				
 				$this->contests->modify_problem($data, $cid);
 			}
 		}
 
-		if ($info == FALSE || $pid == FALSE || $data == FALSE)
+		if ($info == FALSE || $pid == FALSE || $data == FALSE) {
 			$this->load->view('error', array('message' => 'Problem not available!'));
-		else
+		} else if  (strtotime($info->startTime) > strtotime('now') && ! $this->user->is_admin()) {
+			$this->load->view("information", array('data' => 'Contest NOT start!'));
+		} else {
 			$this->load->view('contest/show', array('data' => $data, 'info' => $info, 'cid' => $cid));
+		}
 	}
 	
 	public function standing($cid){
@@ -194,12 +201,14 @@ class Contest extends CI_Controller {
 		if ($info != FALSE){
 			if ($info->contestMode == 'ACM')
 				$data = $this->contests->load_contest_ranklist_ACM($cid);
-			else if ($info->contestMode == 'OI'){
-				$data = $this->contests->load_contest_ranklist_OI($cid, strtotime($info->endTime));
+			else if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional'){
+				$data = $this->contests->load_contest_ranklist_OI($cid, $info);
 			}
 		}
 		
-		$this->load->view('contest/standing', array('data' => $data, 'info' => $info));
+		if  (strtotime($info->startTime) > strtotime('now') && ! $this->user->is_admin())
+			$this->load->view("information", array('data' => 'Contest NOT start!'));
+		else $this->load->view('contest/standing', array('data' => $data, 'info' => $info));
 	}
 	
 	public function declaration_list($cid){
@@ -208,7 +217,11 @@ class Contest extends CI_Controller {
 		if ($info->contestMode == 'ACM'){
 			foreach ($data as $row) $row->id += 1000;
 		}
-		$this->load->view('contest/declaration_list', array('data' => $data));
+		
+		if  (strtotime($info->startTime) > strtotime('now') && ! $this->user->is_admin())
+			$this->load->view("information", array('data' => 'Contest NOT start!'));
+		else
+			$this->load->view('contest/declaration_list', array('data' => $data));
 	}
 	
 	public function declaration($id){
@@ -221,11 +234,13 @@ class Contest extends CI_Controller {
 		if ($info != FALSE){
 			if ($info->contestMode == 'ACM')
 				$data = $this->contests->load_contest_ranklist_ACM($cid);
-			else if ($info->contestMode == 'OI'){
-				$data = $this->contests->load_contest_ranklist_OI($cid, strtotime($info->endTime));
+			else if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional'){
+				$data = $this->contests->load_contest_ranklist_OI($cid, $info);
 			}
 		}
 		
-		if ($data != FALSE) $this->load->view('contest/result', array('data' => $data, 'info' => $info));		
+		if  (strtotime($info->startTime) > strtotime('now') && ! $this->user->is_admin())
+			$this->load->view("information", array('data' => 'Contest NOT start!'));
+		else if ($data != FALSE) $this->load->view('contest/result', array('data' => $data, 'info' => $info));
 	}
 }

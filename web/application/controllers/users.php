@@ -11,6 +11,7 @@ class Users extends CI_Controller {
 
 	public function _remap($method, $params = array()){
 		$this->load->model('user');
+		$params[0] = rawurldecode($params[0]);
 		$user = $this->user->load_user($params[0]);
 		$user->name = $params[0];
 		

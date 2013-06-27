@@ -44,7 +44,7 @@
 
 <script type="text/javascript">
 	function delete_task(tid, title){
-		$('#modal_confirm #delete').live('click', function(){
+		$('#modal_confirm #delete').click(function(){
 			$('#modal_confirm').modal('hide');
 			access_page('admin/delete_task/' + tid);
 		});

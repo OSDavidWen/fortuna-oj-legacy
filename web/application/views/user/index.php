@@ -14,8 +14,10 @@
 				<div class="well">
 					<img src="images/avatar/<?=$data->userPicture?>" alt="User Avatar" width="225" height="300" >
 				</div>
-
+				
+				<?php if ($this->user->uid() == $data->uid) { ?>
 				<button class="btn btn-small btn-success" id="btn_change">Change Avatar</button>
+				<?php } ?>
 			</div>
 			
 			<div class="span6" style="height:339px"><dl class="dl-horizontal">

@@ -1,6 +1,7 @@
 <div class="row-fluid">
 	<div id="header"><?php
 		$average = 0;
+		$allowed_download = '';
 		$IOMode = $data->data->IOMode;
 		if ($data->submitCount > 0) $average = number_format($data->scoreSum / $data->submitCount, 2);
 		
@@ -20,6 +21,7 @@
 		} else if ($IOMode != 2) {
 			echo "Time & Memory Limits";
 		} else {
+			$allowed_download .= '|data.zip';
 			echo "<a href='/index.php/main/download/$data->pid' target='_blank'>Download Input</a>";
 		}
 		
@@ -84,7 +86,7 @@
 	</div>
 	
 	<div id="sidebar" class="span2">
-		<div class="well"><?php
+		<div class="well" id="div_statistics"><?php
 			echo '<fieldset><legend>';
 			echo '<h5><em>Statistic</em>';
 			echo '</h5></legend>';
@@ -102,7 +104,7 @@
 		
 		<?php
 		if ($this->session->userdata('show_category') == 1 || $is_accepted){
-			echo '<div class="well">';
+			echo '<div class="well" id="div_tags">';
 			echo '<fieldset id="tags">';
 			echo '<legend><h5><em>Tags</em>';
 			if ($is_accepted || $this->user->is_admin()) echo ' <button id="add_tag_btn" class="btn btn-mini pull-right">add</button>';
@@ -121,13 +123,27 @@
 			echo '</form></fieldset></div>';	
 		}
 		?>
-<!--		<div class="well">
+		<div class="well" id="div_solutions">
 			<fieldset id="solutions">
 				<legend><h5><em>Solutions</em>
-				<?php if ($is_accepted || $this->user->is_admin()) echo ' <button id="add_solution_btn" class="btn btn-mini pull-right">add</button>';?>
+				<?php if ($is_accepted || $this->user->is_admin()) {?>
+					<button id="add_solution_btn" class="btn btn-mini pull-right" onclick="add_solution()">add</button>
+				<?php } ?>
 				</h5></legend>
+				
+				<div><?php
+					if ($data->solutions) {
+					foreach ($data->solutions as $solution) {
+						$allowed_download .= "|$solution->filename";
+						echo "<a href='index.php/main/download/$data->pid/$solution->filename/solution'>$solution->filename</a>";
+						if ($this->user->uid() == $solution->uid || $this->user->is_admin())
+							echo "<a class='pull-right' onclick='delete_solution($solution->idSolution)'>&times;</a>";
+						echo '<br />';
+					}
+					}
+				?></div>
 			</fieldset>
-		</div>-->
+		</div>
 		
 		<?php if ($data->source != ''){ ?>
 			<div class="well"><fieldset>
@@ -138,7 +154,39 @@
 	</div>
 </div>
 
+<form action="index.php/main/addsolution/<?=$data->pid?>" class="form-horizontal" enctype="multipart/form-data" id="form_solution_upload">
+	<div class="modal hide fade" id="modal_upload">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h3>Upload Solution</h3>
+		</div>
+		
+		<div class="modal-body">
+			<span></span>
+			<input type="file" name="solution" />
+		</div>
+		
+		<div class="modal-footer">
+			<a class="btn" data-dismiss="modal">Close</a>
+			<a class="btn btn-success" id="btn_upload">Upload</a>
+		</div>
+	</div>
+</form>
+
+<?php
+	echo $allowed_download;
+	$this->session->set_userdata('download', $allowed_download);
+?>
+
 <script type="text/javascript">
+	function add_solution(){
+		$('#modal_upload').modal({backdrop: 'static'});
+	}
+	
+	function delete_solution(idSolution) {
+		access_page('main/deletesolution/' + idSolution);
+	}
+	
 	var dataconf = "<?php
 		echo '<pre>';
 		$caseCnt = 1;
@@ -159,6 +207,16 @@
 		echo '</pre>';
 	?>";
 	$(document).ready(function(){
+		$('#modal_upload #btn_upload').click(function(){
+			$('#modal_upload').modal('hide');
+			$('#form_solution_upload').ajaxSubmit({
+				type: 'post',
+				success: function(responseText, stautsText){
+					if (responseText == 'success') refresh_page();
+					else alert("Failed to upload!");
+				}
+			});
+		}),
 		$('.delete_tag').hide(),
 		$('#tag_form').hide(),
 		$('.tag').hover(

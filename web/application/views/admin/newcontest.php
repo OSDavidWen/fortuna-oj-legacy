@@ -48,6 +48,7 @@
 			<div class="controls controls-row">
 				<select name="contestMode">
 					<option value="OI" <?=set_select('contestMode', 'OI', isset($contestMode) ? ($contestMode == 'OI' ? TRUE : FALSE) : TRUE)?> >OI</option>
+					<option value="OI Traditional" <?=set_select('contestMode', 'OI Traditional', isset($contestMode) ? ($contestMode == 'OI Traditional' ? TRUE : FALSE) : TRUE)?> >OI Traditional</option>
 					<option value="ACM" <?=set_select('contestMode', 'ACM', isset($contestMode) ? ($contestMode == 'ACM' ? TRUE : FALSE) : FALSE)?> >ACM</option>
 					<option value="Codeforces" <?=set_select('contestMode', 'Codeforces', isset($contestMode) ? ($contestMode == 'Codeforces' ? TRUE : FALSE) : FALSE)?> >Codeforces</option>
 					<option value="codejam" <?=set_select('contestMode', 'codejam', isset($contestMode) ? ($contestMode == 'codejam' ? TRUE : FALSE) : FALSE)?> >Code Jam</option>

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <sys/ptrace.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -61,7 +62,7 @@ int builtin_comp(char* file_std, char* file_user){
 }
 
 int main(int argc, char* argv[]){
-	//argv[1] means test mode. 1 for file input/output, 0 for standard input/output, 2 for output submit task
+	//argv[1] means test mode. 1 for file input/output, 0 for standard input/output, 2 for output only task
 	//argv[2] is program, argv[3] is input, argv[4] is standard output, argv[5] is user output
 	//argv[6] is Time Limit, argv[7] is Memory Limit, argv[8] is full score
 	//argv[9] is spj file(if exist) argv[10] is spj mode : 0 for default, 1 for cena, 2 for tsinsen, 3 for hustOJ
@@ -73,16 +74,17 @@ int main(int argc, char* argv[]){
 	int i;
 	for (i = 0; i < syscall_forbidden_table_cnt; i++)
 		forbidden[syscall_forbidden_table[i]] = 1;
+		
+	int time_usage = 0, mem_usage = 0;
 	
 	if (type <= 1){
-		int time_usage = 0, mem_usage = 0;
 		int pid = fork();
 		
 		if (pid < 0) return 1;
 					
 		if (pid == 0){
 			ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-                      
+            
 			//set resources limit
 			struct rlimit limit;
 			limit.rlim_cur = (time_limit - 1) / 1000 + 3;
@@ -203,7 +205,12 @@ int main(int argc, char* argv[]){
 			if (rinfo.ru_maxrss > mem_usage) mem_usage = rinfo.ru_maxrss;
 							
 			if (terminate) return 0;
-				//verify output
+				
+		}
+	}else{
+		
+	}
+			//verify output
 			if (spj){ //default
 				char exec_spj[255], msg[4096], ac[]="Accepted";
 				int status; double score;
@@ -213,24 +220,34 @@ int main(int argc, char* argv[]){
 					if (res == NULL) result(3, 0, time_usage, mem_usage, "Checker error!");
 					else{
 						fscanf(res, "%d%lf%s", &status, &score, msg);
-						result(0, score, time_usage, mem_usage, msg);
 						pclose(res);
+						
+						if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+						else  result(2, score, time_usage, mem_usage, msg);
 					}
 											
 				}else if (spj_mode == 1){ //cena
-					sprintf(exec_spj, "./%s %s %s\n", argv[9], argv[8], argv[3]);
+					sprintf(exec_spj, "./%s %s %s\n", argv[9], argv[8], argv[4]);
+					printf("Special Judge: %s\n", exec_spj);
 					if ((system(exec_spj) >> 8) > 0) result(3, 0, time_usage, mem_usage, "Checker error!");
 					else{
 						FILE *res = fopen("score.log", "r");
 						fscanf(res, "%lf", &score);
 						fclose(res);
+						
 						res = fopen("report.log", "r");
 						if (res != NULL){
 							fscanf(res, "%s", msg);
 							fclose(res);
-							result(0, score, time_usage, mem_usage, msg);
+							if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+							else result(2, score, time_usage, mem_usage, msg);
+							
+						} else {
+							if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, ac);
+							else result(2, score, time_usage, mem_usage, ac);
 						}
-						result(0, score, time_usage, mem_usage, ac);
+						
+						//printf("Score: %lf Full Score:%lf\n", score, full_score);
 					}
 						
 				}else if (spj_mode == 2){ //tsinsen
@@ -241,7 +258,9 @@ int main(int argc, char* argv[]){
 						fscanf(res, "%lf %s", &score, msg);
 						score *= full_score;
 						fclose(res);
-						result(0, score, time_usage, mem_usage, msg);
+						
+						if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+						else result(2, score, time_usage, mem_usage, msg);
 					}
 						
 				}else if (spj_mode == 3){
@@ -255,10 +274,7 @@ int main(int argc, char* argv[]){
 				else if (status < 0) result(1, 0, time_usage, mem_usage, "Presentation Error!");
 				else result(0, full_score, time_usage, mem_usage, "Correct!");
 			}
-		}
-	}else{
-		
-	}
+
 	#ifdef DEBUG
 		printf("Judge Ended!\n");
 	#endif

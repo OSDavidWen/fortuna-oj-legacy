@@ -42,16 +42,23 @@ function hash_to_url(hash) {
 
 function set_page_content(selector, url, success) {
 	url = randomize(url);
+	//$('body').append('<div class="overlay"></div>');
+	$('.overlay').css({'z-index': '1000', 'display': 'block'});
+	$('.overlay').animate({opacity: '0.5'}, 250);
 	$.ajax({
 		type: "GET",
 		url: url,
 		success: function(data){
 			$(selector).hide();
+			$('.overlay').css({'z-index': '-1000', 'display': 'none'});
+			$('.overlay').animate({opacity: '0'}, 250);
 			$(selector).html(data);
 			$(selector).fadeIn(250);
 			if (success != void 0) success();
 		},
 		error: function(xhr, statusText, error){
+			$('.overlay').css({'z-index': '-1000', 'display': 'none'});
+			$('.overlay').animate({opacity: '0'}, 250);
 			$(selector).html('<div class="alert"><strong>Error: ' + ' ' + error + '</strong></div>');
 		}
 	});

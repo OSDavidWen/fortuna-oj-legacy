@@ -9,21 +9,24 @@
 		<th class="language">Language</th>
 		<th class="codeLength">Code Length</th>
 		<th class="submitTime">Submit Time</th>
+		<th>Access</th>
 	</tr></thead>
 	
 	<tbody><?php
 		foreach ($data as $row){
 			if ($row->isShowed = 0 && ! $is_admin) continue;
+			
 			echo "<tr><td>$row->sid</td><td><a href='#contest/show/$info->cid/$row->id'>" . 
 				($info->contestMode == 'ACM' ? chr(65 + $row->id) : $row->id) . '</a></td><td>' . 
 				"<span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
+				
 			if ($row->status == -1) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
-			if ($info->running && $info->contestMode == 'OI' && ! $is_admin){
+				if ($info->running && $info->contestMode == 'OI Traditional' && ! $is_admin){
 					echo '<span class="label label-success">Compiled</span>';
 				}else{
-					if ($info->contestMode == 'OI') {
+					if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional') {
 						switch ($row->status) {
 							case 0: $tag = 'label-success'; break;
 							case 1: ;
@@ -37,22 +40,30 @@
 						}
 						$sname = "$row->result <span class=\"label $tag\">" . round($row->score, 1) . '</span>';
 						
-						echo "<a href=\"#main/result/$row->sid\"> $sname</a>";
+						echo "<a href=\"#main/result/$row->sid\">$sname</a>"; //
 					} else {
 						$sname = $row->result;
 						
-						echo "<a href=\"#main/result/$row->sid\">$sname</a>";
+						echo "<a href=\"#main/result/$row->sid\">$sname</a>"; //
 					}
 				}
 			}
-			if ($info->running && $info->contestMode == 'OI' && ! $is_admin){
+			if ($info->running && $info->contestMode == 'OI Traditional' && ! $is_admin){
 				echo "</td><td></td><td></td>";
 			}else{
 				echo "</td><td><span class=\"label label-info\">$row->time</span></td>";
 				echo "<td><span class=\"label label-info\">$row->memory</span></td>";
 			}
 			echo "<td><a href=\"#main/code/$row->sid\">$row->language</a>" . 
-				"</td><td>$row->codeLength</td><td>$row->submitTime</td></tr>";
+				"</td><td>$row->codeLength</td><td>$row->submitTime</td>";
+				
+			echo '<td>';
+			if ($this->user->uid() == $row->uid || $this->user->is_admin()){
+				echo "<a onclick=\"access_page('main/submission_change_access/$row->sid')\">";
+				if ($row->private == 1) echo '<i class="icon-lock"></i>'; else echo '<i class="icon-globe"></i>';
+				echo '</a>';
+			} else if ($row->private == 0) echo '<i class="icon-globe"></i>';
+			echo '</td></tr>';
 		}
 	?></tbody>
 </table></div>

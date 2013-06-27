@@ -133,13 +133,13 @@ class Contests extends CI_Model{
 	
 	function load_contest_submission($cid, $row_begin, $count, $running, $username, $is_admin){
 		if ($is_admin || ! $running){
-			return $this->db->query("SELECT isShowed, sid, name, pid, status, score,
+			return $this->db->query("SELECT isShowed, uid, private, sid, name, pid, status, score,
 								time, memory, codeLength, submitTime, language FROM Submission
 								WHERE cid=? ORDER BY sid DESC LIMIT ?, ?",
 								array($cid, $row_begin, $count))
 								->result();
 		}else{
-			return $this->db->query("SELECT isShowed, sid, name, pid, status, score,
+			return $this->db->query("SELECT isShowed, uid, private, sid, name, pid, status, score,
 								time, memory, codeLength, submitTime, language FROM Submission
 								WHERE cid=? AND name=? ORDER BY sid DESC LIMIT ?, ?",
 								array($cid, $username, $row_begin, $count))
@@ -222,9 +222,9 @@ class Contests extends CI_Model{
 		return NULL;
 	}
 	
-	function load_contest_ranklist_OI($cid, $endTime){
+	function load_contest_ranklist_OI($cid, $info){
 		$now = strtotime('now');
-		if ($now <= $endTime && ! $this->user->is_admin()) return FALSE;
+		if ($now <= strtotime($info->endTime) && ! $this->user->is_admin() && $info->contestMode == 'OI Traditional') return FALSE;
 		
 		$info = $this->db->query("SELECT teamMode, startTime FROM Contest
 								WHERE cid=?",
@@ -245,7 +245,7 @@ class Contests extends CI_Model{
 			}
 			
 		}else {
-			$data = $this->db->query("SELECT uid, name, pid, status, score FROM Submission
+			$data = $this->db->query("SELECT sid, uid, name, pid, score FROM Submission
 									  WHERE cid=? ORDER BY sid DESC",
 									  array($cid))
 									  ->result();
@@ -258,7 +258,7 @@ class Contests extends CI_Model{
 				}
 				if (isset($result[$row->uid]->attempt[$row->pid])) continue;
 
-				$result[$row->uid]->attempt[$row->pid] = $row->status;
+				$result[$row->uid]->attempt[$row->pid] = $row->sid;
 				$result[$row->uid]->acList[$row->pid] = $row->score;
 				$result[$row->uid]->score += $row->score;
 			}
@@ -366,10 +366,26 @@ class Contests extends CI_Model{
 		$this->db->query("DELETE FROM Contest
 						WHERE cid=?",
 						array($cid));
-		$cnt = $this->db->query('SELECT MAX(cid) AS cnt FROM Contest')
-							->row()->cnt + 1;
+		$cnt = $this->db->query('SELECT MAX(cid) AS cnt FROM Contest')->row()->cnt + 1;
 		if ($cnt == 1) $cnt = 1000;
 		$this->db->query('ALTER TABLE Contest AUTO_INCREMENT=?',
 						array($cnt));
+	}
+	
+	function contest_to_task($cid) {
+		$result = $this->db->query("SELECT title, description, language FROM Contest
+									WHERE cid=?", array($cid))->row_array();
+		$sql = $this->db->insert_string('Task', $result);
+		$this->db->query($sql);
+		$tid = $this->db->insert_id();
+		
+		$result = $this->db->query("SELECT pid, title FROM Contest_has_ProblemSet
+									WHERE cid=?", array($cid))->result_array();
+		foreach ($result as $row) {
+			$row['tid'] = $tid;
+			$sql = $this->db->insert_string('Task_has_ProblemSet', $row);
+			$this->db->query($sql);
+		}
+		
 	}
 }

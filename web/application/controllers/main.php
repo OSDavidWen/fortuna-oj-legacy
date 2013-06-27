@@ -240,6 +240,7 @@ class Main extends CI_Controller {
 			
 			$categorization = $this->misc->load_categorization();
 			$data->category = $this->misc->load_problem_category($pid, $categorization);
+			$data->solutions = $this->problems->load_solutions($pid);
 		} else $data = FALSE;
 	
 		if ($data == FALSE)
@@ -248,10 +249,11 @@ class Main extends CI_Controller {
 			$this->load->view('main/show', array('data' => $data, 'category' => $categorization));
 	}
 	
-	public function download($pid, $filename = 'data.zip') {
-		$file = $this->config->item('data_path') . $pid . "/$filename";
+	public function download($pid, $filename = 'data.zip', $dir = '') {
+		$filename = rawurldecode($filename);
+		$file = $this->config->item('data_path') . $pid . "/$dir/$filename";
 		
-		if ($filename != 'data.zip' && ! strstr($this->session->userdata('download'), $filename))
+		if (! strstr($this->session->userdata('download'), $filename))
 			$this->load->view('error', array('message' => 'You are not allowed to download this file!'));
 		else if ( ! is_file($file))
 			$this->load->view('error', array('message' => 'File Not Found!'));
@@ -358,7 +360,7 @@ class Main extends CI_Controller {
 				if ( ! in_array($language, $languages)) return;
 			}
 			
-			if (isset($data['cid'])){
+			else if (isset($data['cid'])){
 				$this->load->model('contests');
 				$info = $this->contests->load_contest_status($data['cid']);
 				if (strtotime($info->startTime) > time() || strtotime($info->endTime) < time()) return;		
@@ -366,11 +368,13 @@ class Main extends CI_Controller {
 				if ( ! in_array($language, $languages)) return;
 			}			
 			
-			$this->load->model('problems');
-			$showed = $this->problems->is_showed($data['pid']);
-			if ($showed == 0){
-				if ($this->user->is_admin()) $data['isShowed'] = 0;
-				else return;
+			else {
+				$this->load->model('problems');
+				$showed = $this->problems->is_showed($data['pid']);
+				if ($showed == 0){
+					if ($this->user->is_admin()) $data['isShowed'] = 0;
+					else return;
+				}
 			}
 
 			$this->load->model('submission');
@@ -416,7 +420,7 @@ class Main extends CI_Controller {
 			if ($this->input->post('tid') != '') $data['tid'] = $this->input->post('tid');
 			
 			$this->load->model('problems');
-			$dataconf = json_decode($this->problems->load_dataconf($data['pid']));
+			$dataconf = json_decode($this->problems->load_dataconf($data['pid'])->dataConfiguration);
 			if ($dataconf->IOMode != 2) {
 				$this->load->view('error', array('message' => 'Uploading for this problem is not allowed!'));
 				return;
@@ -458,6 +462,12 @@ class Main extends CI_Controller {
 	}
 
 	public function statistic($pid, $page = 1){
+		$this->load->model('problems');
+		if ( ! $this->problems->is_showed($pid) && ! $this->user->is_admin()) {
+			$this->load->view('error', array('message' => 'You have NO priviledge to see the statistic.'));
+			return;
+		}
+	
 		$users_per_page = 20;
 		
 		$this->load->model('submission');
@@ -570,7 +580,38 @@ class Main extends CI_Controller {
 
 		$this->load->view('main/ranklist', array('data' => $data));
 	}
-
+	
+	function addsolution($pid) {
+		$this->load->model('misc');
+		$this->load->model('problems');
+		
+		$is_accepted = $this->misc->is_accepted($this->session->userdata('uid'), $pid);
+		if ( ! $is_accepted && ! $this->user->is_admin()) return;
+		
+		if ( !isset($_FILES['solution'])) return;
+		
+		$temp_file = $_FILES['solution']['tmp_name'];
+		$target_path = $this->config->item('data_path') . $pid . '/solution/';
+		if (! is_dir($target_path)) mkdir($target_path);
+		$target_file = $target_path . $_FILES['solution']['name'];
+		
+		if (file_exists($target_file)) return;
+		
+		if (! is_executable($temp_file)) {
+			move_uploaded_file($temp_file, $target_file);
+			$this->problems->add_solution($pid, $_FILES['solution']['name']);
+			
+			$this->load->view('success');
+		}
+	}
+	
+	function deletesolution($idSolution) {
+		$this->load->model('problems');
+		
+		if ($this->user->is_admin() || $this->problems->load_solution_uid($idSolution) == $this->user->uid()) {
+			$this->problems->delete_solution($idSolution);
+		}
+	}
 }
 
 // End of file main.php

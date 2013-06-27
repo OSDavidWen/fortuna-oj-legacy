@@ -1,6 +1,8 @@
 <div class="hero-unit" style="text-align:center">
 	<h2 class="text-error">Welcome to Fortuna Online Judge System!</h2>
-	<p>This OJ is based on GNU/Linux wheezy/sid Debian.<br />Powered Codeigniter / Bootstrap.</p>
+	<p>This OJ is based on GNU/Linux Debian sid.</p>
+	<p>Powered by Codeigniter / Bootstrap.</p>
+<!-- 	<h3 class="text-error">由于操作失误,导致部分图片丢失,请大家重新上传头像（忏悔中。。。）</h3> -->
 	<br /><br />
 	<div class="row-fluid">
 		<div class="span3">
@@ -32,7 +34,7 @@
 					<dt>Apr.3  2013</dt>
 					<dd>设置中可调ProblemSet中每页显示题数和Status中每页显示提交数</dd>
 					<dt>Mar.17 2013</dt>
-					<dd>现在未通过提交可以下载第一个未通过的数据。（在提交的详细信息里面）</dd>
+					<dd>现在未通过提交可以下载第一个未通过的数据。</dd>
 				</dl>
 		</div>
 	</div>

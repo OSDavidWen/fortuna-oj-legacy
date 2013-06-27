@@ -5,12 +5,12 @@
 	<input type="text" name="title" value="<?=$title?>" />
 	<br />
 	<span class="label" style="width: 45px; text-align:center">Start</span>
-	<input type="date" name="start_date" class="span3" value="<?=date('Y-m-d', strtotime($startTime))?>" />
-	<input type="time" name="start_time" class="span3" value="<?=date('H:i', strtotime($startTime))?>" />
+	<input type="date" name="start_date" class="span4" value="<?=date('Y-m-d', strtotime($startTime))?>" />
+	<input type="time" name="start_time" class="span4" value="<?=date('H:i', strtotime($startTime))?>" />
 	<br />
 	<span class="label" style="width: 45px; text-align:center">End</span>
-	<input type="date" name="end_date" class="span3" value="<?=date('Y-m-d', strtotime($endTime))?>" />
-	<input type="time" name="end_time" class="span3" value="<?=date('H:i', strtotime($endTime))?>" />
+	<input type="date" name="end_date" class="span4" value="<?=date('Y-m-d', strtotime($endTime))?>" />
+	<input type="time" name="end_time" class="span4" value="<?=date('H:i', strtotime($endTime))?>" />
 	<br />
 </form>
 

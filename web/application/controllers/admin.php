@@ -200,13 +200,17 @@ class Admin extends CI_Controller {
 			$data = json_encode($data);
 			$this->problems->save_dataconf($this->input->post('pid'), $data);
 			
+			$cur = getcwd();
+			chdir($path);
+			
 			if ($IOMode == 2) {
-				$cmd = "zip $path/data.zip -q ";
-				foreach ($post['infile'] as $infile) $cmd .= " $path/$infile";
+				$cmd = "zip data.zip -q";
+				foreach ($post['infile'] as $infile) $cmd .= " $infile";
 				$info = exec($cmd);
 				if ( ! is_dir($path . '/submission')) $mkdir($path . '/submission');
 			}			
 
+			chdir($cur);
 			$this->load->view('success');
 		}
 	}
@@ -532,6 +536,9 @@ class Admin extends CI_Controller {
 	}
 	
 	function contest_to_task($cid) {
+		$this->load->model('contests');
+		
+		$this->contests->contest_to_task($cid);
 	}
 }
 

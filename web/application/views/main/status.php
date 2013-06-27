@@ -3,6 +3,7 @@
 		if ($array != NULL && in_array($value, $array)) return 'checked';
 	}
 ?>
+
 <div class="status_table">
 	<form class="accordion form form-inline" id="form_filter" method="get">
 		<div class="accordion-group">
@@ -141,10 +142,12 @@
 				
 			echo "<tr><td>$row->sid</td>";
 			
-			if ( ! isset($row->tid) || $row->tid == NULL)
+			if ( ! isset($row->tid) || $row->tid == NULL) {
 				echo "<td><a href=\"#main/show/$row->pid\">$row->pid</a></td>";
-			else 
-				echo "<td><a href=\"#task/show/$row->pid/$row->gid/$row->tid\">$row->pid</a><i class='icon-info-sign' title='Task: $row->tid'></i></td>";
+			} else {
+				echo "<td><a href=\"#task/show/$row->pid/$row->gid/$row->tid\">$row->pid</a>";
+				echo "<i class='icon-info-sign' title='Task: $row->tid'></i></td>";
+			}
 			echo "<td><span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
 
 			if ($row->status < 0) echo $row->result;
@@ -161,6 +164,7 @@
 					case 6: $tag = 'label-warning'; break;
 					default: $tag = '';
 				}
+				
 				$sname = "$row->result <span class=\"label $tag\">" . round($row->score, 1) . '</span>';
 				echo "<a href=\"#main/result/$row->sid\"> $sname </a>";
 			}
@@ -280,9 +284,14 @@
 	});
 	
 	function filter(url, hash){
+		$('.overlay').css({'z-index': '1000', 'display': 'block'});
+		$('.overlay').animate({opacity: '0.5'}, 250);
+		
 		$('#form_filter').ajaxSubmit({
 			url: url,
 			success: function(responseText){
+				$('.overlay').css({'z-index': '-1000', 'display': 'none'});
+				$('.overlay').animate({opacity: '0'}, 250);
 				$('#page_content').html(responseText);
 			}
 		});

@@ -86,10 +86,21 @@ void init(){
 
 bool run(){
         string query = "SELECT sid FROM Submission WHERE status=-1 LIMIT 0,1;";
-        if (mysql_query(&db, query.c_str())){
-                syslog(LOG_ERR, "SQL Query Failed!");
-                return false;
-        }
+		
+		while (true) {
+			int ret = mysql_query(&db, query.c_str());
+			if (ret) {
+				ret = mysql_errno(&db);
+				if (ret == 2006 || ret == 2013){
+					mysql_init(&db);
+					mysql_real_connect(&db, settings[0].c_str(), settings[1].c_str(), settings[2].c_str(), settings[3].c_str(), 0, NULL, 0);
+				} else if (ret) {
+					syslog(LOG_ERR, "SQL Query Failed!");
+					return false;
+				}
+			} else break;
+		}
+		
         MYSQL_RES *result = mysql_store_result(&db);
         rows_count = mysql_num_rows(result);
         if (rows_count == 0){

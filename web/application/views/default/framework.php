@@ -45,6 +45,9 @@
 					<div class="tabbable tabs-left">
 						<ul id="navigation" class="nav nav-tabs pull-left">
 							<li>
+								<label id="countdown"></label>
+							</li>
+							<li>
 								<div id="userinfo"></div>
 								<div class="clearfix"></div>
 							</li>
@@ -93,7 +96,9 @@
 		
 		<script type="text/javascript">
 			timer = <?=mktime() * 1000?>;
-			setInterval("server_time.innerHTML=('Server Time: ' + (new Date(timer).toString())); timer += 1000;", 1000);
+			setInterval("$('#server_time').html('Server Time: ' + (new Date(timer).toString())); timer += 1000;", 1000);
+			//var remain = (new Date("2013/5/18,8:00:00").getTime() - new Date(timer).getTime());
+			//setInterval("$('#countdown').html('Time to GDOI:<br/><p style=\"text-align:center\">' + Math.floor(remain / (1000 * 86400)) + ' Days</p>'); remain += 1000;", 1000);
 			
 			var browser = navigator.userAgent;
 			$('#scroll_tip').affix();
@@ -114,6 +119,8 @@
 			else if (hash.indexOf('admin') != -1) $('#nav_admin').addClass('active');
 		</script>
 	</div>
+	
+	<div class="overlay"></div>
 </body>
 
 </html>

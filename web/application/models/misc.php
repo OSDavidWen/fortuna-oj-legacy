@@ -210,6 +210,10 @@ class Misc extends CI_Model{
 	
 	function delete_task($tid) {
 		$this->db->query("DELETE FROM Task WHERE tid=?", array($tid));
+		$cnt = $this->db->query('SELECT MAX(tid) AS cnt FROM Task')->row()->cnt + 1;
+		if ($cnt < 1) $cnt = 1;
+		$this->db->query('ALTER TABLE Task AUTO_INCREMENT=?',
+						array($cnt));
 	}
 	
 	function count_tasks(){

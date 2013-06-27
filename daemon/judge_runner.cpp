@@ -15,7 +15,7 @@
 using namespace std;
 
 const int bufferSize = 256, SETTINGS_COUNT = 5;
-char *sidStr, *runPath, dataPath[bufferSize];
+char *sidStr, *runPath, dataPath[bufferSize], command[bufferSize];
 int sid, pid, uid, JudgeType, Rtime, Rmemory, Rstatus;
 MYSQL db;
 MYSQL_RES *sqlResult;
@@ -90,14 +90,8 @@ void init(){
 	ofstream fout;
 	uid = atoi(row[5]);
 	pid = atoi(row[0]);
-	char pidStr[255];
+	char pidStr[bufferSize];
 	strcpy(pidStr, row[0]);
-	if (strcmp(row[2], "C") == 0) fout.open("Main.c");
-	else if (strcmp(row[2], "C++") == 0) fout.open("Main.cpp");
-	else if (strcmp(row[2], "C++11") == 0) fout.open("Main.cpp");		
-	else if (strcmp(row[2], "Pascal") == 0) fout.open("Main.pas");
-	else if (strcmp(row[2], "Java") == 0) fout.open("Main.java");
-	else if (strcmp(row[2], "Python") == 0) fout.open("Main.py");
 	language = row[2];
 	string program = row[1];
 	if (sqlResult != NULL) mysql_free_result(sqlResult);
@@ -126,6 +120,16 @@ void init(){
 	problem.compiler["Java"] = root.get("compiler_Java", "").asString();
 	problem.compiler["Python"] = root.get("compiler_Python", "").asString();
 	if (problem.spjMode >= 0) problem.spjFile = root.get("spjFile", "").asString();
+	
+	if (problem.IOMode != 2) {
+		if (strcmp(language.c_str(), "C") == 0) fout.open("Main.c");
+		else if (strcmp(language.c_str(), "C++") == 0) fout.open("Main.cpp");
+		else if (strcmp(language.c_str(), "C++11") == 0) fout.open("Main.cpp");		
+		else if (strcmp(language.c_str(), "Pascal") == 0) fout.open("Main.pas");
+		else if (strcmp(language.c_str(), "Java") == 0) fout.open("Main.java");
+		else if (strcmp(language.c_str(), "Python") == 0) fout.open("Main.py");
+	}
+	
 	const Json::Value cases = root["cases"];
 	for (int i = 0; i < (int)cases.size(); i++){
 		testcase currentCase;
@@ -153,46 +157,57 @@ void init(){
 		problem.IOMode = 0;
 	}
 	
-	fout << program;
-	fout.close();
+	if (problem.IOMode != 2) {
+		fout << program;
+		fout.close();
+	} else {
+		char sub[bufferSize];
+		sprintf(sub, "%s/submission/%s.compressed", dataPath, sidStr);
+		sprintf(command, "cp %s %s", sub, runPath);
+		system(command);
+		sprintf(command, "extract.sh %s.compressed", sidStr);
+		system(command);
+	}
 }
 
 void runTest(){
 	//initialize
 	printf("Testing %s\n", sidStr);
-	char command[bufferSize];
+	char msg[bufferSize];
+	FILE *ret;
 
 	result["compileMessage"] = "";
 
-	//compile
-	char msg[bufferSize];
-	chdir(runPath);
-	if (language == "C")
-	sprintf(command, "gcc Main.c %s -O2 -DONLINE_JUDGE -o %s/Main 2>&1", problem.compiler["C"].c_str(), runPath);
-	
-	else if (language == "C++")
-	sprintf(command, "g++ Main.cpp %s -O2 -DONLINE_JUDGE -o %s/Main 2>&1", problem.compiler["C++"].c_str(), runPath);
-	
-	else if (language == "C++11")
-	sprintf(command, "g++ Main.cpp %s -O2 -DONLINE_JUDGE -std=c++11 -o %s/Main 2>&1", problem.compiler["C++"].c_str(), runPath);
-	
-	else if (language == "Pascal")
-	sprintf(command, "fpc Main.pas %s -O2 -Co -Ci -o%s/Main 2>&1", problem.compiler["Pascal"].c_str(), runPath);
-	
-	FILE *ret = popen(command, "r");
-	while (fscanf(ret, "%[^\n]\n", msg) > 0) result["compileMessage"] = result["compileMessage"].asString() + msg + '\n';
+	if (problem.IOMode != 2) {
+		//compile
+		chdir(runPath);
+		if (language == "C")
+		sprintf(command, "gcc Main.c %s -O2 -DONLINE_JUDGE -o %s/Main 2>&1", problem.compiler["C"].c_str(), runPath);
+		
+		else if (language == "C++")
+		sprintf(command, "g++ Main.cpp %s -O2 -DONLINE_JUDGE -o %s/Main 2>&1", problem.compiler["C++"].c_str(), runPath);
+		
+		else if (language == "C++11")
+		sprintf(command, "g++ Main.cpp %s -O2 -DONLINE_JUDGE -std=c++11 -o %s/Main 2>&1", problem.compiler["C++"].c_str(), runPath);
+		
+		else if (language == "Pascal")
+		sprintf(command, "fpc Main.pas %s -O2 -Co -Ci -o%s/Main 2>&1", problem.compiler["Pascal"].c_str(), runPath);
+		
+		ret = popen(command, "r");
+		while (fscanf(ret, "%[^\n]\n", msg) > 0) result["compileMessage"] = result["compileMessage"].asString() + msg + '\n';
+		
+		if (pclose(ret) > 0){
+			result["compileStatus"] = false;
+			Rtime = Rmemory = 0;
+			Rstatus = 8;
+			return;
+		}else result["compileStatus"] = true;
+	} else result["compileStatus"] = true;
 	
 	if (problem.spjMode >= 0){
 		sprintf(command, "cp -f %s/%s %s/", dataPath, problem.spjFile.c_str(), runPath);
 		system(command);
 	}
-	
-	if (pclose(ret) > 0){
-		result["compileStatus"] = false;
-		Rtime = Rmemory = 0;
-		Rstatus = 8;
-		return;
-	}else result["compileStatus"] = true;
 
 	//run
 	for (int id = 0; id < (int)problem.cases.size(); id++){
@@ -201,15 +216,18 @@ void runTest(){
 		Json::Value rcase;
 		for (int i = 0; i < (int)C.tests.size(); i++){
 			Json::Value rtest;
-			#ifdef DEBUG
+#ifdef DEBUG
 			printf("Testing case %d, test %d\n", id, i);
-			#endif                  
+#endif                  
 			sprintf(command, "cp -f %s/%s %s/%s", dataPath, C.tests[i].input.c_str(), runPath, C.tests[i].userInput.c_str());
 			system(command);
 			sprintf(command, "cp -f %s/%s %s/", dataPath, C.tests[i].output.c_str(), runPath);
 			system(command);
 			sprintf(command, "cp -f /usr/bin/judge_core %s", runPath);
 			system(command);
+			
+			if (problem.IOMode == 2) C.tests[i].userInput = C.tests[i].input;
+			
 			if (problem.spjMode < 0){
 				sprintf(command, "./judge_core %d ./Main %s %s %s %d %d %lf",
 				problem.IOMode, C.tests[i].userInput.c_str(), C.tests[i].output.c_str(),
@@ -221,10 +239,9 @@ void runTest(){
 				C.tests[i].userOutput.c_str(), C.tests[i].timeLimit, C.tests[i].memoryLimit,
 				C.score, problem.spjFile.c_str(), problem.spjMode);                             
 			}
-			#ifdef DEBUG
+#ifdef DEBUG
 			printf("%s\n", command);
-			#endif
-
+#endif
 			system(command);
 			
 			ret = fopen("test.log", "r");

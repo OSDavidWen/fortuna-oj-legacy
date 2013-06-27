@@ -17,7 +17,7 @@
 		</div>
 		
 		<div id="div_filter" class="control-group input-append">
-			<select id="filter_content" style="width:120px">
+			<select id="filter_content" style="width:140px">
 				<option value="0">All</option>
 			<?php
 				foreach ($category as $id => $name) {

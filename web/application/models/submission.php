@@ -124,9 +124,23 @@ class Submission extends CI_Model{
 	}
 	
 	function load_result($sid){
-		$result = $this->db->query("SELECT uid, pid, judgeResult AS result FROM Submission WHERE sid=?", array($sid));
+		$result = $this->db->query("SELECT uid, pid, cid, judgeResult AS result
+									FROM Submission
+									WHERE sid=?",
+									array($sid));
+									
 		if ($result->num_rows() == 0) return FALSE;
-		if ($result->row()->uid == $this->session->userdata('uid') || $this->session->userdata('priviledge') == 'admin') return $result->row();
+		
+		$result = $result->row();
+		if ($result->uid == $this->session->userdata('uid') || $this->session->userdata('priviledge') == 'admin') {
+			if ( ! is_null($result->cid)) {
+				$this->load->model('contests');
+				$info = $this->contests->load_contest_status($result->cid);
+				if ($info->contestMode == 'Codeforces' || $info->contestMode == 'OI') return $result;
+				else if (strtotime($info->endTime) < strtotime('now')) return $result;
+				else return FALSE;
+			} else return $result;
+		}
 		return FALSE;
 	}
 	

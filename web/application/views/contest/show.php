@@ -18,6 +18,7 @@
 		} else if ($IOMode != 2) {
 			echo "Time & Memory Limits";
 		} else {
+			$this->session->set_userdata('download', 'data.zip');
 			echo "<a href='/index.php/main/download/$data->pid' target='_blank'>Download Input</a>";
 		}
 		
@@ -27,7 +28,7 @@
 		if (isset($data->data->spjMode)) echo '&nbsp;&nbsp;&nbsp;<span class="label label-important">Special Judge</span>';
 		echo '</div>';
 		
-		if ($info->contestMode != 'OI'){
+		if ($info->contestMode != 'OI' && $info->contestMode != 'OI Traditional'){
 			echo "<div>Solved: <span class=\"badge badge-info\">$data->solvedCount</span> &nbsp;";
 			echo "Submit: <span class=\"badge badge-info\">$data->submitCount</span></div>";
 		}
@@ -97,11 +98,15 @@
 	</div>
 </div>
 
-<?php if (strtotime($info->endTime) >= strtotime(date('now'))){ ?>
-<div style="text-align:center">
-	<button style='margin-top:3px' class='btn btn-primary' onclick="load_page('main/submit/<?="$data->pid/$cid"?>')">Submit</button>
-</div>
-<?php } ?>
+<div style="text-align:center"><?php
+	if (strtotime($info->endTime) > time()){
+		if ($IOMode != 2) {
+			echo "<button style='margin-top:3px' class='btn btn-primary' onclick=\"load_page('main/submit/$data->pid/$cid')\">Submit</button>";
+		} else {
+			echo "<button style='margin-top:3px' class='btn btn-primary' onclick=\"load_page('main/upload/$data->pid/$cid')\">Submit</button>";
+		}	
+	}
+?></div>
 
 <script type="text/javascript">
 	var dataconf = "<?php

@@ -58,16 +58,16 @@ class Customtest extends CI_Controller {
 			system($cmd);
 			
 			switch ($language) {
-				case 'C':		$cmd = 'gcc Main.c -o Main';
+				case 'C':		$cmd = 'gcc Main.c -o Main -O2 -DONLINE_JUDGE';
 								$source = 'Main.c';
 								break;
-				case 'C++':		$cmd = 'g++ Main.cpp -o Main';
+				case 'C++':		$cmd = 'g++ Main.cpp -o Main -O2 -DONLINE_JUDGE';
 								$source = 'Main.cpp';
 								break;
-				case 'C++11':	$cmd = 'g++ Main.code --std=c++11 -o Main';
+				case 'C++11':	$cmd = 'g++ Main.code --std=c++11 -o Main -O2 -DONLINE_JUDGE';
 								$source = 'Main.cpp';
 								break;
-				case 'Pascal':	$cmd = 'fpc Main.pas -oMain';
+				case 'Pascal':	$cmd = 'fpc Main.pas -oMain -O2';
 								$source = 'Main.pas';
 								break;
 			}
