@@ -175,6 +175,7 @@ void runTest(){
 	printf("Testing %s\n", sidStr);
 	char msg[bufferSize];
 	FILE *ret;
+	Rstatus = -5;
 
 	result["compileMessage"] = "";
 

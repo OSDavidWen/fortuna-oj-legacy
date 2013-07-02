@@ -207,76 +207,78 @@ int main(int argc, char* argv[]){
 			if (terminate) return 0;
 				
 		}
-	}else{
-		
 	}
-			//verify output
-			if (spj){ //default
-				char exec_spj[255], msg[4096], ac[]="Accepted";
-				int status; double score;
-				if (spj_mode == 0){
-					sprintf(exec_spj, "./%s %s %s %s %s\n", argv[9], argv[3], argv[4], argv[5], argv[8]);
-					FILE *res = popen(exec_spj, "r");
-					if (res == NULL) result(3, 0, time_usage, mem_usage, "Checker error!");
-					else{
-						fscanf(res, "%d%lf%s", &status, &score, msg);
-						pclose(res);
-						
-						if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
-						else  result(2, score, time_usage, mem_usage, msg);
-					}
-											
-				}else if (spj_mode == 1){ //cena
-					sprintf(exec_spj, "./%s %s %s\n", argv[9], argv[8], argv[4]);
-					printf("Special Judge: %s\n", exec_spj);
-					if ((system(exec_spj) >> 8) > 0) result(3, 0, time_usage, mem_usage, "Checker error!");
-					else{
-						FILE *res = fopen("score.log", "r");
-						fscanf(res, "%lf", &score);
-						fclose(res);
-						
-						res = fopen("report.log", "r");
-						if (res != NULL){
-							fscanf(res, "%s", msg);
-							fclose(res);
-							if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
-							else result(2, score, time_usage, mem_usage, msg);
-							
-						} else {
-							if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, ac);
-							else result(2, score, time_usage, mem_usage, ac);
-						}
-						
-						//printf("Score: %lf Full Score:%lf\n", score, full_score);
-					}
-						
-				}else if (spj_mode == 2){ //tsinsen
-					sprintf(exec_spj, "./%s %s %s %s result.txt\n", argv[9], argv[3], argv[5], argv[4]);
-					if ((system(exec_spj) >> 8) > 0) result(3, 0, time_usage, mem_usage, "Checker error!");
-					else{
-						FILE *res = fopen("result.txt", "r");
-						fscanf(res, "%lf %s", &score, msg);
-						score *= full_score;
-						fclose(res);
-						
-						if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
-						else result(2, score, time_usage, mem_usage, msg);
-					}
-						
-				}else if (spj_mode == 3){
-					sprintf(exec_spj, "./%s %s %s %s\n", argv[9], argv[3], argv[4], argv[5]);
-					if ((system(exec_spj) >> 8) > 0) result(2, 0, time_usage, mem_usage, "Wrong Answer");
-					else result(0, full_score, time_usage, mem_usage, ac);
-				}
-			}else{
-				int status = builtin_comp(argv[4], argv[5]);
-				if (status > 0) result(2, 0, time_usage, mem_usage, "Wrong Answer!");
-				else if (status < 0) result(1, 0, time_usage, mem_usage, "Presentation Error!");
-				else result(0, full_score, time_usage, mem_usage, "Correct!");
-			}
 
-	#ifdef DEBUG
-		printf("Judge Ended!\n");
-	#endif
+	//verify output
+	if ( access(argv[5], R_OK) ) {
+		result(-3, 0, 0, 0, "Output File Not Exist!");
+	} else if (spj){ //default
+		char exec_spj[255], msg[4096], ac[]="Accepted";
+		int status; double score;
+		if (spj_mode == 0){
+			sprintf(exec_spj, "./%s %s %s %s %s\n", argv[9], argv[3], argv[4], argv[5], argv[8]);
+			FILE *res = popen(exec_spj, "r");
+			if (res == NULL) result(3, 0, time_usage, mem_usage, "Checker error!");
+			else{
+				fscanf(res, "%d%lf%s", &status, &score, msg);
+				pclose(res);
+				
+				if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+				else  result(2, score, time_usage, mem_usage, msg);
+			}
+									
+		}else if (spj_mode == 1){ //cena
+			sprintf(exec_spj, "./%s %s %s\n", argv[9], argv[8], argv[4]);
+			printf("Special Judge: %s\n", exec_spj);
+			if ((system(exec_spj) >> 8) > 0) result(3, 0, time_usage, mem_usage, "Checker error!");
+			else{
+				FILE *res = fopen("score.log", "r");
+				fscanf(res, "%lf", &score);
+				fclose(res);
+				
+				res = fopen("report.log", "r");
+				if (res != NULL){
+					fscanf(res, "%s", msg);
+					fclose(res);
+					if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+					else result(2, score, time_usage, mem_usage, msg);
+					
+				} else {
+					if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, ac);
+					else result(2, score, time_usage, mem_usage, ac);
+				}
+				
+				//printf("Score: %lf Full Score:%lf\n", score, full_score);
+			}
+				
+		}else if (spj_mode == 2){ //tsinsen
+			sprintf(exec_spj, "./%s %s %s %s result.txt\n", argv[9], argv[3], argv[5], argv[4]);
+			if ((system(exec_spj) >> 8) > 0) result(3, 0, time_usage, mem_usage, "Checker error!");
+			else{
+				FILE *res = fopen("result.txt", "r");
+				fscanf(res, "%lf %s", &score, msg);
+				score *= full_score;
+				fclose(res);
+				
+				if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+				else result(2, score, time_usage, mem_usage, msg);
+			}
+				
+		}else if (spj_mode == 3){
+			sprintf(exec_spj, "./%s %s %s %s\n", argv[9], argv[3], argv[4], argv[5]);
+			if ((system(exec_spj) >> 8) > 0) result(2, 0, time_usage, mem_usage, "Wrong Answer");
+			else result(0, full_score, time_usage, mem_usage, ac);
+		}
+	}else{
+		int status = builtin_comp(argv[4], argv[5]);
+		if (status > 0) result(2, 0, time_usage, mem_usage, "Wrong Answer!");
+		else if (status < 0) result(1, 0, time_usage, mem_usage, "Presentation Error!");
+		else result(0, full_score, time_usage, mem_usage, "Correct!");
+	}
+
+#ifdef DEBUG
+	printf("Judge Ended!\n");
+#endif
+
 	return 0;
 }
