@@ -69,7 +69,7 @@ class Submission extends CI_Model{
 	
 	function load_statistic($pid, $row_begin, $count){
 		return $this->db->query("SELECT *, COUNT(DISTINCT A.uid) FROM
-			(SELECT sid, uid, status, name, score, time, memory, codeLength, submitTime, language, 
+			(SELECT sid, uid, status, name, score, time, memory, codeLength, submitTime, language, private, isShowed, 
 					-score*100000000000000+time*10000000000+memory*100000+sid val FROM Submission WHERE pid=? AND status>=0) A
 			INNER JOIN
 			(SELECT uid, min(-score*100000000000000+time*10000000000+memory*100000+sid) eval, COUNT(*) AS count

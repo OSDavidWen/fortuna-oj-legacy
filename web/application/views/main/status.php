@@ -133,6 +133,7 @@
 			<th>Length</th>
 			<th>Submit Time</th>
 			<th>Access</th>
+			<th></th>
 			<?php if ($this->user->is_admin()) echo '<th></th>'; ?>
 		</tr></thead>
 		
@@ -148,8 +149,9 @@
 				echo "<td><a href=\"#task/show/$row->pid/$row->gid/$row->tid\">$row->pid</a>";
 				echo "<i class='icon-info-sign' title='Task: $row->tid'></i></td>";
 			}
-			echo "<td><span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
+			echo "<td><span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td>";
 
+			echo '<td>';
 			if ($row->status < 0 && $row->status > -3) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
@@ -168,11 +170,15 @@
 				$sname = "$row->result <span class=\"label $tag\">" . round($row->score, 1) . '</span>';
 				echo "<a href=\"#main/result/$row->sid\"> $sname </a>";
 			}
-			echo "</td><td><span class=\"label label-info\">$row->time</span></td>";
-			echo "<td><span class=\"label label-info\">$row->memory</span></td>";
-			if ($row->codeLength > 0) echo "<td><a href=\"#main/code/$row->sid\">$row->language</a></td>";
-			else echo '<td></td>';
-			echo "<td>$row->codeLength</td><td>$row->submitTime</td>";
+			echo '</td>';
+			
+			if ($row->codeLength > 0) {
+				echo "<td><span class=\"label label-info\">$row->time</span></td>";
+				echo "<td><span class=\"label label-info\">$row->memory</span></td>";
+				echo "<td><a href=\"#main/code/$row->sid\">$row->language</a></td>";
+				echo "<td>$row->codeLength</td>";
+			} else echo '<td>---</td><td>---</td><td>---</td><td>---</td>';
+			echo "<td>$row->submitTime</td>";
 			
 			echo '<td>';
 			if ($this->user->uid() == $row->uid || $this->user->is_admin()){
@@ -182,12 +188,14 @@
 			} else if ($row->private == 0) echo '<i class="icon-globe"></i>';
 			echo '</td>';
 			
+			echo '<td>';
 			if ($this->user->is_admin()){
-				echo "<td><a onclick=\"access_page('admin/change_submission_status/$row->sid')\">";
+				echo "<a onclick=\"access_page('admin/change_submission_status/$row->sid')\">";
 				if ($row->isShowed == 1) echo '<i class="icon-eye-open"></i>';
 				else echo '<i class="icon-eye-close"></i>';
-				echo '</a></td>';
+				echo '</a>';
 			}
+			echo '</td>';
 			
 			echo '</tr>';
 		}

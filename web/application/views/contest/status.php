@@ -1,4 +1,4 @@
-<div class="status_table"><table class="table table-condensed table-striped table-bordered">
+<div class="status_table"><table class="table table-condensed table-striped">
 	<thead><tr>
 		<th class="sid">Submission</th>
 		<th class="pid">Problem</th>
@@ -48,14 +48,19 @@
 					}
 				}
 			}
-			if ($info->running && $info->contestMode == 'OI Traditional' && ! $is_admin){
-				echo "</td><td></td><td></td>";
-			}else{
-				echo "</td><td><span class=\"label label-info\">$row->time</span></td>";
-				echo "<td><span class=\"label label-info\">$row->memory</span></td>";
-			}
-			echo "<td><a href=\"#main/code/$row->sid\">$row->language</a>" . 
-				"</td><td>$row->codeLength</td><td>$row->submitTime</td>";
+			//echo "<td><a href=\"#main/code/$row->sid\">$row->language</a>";
+			if ($row->codeLength > 0) {
+				if ($info->running && $info->contestMode == 'OI Traditional' && ! $is_admin){
+					echo "</td>---<td></td><td>---</td>";
+				}else{
+					echo "</td><td><span class=\"label label-info\">$row->time</span></td>";
+					echo "<td><span class=\"label label-info\">$row->memory</span></td>";
+				}
+				echo "<td><a href=\"#main/code/$row->sid\">$row->language</a></td>";
+				echo "</td><td>$row->codeLength</td>";
+				
+			} else echo '<td>---</td><td>---</td><td>---</td><td>---</td>';
+			echo "<td>$row->submitTime</td>";
 				
 			echo '<td>';
 			if ($this->user->uid() == $row->uid || $this->user->is_admin()){

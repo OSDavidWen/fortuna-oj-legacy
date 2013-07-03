@@ -8,8 +8,8 @@
 			<option value="C++"<?php if ($language=="C++") echo ' selected';?> >C++</option>
 			<option value="C++11"<?php if ($language=="C++11") echo ' selected';?> >C++11(0x)</option>
 			<option value="Pascal"<?php if ($language=="Pascal") echo ' selected';?> >Pascal</option>
-			<option value="Java"<?php if ($language=="Java") echo ' selected';?> >Java</option>
-			<option value="Python"<?php if ($language=="Python") echo ' selected';?> >Python</option>
+<!-- 			<option value="Java"<?php if ($language=="Java") echo ' selected';?> >Java</option> -->
+<!-- 			<option value="Python"<?php if ($language=="Python") echo ' selected';?> >Python</option> -->
 		</select>
 		<label for="pid">Problem ID</label>
 		<input name="pid" id="pid" type="text" class="input-mini" value="<?=$pid?>" <?=isset($cid) || isset($tid) ? 'readonly' : ''?> />
