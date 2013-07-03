@@ -72,7 +72,7 @@
 
 
 <script type="text/javascript">
-	refresh_flag = setTimeout("refresh_page()", 30000);
+	//refresh_flag = setTimeout("refresh_page()", 30000);
 </script>
 
 <!-- End of file status.php -->

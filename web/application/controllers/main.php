@@ -432,25 +432,27 @@ class Main extends CI_Controller {
 				$this->load->model('misc');
 				$info = $this->misc->load_task_info($data['gid'], $data['tid']);
 				if (strtotime($info->startTime) > time() || strtotime($info->endTime) < time()) return;
-			}
+			} 
 			
-			if (isset($data['cid'])){
+			else if (isset($data['cid'])){
 				$this->load->model('contests');
 				$info = $this->contests->load_contest_status($data['cid']);
 				if (strtotime($info->startTime) > time() || strtotime($info->endTime) < time()) return;
 			}
 			
-			$showed = $this->problems->is_showed($data['pid']);
-			if ($showed == 0){
-				if ($this->user->is_admin()) $data['isShowed'] = 0;
-				else return;
+			else {
+				$showed = $this->problems->is_showed($data['pid']);
+				if ($showed == 0){
+					if ($this->user->is_admin()) $data['isShowed'] = 0;
+					else return;
+				}
 			}
 			
 			if ( !isset($_FILES['file'])) return;
 			
 			$this->load->model('submission');
 			$sid = $this->submission->save_submission($data);
-			$this->user->submit();
+			//$this->user->submit();
 			
 			$temp_file = $_FILES['file']['tmp_name'];
 			$target_path = $this->config->item('data_path') . $pid . '/submission';

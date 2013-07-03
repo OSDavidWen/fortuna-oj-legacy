@@ -14,7 +14,7 @@
             </tr></thead>';
         
         $case_no = 1;
-        $ok = true;
+        $ok = $this->problems->is_showed($pid);
         foreach ($result->cases as $row1 => $case){
             $case_memory = $case_time = $case_status = -5;
             $case_result = '';

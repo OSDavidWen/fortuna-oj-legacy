@@ -25,8 +25,10 @@
 		$('#submit_file').ajaxSubmit({
 			url: 'index.php/main/upload/' + $('#pid').val(),
 			success: function(responseText, statusText){
-				if (responseText == 'success') load_page('main/status');
-				else alert('Failed to submit!');
+				if (responseText == 'success') {
+					if ($('#cid').val() != '') load_page('contest/status/' + $('#cid').val());
+					else load_page('main/status');
+				} else alert('Failed to submit!');
 			}
 		});
 		return false;

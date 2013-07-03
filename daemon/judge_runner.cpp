@@ -80,8 +80,6 @@ void init(){
 		cout << query << endl;
 #endif
 		mysql_query(&db, query.c_str());
-		query = string("UPDATE User SET solvedCount=solvedCount-") + solved + " WHERE uid=" + row[5];
-		mysql_query(&db, query.c_str());
 	}
 	query = string("UPDATE Submission SET score=0, status=-2, time=0, memory=0, judgeResult='' WHERE sid=") + sidStr;
 	mysql_query(&db, query.c_str());
@@ -160,6 +158,9 @@ void init(){
 	if (problem.IOMode != 2) {
 		fout << program;
 		fout.close();
+		query = string("UPDATE User SET solvedCount=solvedCount-") + solved + " WHERE uid=" + pidStr;
+		mysql_query(&db, query.c_str());
+		
 	} else {
 		char sub[bufferSize];
 		sprintf(sub, "%s/submission/%s.compressed", dataPath, sidStr);
@@ -287,11 +288,13 @@ void writeResult(){
 	sout << "UPDATE ProblemSet SET scoreSum=scoreSum+" << Rscore << ", solvedCount=solvedCount+" << solved << " WHERE pid=" << pid;
 	mysql_ping(&db);
 	mysql_query(&db, sout.str().c_str());
-	
-	sout.str(""); sout.clear();
-	mysql_ping(&db);
-	sout << "UPDATE User SET solvedCount=solvedCount+" << solved << " WHERE uid=" << uid;
-	mysql_query(&db, sout.str().c_str());
+
+	if (problem.IOMode != 2) {
+		sout.str(""); sout.clear();
+		mysql_ping(&db);
+		sout << "UPDATE User SET solvedCount=solvedCount+" << solved << " WHERE uid=" << uid;
+		mysql_query(&db, sout.str().c_str());
+	}
 	
 	sout.str(""); sout.clear();
 	if (judgeStatus){
