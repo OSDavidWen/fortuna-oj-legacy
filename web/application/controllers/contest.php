@@ -162,9 +162,11 @@ class Contest extends CI_Controller {
 					$data->data = json_decode($data->dataConfiguration);
 					
 					$data->timeLimit = $data->memoryLimit = 0;
-					foreach ($data->data->cases as $case){
-						foreach ($case->tests as $test){
-							if ($data->timeLimit == 0){
+					foreach ($data->data->cases as $case) {
+						foreach ($case->tests as $test) {
+							if ( ! isset($test->timeLimit)) continue;
+						
+							if ($data->timeLimit == 0) {
 								$data->timeLimit = $test->timeLimit;
 								$data->memoryLimit = $test->memoryLimit;
 							} elseif ($data->timeLimit != $test->timeLimit || $data->memoryLimit != $test->memoryLimit)
@@ -174,7 +176,7 @@ class Contest extends CI_Controller {
 						}
 						if ($data->timeLimit < 0) break;
 					}
-					if ($data->timeLimit < 0){
+					if ($data->timeLimit <= 0){
 						unset($data->timeLimit);
 						unset($data->memoryLimit);
 					}

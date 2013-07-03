@@ -93,6 +93,7 @@
 				<option value="1" <?=(isset($dataconf->spjMode) && $dataconf->spjMode == 1) ? 'selected' : '';?>>Cena</option>
 				<option value="2" <?=(isset($dataconf->spjMode) && $dataconf->spjMode == 2) ? 'selected' : '';?>>Tsinsen</option>
 				<option value="3" <?=(isset($dataconf->spjMode) && $dataconf->spjMode == 3) ? 'selected' : '';?>>HustOJ</option>
+				<option value="4" <?=(isset($dataconf->spjMode) && $dataconf->spjMode == 4) ? 'selected' : '';?>>Arbiter</option>
 			</select>
 		</div>
 		
@@ -232,7 +233,7 @@
 			if ($("#IOMode").val() == 2) {
 				var outfile = $(this).val();
 				$(".datatest").each(function() {
-					var id = $(this).attr("id") - 1000000000;
+					var id = $(this).attr("id") - 1000000000 + 1;
 					var user_output = outfile.replace(/[*]/, id.toString());
 					$(this).children(".user_output").children(".user_output").val(user_output);
 				});

@@ -213,10 +213,12 @@ class Main extends CI_Controller {
 			
 			if ($data->data->IOMode != 2) {
 				$data->timeLimit = $data->memoryLimit = 0;
-				if (isset($data->data->cases)) {
 				
+				if (isset($data->data->cases)) {
 					foreach ($data->data->cases as $case) {
 						foreach ($case->tests as $test){
+						
+							if ( ! isset($test->timeLimit)) continue;
 						
 							if ($data->timeLimit == 0) {
 								$data->timeLimit = $test->timeLimit;
@@ -232,7 +234,7 @@ class Main extends CI_Controller {
 					
 				}
 				
-				if ($data->timeLimit < 0){
+				if ($data->timeLimit <= 0){
 					unset($data->timeLimit);
 					unset($data->memoryLimit);
 				}

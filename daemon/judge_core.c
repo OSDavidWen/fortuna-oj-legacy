@@ -264,10 +264,23 @@ int main(int argc, char* argv[]){
 				else result(2, score, time_usage, mem_usage, msg);
 			}
 				
-		}else if (spj_mode == 3){
+		}else if (spj_mode == 3){ // HUST OJ
 			sprintf(exec_spj, "./%s %s %s %s\n", argv[9], argv[3], argv[4], argv[5]);
 			if ((system(exec_spj) >> 8) > 0) result(2, 0, time_usage, mem_usage, "Wrong Answer");
 			else result(0, full_score, time_usage, mem_usage, ac);
+			
+		}else if (spj_mode == 4){ //Arbiter
+			sprintf(exec_spj, "./%s %s %s %s\n", argv[9], argv[3], argv[5], argv[4]);
+			if ((system(exec_spj) >> 8) > 0) result(3, 0, time_usage, mem_usage, "Checker error!");
+			else{
+				FILE *res = fopen("/tmp/_eval.score", "r");
+				fgets(msg, 4096, res);//fscanf(res, "%s", msg);
+				fscanf(res, "%lf", &score);
+				fclose(res);
+				
+				if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+				else result(2, score, time_usage, mem_usage, msg);
+			}
 		}
 	}else{
 		int status = builtin_comp(argv[4], argv[5]);

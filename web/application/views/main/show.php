@@ -174,7 +174,7 @@
 </form>
 
 <?php
-	echo $allowed_download;
+	//echo $allowed_download;
 	$this->session->set_userdata('download', $allowed_download);
 ?>
 

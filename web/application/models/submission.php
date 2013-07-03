@@ -34,6 +34,7 @@ class Submission extends CI_Model{
 	function format_data(&$data){
 		foreach ($data as $row){
 			switch ($row->status){
+				case -3: $row->result = '<span class="label">Not Exist</span>'; break;
 				case -2: $row->result = '<span class="label label-important">Running</span>'; break;
 				case -1: $row->result = '<span class="label">Pending</span>'; break;
 				case 0: $row->result = '<span class="label label-success">Accepted</span>'; break;

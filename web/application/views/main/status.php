@@ -150,7 +150,7 @@
 			}
 			echo "<td><span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
 
-			if ($row->status < 0) echo $row->result;
+			if ($row->status < 0 && $row->status > -3) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
 				switch ($row->status) {

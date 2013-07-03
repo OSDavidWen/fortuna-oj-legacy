@@ -20,7 +20,7 @@
 				($info->contestMode == 'ACM' ? chr(65 + $row->id) : $row->id) . '</a></td><td>' . 
 				"<span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
 				
-			if ($row->status == -1) echo $row->result;
+			if ($row->status < 0 && $row->status > -3) echo $row->result;
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
 				if ($info->running && $info->contestMode == 'OI Traditional' && ! $is_admin){

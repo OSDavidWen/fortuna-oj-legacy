@@ -207,8 +207,8 @@ class Admin extends CI_Controller {
 				$cmd = "zip data.zip -q";
 				foreach ($post['infile'] as $infile) $cmd .= " $infile";
 				$info = exec($cmd);
-				if ( ! is_dir($path . '/submission')) $mkdir($path . '/submission');
-			}			
+				if ( ! is_dir($path . '/submission')) mkdir($path . '/submission');
+			}
 
 			chdir($cur);
 			$this->load->view('success');
@@ -228,11 +228,12 @@ class Admin extends CI_Controller {
 			$file_parts = pathinfo($_FILES['files']['name'][$i]);
 			$basename = $file_parts['basename'];
 			$filename = $file_parts['filename'];
-			$extension = $file_parts['extension'];
+			if (isset($file_parts['extension'])) $extension = $file_parts['extension'];
+			else $extension = '';
 		
 		//	if (in_array($file_parts['extension'],$file_types))
-			if ( ! is_executable($temp_file))
-				move_uploaded_file($temp_file, $target_file);
+			//if ( ! is_executable($temp_file))
+			move_uploaded_file($temp_file, $target_file);
 				
 			if (in_array($extension, $file_types)){
 				chdir($target_path);

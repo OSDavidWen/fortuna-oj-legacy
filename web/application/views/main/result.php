@@ -16,7 +16,7 @@
         $case_no = 1;
         $ok = true;
         foreach ($result->cases as $row1 => $case){
-            $case_memory = $case_time = $case_status = -1;
+            $case_memory = $case_time = $case_status = -5;
             $case_result = '';
             $test_cnt = 0;
             foreach ($case->tests as $row2 => $test){
