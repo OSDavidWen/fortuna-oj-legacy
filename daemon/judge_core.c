@@ -211,7 +211,7 @@ int main(int argc, char* argv[]){
 
 	//verify output
 	if ( access(argv[5], R_OK) ) {
-		result(-3, 0, 0, 0, "Output File Not Exist!");
+		result(-4, 0, 0, 0, "Output File Not Exist!");
 	} else if (spj){ //default
 		char exec_spj[255], msg[4096], ac[]="Accepted";
 		int status; double score;
@@ -224,7 +224,8 @@ int main(int argc, char* argv[]){
 				pclose(res);
 				
 				if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
-				else  result(2, score, time_usage, mem_usage, msg);
+				else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg); 
+				else result(2, score, time_usage, mem_usage, msg);
 			}
 									
 		}else if (spj_mode == 1){ //cena
@@ -241,10 +242,12 @@ int main(int argc, char* argv[]){
 					fscanf(res, "%s", msg);
 					fclose(res);
 					if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+					else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg);
 					else result(2, score, time_usage, mem_usage, msg);
 					
 				} else {
 					if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, ac);
+					else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg); 
 					else result(2, score, time_usage, mem_usage, ac);
 				}
 				
@@ -261,6 +264,7 @@ int main(int argc, char* argv[]){
 				fclose(res);
 				
 				if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+				else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg); 
 				else result(2, score, time_usage, mem_usage, msg);
 			}
 				
@@ -279,6 +283,7 @@ int main(int argc, char* argv[]){
 				fclose(res);
 				
 				if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+				else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg); 
 				else result(2, score, time_usage, mem_usage, msg);
 			}
 		}

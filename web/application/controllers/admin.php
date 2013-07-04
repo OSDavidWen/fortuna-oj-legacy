@@ -497,9 +497,9 @@ class Admin extends CI_Controller {
 		$this->submission->change_status($sid);
 	}
 	
-	private function _set_pending($sid){
-		$this->submission->rejudge($sid);
-	}
+	//private function _set_pending($sid){
+	//	$this->submission->rejudge($sid);
+	//}
 	
 	function rejudge(){
 		$this->load->library('form_validation');

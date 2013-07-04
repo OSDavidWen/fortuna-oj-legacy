@@ -156,6 +156,7 @@
 			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
 				switch ($row->status) {
+					case -3: ;
 					case 0: $tag = 'label-success'; break;
 					case 1: ;
 					case 2: ;

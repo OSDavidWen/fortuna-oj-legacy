@@ -17,18 +17,38 @@
 	
 	echo '<tbody>';
 	foreach ($data as $row){
-		echo "<tr><td>$row->sid ($row->count)</td><td><a href=\"#users/$row->name\"><span class=\"label label-info\">$row->name</span></a></td><td>";
-		if ($row->status == -1) echo $row->result;
+		echo "<tr><td>$row->sid ($row->count)</td>";
+		echo "<td><a href=\"#users/$row->name\"><span class=\"label label-info\">$row->name</span></a></td>";
+		
+		echo '<td>';
+		if ($row->status < 0 && $row->status > -3) echo $row->result;
 		elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 		else{
-			$sname = "$row->result <span class=\"label label-info\">" . round($row->score, 1) . '</span>';
-			echo "<a href=\"#main/result/$row->sid\">$sname</a>";
+			switch ($row->status) {
+				case -3: ;
+				case 0: $tag = 'label-success'; break;
+				case 1: ;
+				case 2: ;
+				case 7: $tag = 'label-important'; break;
+				case 3: $tag = 'label-info'; break;
+				case 4:
+				case 5:
+				case 6: $tag = 'label-warning'; break;
+				default: $tag = '';
+			}
+			
+			$sname = "$row->result <span class=\"label $tag\">" . round($row->score, 1) . '</span>';
+			echo "<a href=\"#main/result/$row->sid\"> $sname </a>";
 		}
+		echo '</td>';
 		
-		echo "</td><td><span class=\"label label-info\">$row->time</span></td>
-			<td><span class=\"label label-info\">$row->memory</span></td>
-			<td><a href=\"#main/code/$row->sid\">$row->language</a></td>
-			<td>$row->codeLength</td><td>$row->submitTime</td>";
+		if ($row->codeLength > 0) {
+			echo "<td><span class=\"label label-info\">$row->time</span></td>";
+			echo "<td><span class=\"label label-info\">$row->memory</span></td>";
+			echo "<td><a href=\"#main/code/$row->sid\">$row->language</a></td>";
+			echo "<td>$row->codeLength</td>";
+		} else echo '<td>---</td><td>---</td><td>---</td><td>---</td>';
+		echo "<td>$row->submitTime</td>";
 
 		echo '<td>';
 		if ($this->user->uid() == $row->uid || $this->user->is_admin()){

@@ -28,6 +28,7 @@
 				}else{
 					if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional') {
 						switch ($row->status) {
+							case -3: $tag = 'label-success'; break;
 							case 0: $tag = 'label-success'; break;
 							case 1: ;
 							case 2: ;

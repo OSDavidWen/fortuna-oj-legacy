@@ -101,6 +101,8 @@ class Main extends CI_Controller {
 	
 	static function _convert_status($status){
 		switch ($status){
+			case -3: return '<span class="label label-success">PAC</span>';
+			case -2: return '<i class="icon-time"></i>';
 			case -1: return '<i class="icon-time"></i>';
 			case 0: return '<span class="label label-success">AC</span>';
 			case 1: return '<span class="label label-important">PE</span>';

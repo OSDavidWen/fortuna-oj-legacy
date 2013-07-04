@@ -7,12 +7,24 @@ class Submission extends CI_Model{
 	}
 	
 	function rejudge($sid){
-		$data = $this->db->query("SELECT pid, uid, status, score FROM Submission WHERE sid=?", array($sid))->row();
-		if ($data->status == 0){
-			$this->db->query("UPDATE ProblemSet SET solvedCount=solvedCount-1,scoreSum=scoreSum-? WHERE pid=?", array($data->score, $data->pid));
-			$this->db->query("UPDATE User SET solvedCount=solvedCount-1 WHERE uid=?", array($data->uid));
+		$data = $this->db->query("SELECT pid, uid, status, score FROM Submission WHERE sid=?",
+									array($sid))->row();
+									
+		if ($data->status != -1) {
+			$this->db->query("UPDATE ProblemSet SET scoreSum=scoreSum-? WHERE pid=?",
+				array($data->score, $data->pid));
 		}
-		$this->db->query("UPDATE Submission SET score=0,status=-1,time=0,memory=0,judgeResult='' WHERE sid=?", array($sid));
+		
+		if ($data->status == 0){
+			$this->db->query("UPDATE ProblemSet SET solvedCount=solvedCount-1 WHERE pid=?",
+								array($data->score, $data->pid));
+		
+			$this->db->query("UPDATE User SET solvedCount=solvedCount-1 WHERE uid=?",
+								array($data->uid));
+		}
+		
+		$this->db->query("UPDATE Submission SET score=0,status=-1,time=0, memory=0,judgeResult='' WHERE sid=?",
+							array($sid));
 	}
 	
 	function change_status($sid){
@@ -34,7 +46,8 @@ class Submission extends CI_Model{
 	function format_data(&$data){
 		foreach ($data as $row){
 			switch ($row->status){
-				case -3: $row->result = '<span class="label">Not Exist</span>'; break;
+				case -3: $row->result = '<span class="label label-success">Partially Accepted</span>'; break;
+				case -4: $row->result = '<span class="label">Not Exist</span>'; break;
 				case -2: $row->result = '<span class="label label-important">Running</span>'; break;
 				case -1: $row->result = '<span class="label">Pending</span>'; break;
 				case 0: $row->result = '<span class="label label-success">Accepted</span>'; break;
@@ -64,16 +77,19 @@ class Submission extends CI_Model{
 	}
 	
 	function statistic_count($pid){
-		return $this->db->query("SELECT COUNT(DISTINCT uid) AS count FROM Submission WHERE pid=? AND status>=0", array($pid))->row()->count;
+		return $this->db->query("SELECT COUNT(DISTINCT uid) AS count
+								FROM Submission WHERE pid=? AND (status>=0 OR status<=-3)",
+								array($pid))->row()->count;
 	}
 	
 	function load_statistic($pid, $row_begin, $count){
 		return $this->db->query("SELECT *, COUNT(DISTINCT A.uid) FROM
 			(SELECT sid, uid, status, name, score, time, memory, codeLength, submitTime, language, private, isShowed, 
-					-score*100000000000000+time*10000000000+memory*100000+sid val FROM Submission WHERE pid=? AND status>=0) A
+					-score*100000000000000+time*10000000000+memory*100000+sid val FROM Submission
+					WHERE pid=? AND (status>=0 OR status<=-3)) A
 			INNER JOIN
 			(SELECT uid, min(-score*100000000000000+time*10000000000+memory*100000+sid) eval, COUNT(*) AS count
-			 FROM Submission WHERE pid=? AND status>=0 GROUP BY uid) B
+			 FROM Submission WHERE pid=? AND (status>=0 OR status<=-3) GROUP BY uid) B
 			ON A.val=B.eval AND A.uid=B.uid GROUP BY A.uid ORDER BY A.val LIMIT ?,?;",
 			array($pid, $pid, $row_begin, $count))->result();
 	}

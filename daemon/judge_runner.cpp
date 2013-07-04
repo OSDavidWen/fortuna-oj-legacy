@@ -16,7 +16,7 @@ using namespace std;
 
 const int bufferSize = 256, SETTINGS_COUNT = 5;
 char *sidStr, *runPath, dataPath[bufferSize], command[bufferSize];
-int sid, pid, uid, JudgeType, Rtime, Rmemory, Rstatus;
+int sid, pid, uid, JudgeType, Rtime, Rmemory, Rstatus, tScore;
 MYSQL db;
 MYSQL_RES *sqlResult;
 string settings[SETTINGS_COUNT], language;
@@ -131,7 +131,7 @@ void init(){
 	const Json::Value cases = root["cases"];
 	for (int i = 0; i < (int)cases.size(); i++){
 		testcase currentCase;
-		currentCase.score = cases[i].get("score", 0).asDouble();
+		tScore += currentCase.score = cases[i].get("score", 0).asDouble();
 		
 		const Json::Value tests = cases[i]["tests"];
 		for (int j = 0; j < (int)tests.size(); j++){
@@ -249,7 +249,10 @@ void runTest(){
 			ret = fopen("test.log", "r");
 			int status, time, memory; double score; char msg[4096];
 			fscanf(ret, "%d %lf %d %d\n%s", &status, &score, &time, &memory, msg);
-			if (fabs(score) < 1e-6) zero = true; else rcase["score"] = rcase["score"].asDouble() + score;
+			
+			if (fabs(score) < 1e-6) zero = true;
+			else rcase["score"] = rcase["score"].asDouble() + score;
+
 			rtest["status"] = status;
 			rtest["time"] = time;
 			rtest["memory"] = memory;
@@ -263,7 +266,11 @@ void runTest(){
 			sprintf(command, "rm %s", C.tests[i].userOutput.c_str());
 			system(command);
 		}
-		if (zero) rcase["score"] = 0; else rcase["score"] = rcase["score"].asDouble() / C.tests.size();
+		if (zero) rcase["score"] = 0;
+		else rcase["score"] = rcase["score"].asDouble() / C.tests.size();
+		
+		if (fabs(C.score - rcase["score"].asDouble()) > 1e-4 && rcase["status"].asInt() == 0) rcase["status"] = -3;
+		
 		Rscore += rcase["score"].asDouble();
 		#ifdef DEBUG
 		printf("%.2lf\n", rcase["score"].asDouble());
@@ -283,6 +290,7 @@ char cmsg[65536], rmsg[65536];
 void writeResult(){
 	stringstream sout;
 	
+	if (fabs(Rscore - tScore) > 1e-4 && Rstatus == 0) Rstatus = -3;
 	int solved = 0;
 	if (Rstatus == 0) solved = 1;
 	sout << "UPDATE ProblemSet SET scoreSum=scoreSum+" << Rscore << ", solvedCount=solvedCount+" << solved << " WHERE pid=" << pid;

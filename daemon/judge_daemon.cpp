@@ -51,37 +51,46 @@ void sigchld_handler(int signo){
 }
 
 void init(){
-        if(daemon_init() == -1){ 
-                printf("can't fork self.\n"); 
-                exit(0); 
-        } 
-        openlog("judge_daemon", LOG_PID, LOG_USER); 
-        syslog(LOG_INFO, "Judge daemon started."); 
-        signal(SIGTERM, sigterm_handler);
-        signal(SIGCHLD, sigchld_handler);
+	if(daemon_init() == -1){ 
+		printf("can't fork self.\n"); 
+		exit(0); 
+	} 
+	openlog("judge_daemon", LOG_PID, LOG_USER); 
+	syslog(LOG_INFO, "Judge daemon started."); 
+	signal(SIGTERM, sigterm_handler);
+	signal(SIGCHLD, sigchld_handler);
         
-        ifstream fin("/etc/foj_judged.conf");
-        int cnt = 0;
-        while (cnt < SETTINGS_COUNT){
-                getline(fin, settings[cnt]);
-                if (!settings[cnt].empty()){
-                        settings[cnt].erase(0, settings[cnt].find_first_not_of(" "));
-                        settings[cnt].erase(settings[cnt].find_last_not_of(" ") + 1);
-                }
-                if (settings[cnt][0] != '#') cnt++;
-        }
-        fin.close();
-		sscanf(settings[5].c_str(), "%d", &max_running);
-		if (max_running > MAX_RUNNING) max_running = MAX_RUNNING;
+	ifstream fin("/etc/foj_judged.conf");
+	int cnt = 0;
+	while (cnt < SETTINGS_COUNT){
+		getline(fin, settings[cnt]);
+		if (!settings[cnt].empty()){
+			settings[cnt].erase(0, settings[cnt].find_first_not_of(" "));
+			settings[cnt].erase(settings[cnt].find_last_not_of(" ") + 1);
+		}
+		if (settings[cnt][0] != '#') cnt++;
+	}
+	fin.close();
+	
+	sscanf(settings[5].c_str(), "%d", &max_running);
+	if (max_running > MAX_RUNNING) max_running = MAX_RUNNING;
         
-        mysql_init(&db);
-        if (!mysql_real_connect(&db, settings[0].c_str(), settings[1].c_str(), settings[2].c_str(), settings[3].c_str(), 0, NULL, 0)){
-			syslog(LOG_ERR, "Failed to connec to database!");
-			exit(1);
-        }
+	mysql_init(&db);
+	if (!mysql_real_connect(&db, settings[0].c_str(), settings[1].c_str(), settings[2].c_str(), settings[3].c_str(), 0, NULL, 0)){
+		syslog(LOG_ERR, "Failed to connec to database!");
+		exit(1);
+	}
         
-        srand(time(0));
-        running = 0;
+	char command[255];
+	sprintf(command, "mkdir /tmp/foj -p > /dev/null");
+	system(command);
+	sprintf(command, "chown judge /tmp/foj -R > /dev/null");
+	system(command);
+	sprintf(command, "chmod 777 /tmp/foj -R > /dev/null");
+	system(command);
+        
+	srand(time(0));
+	running = 0;
 }
 
 bool run(){
