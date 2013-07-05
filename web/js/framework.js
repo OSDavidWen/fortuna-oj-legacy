@@ -1,10 +1,19 @@
+var loadedJsFile = new Array()
+
+function loadJsFile ( name, src, success ) {
+	if ((arguments.length == 3 && arguments[2]) || $.inArray(name, loadedJsFile) == -1) {
+		loadedJsFile.push(name)
+		$.getScript(src, success)
+	}
+}
+
 if ( ! ('onhashchange' in window)) {
 	var old_href = location.href;
 	setInterval( function() {
 		var new_href = location.href;
 		if (old_href != new_href){
-				old_href = new_href;
-				on_hash_change.call(window, {type: 'hashchange', 'newURL' : new_href, 'oldURL': old_href});
+			old_href = new_href;
+			on_hash_change.call(window, {type: 'hashchange', 'newURL' : new_href, 'oldURL': old_href});
 		}
 	}, 100 );
 	
@@ -176,7 +185,7 @@ $(document).ready( function() {
 
     });
 
-function initialize() {
+function initialize_chart() {
     // Radialize the colors
 	Highcharts.getOptions().colors = Highcharts.map(Highcharts.getOptions().colors, function(color) {
 	    return {

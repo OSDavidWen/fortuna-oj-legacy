@@ -53,21 +53,29 @@
 			if ($row->codeLength > 0) {
 				if ($info->running && $info->contestMode == 'OI Traditional' && ! $is_admin){
 					echo "</td>---<td></td><td>---</td>";
-				}else{
+					
+				}else if ($row->status == -3 || ($row->status >= 0 && $row->status <= 7)) {
 					echo "</td><td><span class=\"label label-info\">$row->time</span></td>";
 					echo "<td><span class=\"label label-info\">$row->memory</span></td>";
-				}
+					
+				} else echo '<td>---</td><td>---</td>';
+				
 				echo "<td><a href=\"#main/code/$row->sid\">$row->language</a></td>";
 				echo "</td><td>$row->codeLength</td>";
 				
 			} else echo '<td>---</td><td>---</td><td>---</td><td>---</td>';
+			
 			echo "<td>$row->submitTime</td>";
 				
 			echo '<td>';
 			if ($this->user->uid() == $row->uid || $this->user->is_admin()){
 				echo "<a onclick=\"access_page('main/submission_change_access/$row->sid')\">";
-				if ($row->private == 1) echo '<i class="icon-lock"></i>'; else echo '<i class="icon-globe"></i>';
+				
+				if ($row->private == 1) echo '<i class="icon-lock"></i>';
+				else echo '<i class="icon-globe"></i>';
+				
 				echo '</a>';
+				
 			} else if ($row->private == 0) echo '<i class="icon-globe"></i>';
 			echo '</td></tr>';
 		}

@@ -108,7 +108,7 @@
 	if ( typeof (Highcharts) == 'undefined') {
 		$.getScript("js/highcharts.js", function() {
 			$.getScript("js/exporting.js", function() {
-				initialize()
+				initialize_chart()
 				render()
 			})
 		})

@@ -174,11 +174,17 @@
 			echo '</td>';
 			
 			if ($row->codeLength > 0) {
-				echo "<td><span class=\"label label-info\">$row->time</span></td>";
-				echo "<td><span class=\"label label-info\">$row->memory</span></td>";
+			
+				if ($row->status == -3 || ($row->status >= 0 && $row->status <= 7)) {
+					echo "<td><span class=\"label label-info\">$row->time</span></td>";
+					echo "<td><span class=\"label label-info\">$row->memory</span></td>";
+				} else echo '<td>---</td><td>---</td>';
+				
 				echo "<td><a href=\"#main/code/$row->sid\">$row->language</a></td>";
 				echo "<td>$row->codeLength</td>";
+				
 			} else echo '<td>---</td><td>---</td><td>---</td><td>---</td>';
+			
 			echo "<td>$row->submitTime</td>";
 			
 			echo '<td>';
