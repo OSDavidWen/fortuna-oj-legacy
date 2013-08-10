@@ -75,7 +75,7 @@ void init(){
 	char solved;
 	if (row[4][0] == '0') solved = '1'; else solved = '0';
 	if (strcmp(row[4], "-1") != 0) {
-		query = string("UPDATE ProblemSet SET scoreSum=scoreSum-") + row[3] + ",solvedCount=solvedCount-" + solved + " WHERE pid=" + row[0];
+		query = string("UPDATE ProblemSet SET scoreSum=scoreSum-") + row[3] + ", solvedCount=solvedCount-" + solved + " WHERE pid=" + row[0];
 #ifdef DEBUG
 		cout << query << endl;
 #endif
@@ -209,6 +209,8 @@ void runTest(){
 	if (problem.spjMode >= 0){
 		sprintf(command, "cp -f %s/%s %s/", dataPath, problem.spjFile.c_str(), runPath);
 		system(command);
+		sprintf(command, "chmod +x %s/%s", runPath, problem.spjFile.c_str());
+		system(command);
 	}
 
 	//run
@@ -269,7 +271,7 @@ void runTest(){
 		if (zero) rcase["score"] = 0;
 		else rcase["score"] = rcase["score"].asDouble() / C.tests.size();
 		
-		if (fabs(C.score - rcase["score"].asDouble()) > 1e-4 && rcase["status"].asInt() == 0) rcase["status"] = -3;
+		if (C.score - rcase["score"].asDouble() > 1e-4 && rcase["status"].asInt() == 0) rcase["status"] = -3;
 		
 		Rscore += rcase["score"].asDouble();
 		#ifdef DEBUG
@@ -290,7 +292,7 @@ char cmsg[65536], rmsg[65536];
 void writeResult(){
 	stringstream sout;
 	
-	if (fabs(Rscore - tScore) > 1e-4 && Rstatus == 0) Rstatus = -3;
+	if (tScore - Rscore > 1e-4 && Rstatus == 0) Rstatus = -3;
 	int solved = 0;
 	if (Rstatus == 0) solved = 1;
 	sout << "UPDATE ProblemSet SET scoreSum=scoreSum+" << Rscore << ", solvedCount=solvedCount+" << solved << " WHERE pid=" << pid;

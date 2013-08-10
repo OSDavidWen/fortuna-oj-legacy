@@ -223,7 +223,7 @@ int main(int argc, char* argv[]){
 				fscanf(res, "%d%lf%s", &status, &score, msg);
 				pclose(res);
 				
-				if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+				if (full_score - score < 1e-2) result(0, score, time_usage, mem_usage, msg);
 				else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg); 
 				else result(2, score, time_usage, mem_usage, msg);
 			}
@@ -241,12 +241,12 @@ int main(int argc, char* argv[]){
 				if (res != NULL){
 					fscanf(res, "%s", msg);
 					fclose(res);
-					if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+					if (full_score - score < 1e-2) result(0, score, time_usage, mem_usage, msg);
 					else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg);
 					else result(2, score, time_usage, mem_usage, msg);
 					
 				} else {
-					if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, ac);
+					if (full_score - score < 1e-2) result(0, score, time_usage, mem_usage, ac);
 					else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg); 
 					else result(2, score, time_usage, mem_usage, ac);
 				}
@@ -263,7 +263,7 @@ int main(int argc, char* argv[]){
 				score *= full_score;
 				fclose(res);
 				
-				if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+				if (full_score - score < 1e-2) result(0, score, time_usage, mem_usage, msg);
 				else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg); 
 				else result(2, score, time_usage, mem_usage, msg);
 			}
@@ -282,7 +282,7 @@ int main(int argc, char* argv[]){
 				fscanf(res, "%lf", &score);
 				fclose(res);
 				
-				if (fabs(full_score - score) < 1e-4) result(0, score, time_usage, mem_usage, msg);
+				if (full_score - score < 1e-2) result(0, score, time_usage, mem_usage, msg);
 				else if (score > 1e-2) result(-3, score, time_usage, mem_usage, msg); 
 				else result(2, score, time_usage, mem_usage, msg);
 			}
