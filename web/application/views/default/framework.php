@@ -54,7 +54,11 @@
 							<li class="nav_bar" id="nav_home"><a href="#main/home">Home</a></li>
 							<li class="nav_bar" id="nav_problemset"><a href="#main/problemset">ProblemSet</a></li>
 							<li class="nav_bar" id="nav_status"><a href="#main/status">Status</a></li>
-							<li class="nav_bar" id="nav_contest"><a href="#contest">Contest</a></li>
+							<li class="nav_bar" id="nav_contest">
+								<a href="#contest">Contest
+									<span class="badge badge-important" id="running_contest_count" style="padding: 1px 4px"></span>
+								</a>
+							</li>
 							<li class="nav_bar" id="nav_task"><a href="#task/task_list">Task</a></li>
 							<li class="nav_bar" id="nav_group"><a href="#group/group_list">Groups</a></li>
 							<li class="nav_bar" id="nav_ranklist"><a href="#main/ranklist">Ranklist</a></li>
@@ -68,6 +72,7 @@
 									<li class="nav_bar nav_admin" style="display:none"><a href="#admin/users">Manage User</a></li>
 <!-- 									<li class="nav_bar nav_admin" style="display:none"><a href="#admin/statistic">Statistic</a></li> -->
 									<li class="nav_bar nav_admin" style="display:none"><a href="#admin/rejudge">Rejudge</a></li>
+									<li class="nav_bar nav_admin" style="display:none"><a href="#admin/permission">Permission</a></li>
 								</ul>
 							</li>
 						</ul>

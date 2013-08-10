@@ -64,6 +64,12 @@ class Admin extends CI_Controller {
 	}
 	
 	public function addproblem($pid = 0){
+		$this->load->model('problems');
+		if ($pid > 0 && ! $this->user->is_admin() && $this->problems->uid($pid) != $this->user->uid()) {
+			$this->load->view('error', array('message' => 'You are not allowed to edit this problem!'));
+			return;
+		}
+
 		$this->load->library('form_validation');
 		$this->form_validation->set_error_delimiters('<div class="alert alert-error">', '</div>');
 		
@@ -86,7 +92,6 @@ class Admin extends CI_Controller {
 			$data = $this->input->post(NULL);
 			$data['codeSizeLimit'] = (int)$data['codeSizeLimit'];
 			$data['isShowed'] = 0;
-			$this->load->model('problems');
 			if ($pid == 0){
 				$new = TRUE;
 				$pid = $this->problems->add($data);
@@ -402,6 +407,8 @@ class Admin extends CI_Controller {
 		$this->form_validation->set_rules('contest_title', 'Title', 'required');
 		$this->form_validation->set_rules('start_date', 'Start Date', 'required');
 		$this->form_validation->set_rules('start_time', 'Start Time', 'required');
+		$this->form_validation->set_rules('submit_date', 'Submit Date', 'required');
+		$this->form_validation->set_rules('submit_time', 'Submit Time', 'required');
 		$this->form_validation->set_rules('end_date', 'End Date', 'required');
 		$this->form_validation->set_rules('end_time', 'End Time', 'required');
 		$this->form_validation->set_rules('teamMode', 'Team Mode', 'required');
@@ -540,6 +547,34 @@ class Admin extends CI_Controller {
 		$this->load->model('contests');
 		
 		$this->contests->contest_to_task($cid);
+	}
+
+	function permission() {
+		$this->load->library('form_validation');
+
+		$this->form_validation->set_error_delimiters('<div class="alert alert-error">', '</div>');
+
+		$this->form_validation->set_rules('name', 'Username', 'required');
+		$this->form_validation->set_rules('date', 'Date', 'required');
+		$this->form_validation->set_rules('time', 'Time', 'required');
+
+		if ($this->form_validation->run() == FALSE) {
+			$this->load->view('admin/permission');
+		} else {
+			$permission = $this->input->post('permission');
+			$time = $this->input->post('date') . ' ' . $this->input->post('time');
+			$time = strtotime($time);
+
+			$data = array();
+			if ($permission != FALSE) {
+				foreach ($permission as $row)
+					$data[$row] = $time;
+			}
+			
+			$this->user->set_permission($data, $this->user->load_uid($this->input->post('name')));
+
+			$this->load->view('success');
+		}
 	}
 }
 

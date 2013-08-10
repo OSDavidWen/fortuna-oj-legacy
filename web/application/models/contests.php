@@ -73,7 +73,7 @@ class Contests extends CI_Model{
 	}
 	
 	function load_contests_list($row_begin, $count){
-		return $this->db->query("SELECT cid, title, startTime, endTime, contestMode, private FROM Contest
+		return $this->db->query("SELECT cid, title, startTime, submitTime, endTime, contestMode, private FROM Contest
 								WHERE isShowed=1 ORDER BY cid DESC LIMIT ?,?",
 								array($row_begin, $count))
 								->result();
@@ -281,6 +281,143 @@ class Contests extends CI_Model{
 		}
 		return NULL;
 	}
+	
+
+	function load_contest_statistic_ACM($cid){
+		$info = $this->db->query("SELECT teamMode, startTime FROM Contest
+								WHERE cid=?",
+								array($cid))
+								->row();
+		$teamMode = $info->teamMode;
+		$startTime = strtotime($info->startTime);
+		if ($teamMode == TRUE){
+			$data = $this->db->query("SELECT * FROM Team
+									WHERE cid=? ORDER BY score DESC, penalty DESC",
+									array($cid))
+									->result();
+			foreach ($data as $row){
+				$result[$row->idTeam]->name = $row->name;
+				$result[$row->idTeam]->score = $row->score;
+				$result[$row->idTeam]->penalty = $row->penalty;
+				$result[$row->idTeam]->isFormal = $row->isFormal;
+			}
+			
+		}else {
+			$result_pids = $this->db->query("SELECT pid FROM Contest_has_ProblemSet WHERE cid=?",
+									array($cid))->result_array();
+			$pids = array();
+			foreach ($result_pids as $pid) $pids[] = $pid['pid'];
+			$pids = implode(',', $pids);
+			$data = $this->db->query("SELECT sid, uid, name, pid, score FROM Submission
+									  WHERE pid in ($pids) ORDER BY sid DESC")->result();
+			foreach ($data as $row){
+				if ( ! isset($result[$row->uid])){
+					$result[$row->uid] = new Participant;
+					$result[$row->uid]->name = $row->name;
+					$result[$row->uid]->penalty = 0;
+					$result[$row->uid]->score = 0;
+					$result[$row->uid]->isFormal = TRUE;
+				}
+				if (isset($result[$row->uid]->acList[$row->pid])) continue;
+				
+				if ( ! isset($result[$row->uid]->attempt[$row->pid])) $result[$row->uid]->attempt[$row->pid] = 0;
+				if ($row->status == 0){
+					$result[$row->uid]->acList[$row->pid] = round((strtotime($row->submitTime) - $startTime) / 60, 0);
+					$result[$row->uid]->score++;
+					$result[$row->uid]->penalty += $result[$row->uid]->acList[$row->pid];
+					$result[$row->uid]->penalty += $result[$row->uid]->attempt[$row->pid] * 20;
+					$result[$row->uid]->attempt[$row->pid]++;
+				}else{
+					$result[$row->uid]->attempt[$row->pid]++;
+				}
+			}
+			if (isset($result)) usort($result, "team_cmp_ACM");
+		}
+		
+		if (isset($result)){
+			$rank = $cnt = $score = $penalty = 0;
+			foreach ($result as $row){
+				if ( ! $row->isFormal) continue;
+				if ($score == $row->score && $penalty == $row->penalty) $cnt++;
+				else{
+					$rank += $cnt + 1;
+					$cnt = 0;
+				}
+				$row->rank = $rank;
+				$score = $row->score;
+				$penalty = $row->penalty;
+			}
+			return $result;
+		}
+		return NULL;
+	}
+	
+	function load_contest_statistic_OI($cid, $info){
+		$now = strtotime('now');
+		if ($now <= strtotime($info->endTime) && ! $this->user->is_admin() && $info->contestMode == 'OI Traditional') return FALSE;
+		
+		$info = $this->db->query("SELECT teamMode, startTime FROM Contest
+								WHERE cid=?",
+								array($cid))
+								->row();
+		$teamMode = $info->teamMode;
+		$startTime = strtotime($info->startTime);
+		if ($teamMode == TRUE){
+			$data = $this->db->query("SELECT * FROM Team
+									WHERE cid=? ORDER BY score DESC",
+									array($cid))
+									->result();
+			foreach ($data as $row){
+				$result[$row->idTeam]->name = $row->name;
+				$result[$row->idTeam]->score = $row->score;
+				$result[$row->idTeam]->penalty = $row->penalty;
+				$result[$row->idTeam]->isFormal = $row->isFormal;
+			}
+			
+		}else {
+			$result_pids = $this->db->query("SELECT pid FROM Contest_has_ProblemSet WHERE cid=?",
+									array($cid))->result_array();
+			$pids = array();
+			foreach ($result_pids as $pid) $pids[] = $pid['pid'];
+			$pids = implode(',', $pids);
+			$data = $this->db->query("SELECT sid, uid, name, pid, score FROM Submission
+									  WHERE pid in ($pids) ORDER BY sid DESC")->result();
+			foreach ($data as $row){
+				if ( ! isset($result[$row->uid])){
+					$result[$row->uid] = new Participant;
+					$result[$row->uid]->name = $row->name;
+					$result[$row->uid]->score = 0;
+					$result[$row->uid]->isFormal = TRUE;
+				}
+				if (isset($result[$row->uid]->attempt[$row->pid])) {
+					$result[$row->uid]->score -= $result[$row->uid]->acList[$row->pid];
+					$result[$row->uid]->acList[$row->pid] = max($result[$row->uid]->acList[$row->pid], $row->score);
+					$result[$row->uid]->score += $result[$row->uid]->acList[$row->pid];
+				} else {
+					$result[$row->uid]->attempt[$row->pid] = $row->sid;
+					$result[$row->uid]->acList[$row->pid] = $row->score;
+					$result[$row->uid]->score += $row->score;
+				}
+			}
+			if (isset($result)) usort($result, "team_cmp_OI");
+		}
+		
+		if (isset($result)){
+			$rank = $cnt = $score = 0;
+			foreach ($result as $row){
+				if ( ! $row->isFormal) continue;
+				if ($score == $row->score) $cnt++;
+				else{
+					$rank += $cnt + 1;
+					$cnt = 0;
+				}
+				$row->rank = $rank;
+				$score = $row->score;
+			}
+			return $result;
+		}
+		return NULL;
+	}
 
 	function declaration_count($cid){
 		return $result = $this->db->query('SELECT COUNT(*) AS count FROM Declaration
@@ -325,6 +462,7 @@ class Contests extends CI_Model{
 			'title' => $raw['contest_title'],
 			'description' => $raw['description'],
 			'startTime' => $raw['start_date'] . ' ' . $raw['start_time'],
+			'submitTime' => $raw['submit_date'] . ' ' . $raw['submit_time'],
 			'endTime' => $raw['end_date'] . ' ' . $raw['end_time'],
 			'contestMode' => $raw['contestMode'],
 			'isShowed' => $raw['isShowed'],
@@ -388,4 +526,5 @@ class Contests extends CI_Model{
 		}
 		
 	}
+
 }

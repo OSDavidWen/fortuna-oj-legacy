@@ -14,10 +14,10 @@ class Submission extends CI_Model{
 			$this->db->query("UPDATE ProblemSet SET scoreSum=scoreSum-? WHERE pid=?",
 				array($data->score, $data->pid));
 		}
-		
+	
 		if ($data->status == 0){
 			$this->db->query("UPDATE ProblemSet SET solvedCount=solvedCount-1 WHERE pid=?",
-								array($data->score, $data->pid));
+								array($data->pid));
 		
 			$this->db->query("UPDATE User SET solvedCount=solvedCount-1 WHERE uid=?",
 								array($data->uid));
@@ -47,7 +47,7 @@ class Submission extends CI_Model{
 		foreach ($data as $row){
 			switch ($row->status){
 				case -3: $row->result = '<span class="label label-success">Partially Accepted</span>'; break;
-				case -4: $row->result = '<span class="label">Not Exist</span>'; break;
+				case -4: $row->result = '<span class="label">Output Not Found</span>'; break;
 				case -2: $row->result = '<span class="label label-important">Running</span>'; break;
 				case -1: $row->result = '<span class="label">Pending</span>'; break;
 				case 0: $row->result = '<span class="label label-success">Accepted</span>'; break;
@@ -77,21 +77,40 @@ class Submission extends CI_Model{
 	}
 	
 	function statistic_count($pid){
-		return $this->db->query("SELECT COUNT(DISTINCT uid) AS count
-								FROM Submission WHERE pid=? AND (status>=0 OR status<=-3)",
-								array($pid))->row()->count;
+		if ($this->user->is_admin()) {
+			return $this->db->query("SELECT COUNT(DISTINCT uid) AS count
+						FROM Submission WHERE pid=? AND (status>=0 OR status<=-3)",
+						array($pid))->row()->count;
+		} else {
+			return $this->db->query("SELECT COUNT(DISTINCT uid) AS count
+						FROM Submission WHERE pid=? AND (status>=0 OR status<=-3) AND isShowed=1",
+						array($pid))->row()->count;
+		}
 	}
 	
 	function load_statistic($pid, $row_begin, $count){
-		return $this->db->query("SELECT *, COUNT(DISTINCT A.uid) FROM
-			(SELECT sid, uid, status, name, score, time, memory, codeLength, submitTime, language, private, isShowed, 
-					-score*100000000000000+time*10000000000+memory*100000+sid val FROM Submission
-					WHERE pid=? AND (status>=0 OR status<=-3)) A
-			INNER JOIN
-			(SELECT uid, min(-score*100000000000000+time*10000000000+memory*100000+sid) eval, COUNT(*) AS count
-			 FROM Submission WHERE pid=? AND (status>=0 OR status<=-3) GROUP BY uid) B
-			ON A.val=B.eval AND A.uid=B.uid GROUP BY A.uid ORDER BY A.val LIMIT ?,?;",
-			array($pid, $pid, $row_begin, $count))->result();
+		if ($this->user->is_admin()) {
+			return $this->db->query("SELECT *, COUNT(DISTINCT A.uid) FROM
+							(SELECT sid, uid, status, name, score, time, memory, codeLength, submitTime, language, private, isShowed, 
+							-score*100000000000000+time*10000000000+memory*100000+sid val FROM Submission
+							WHERE pid=? AND (status>=0 OR status<=-3)) A
+						INNER JOIN
+							(SELECT uid, min(-score*100000000000000+time*10000000000+memory*100000+sid) eval, COUNT(*) AS count
+							 FROM Submission WHERE pid=? AND (status>=0 OR status<=-3) GROUP BY uid) B
+						ON A.val=B.eval AND A.uid=B.uid GROUP BY A.uid ORDER BY A.val LIMIT ?,?;",
+							array($pid, $pid, $row_begin, $count))->result();
+		} else {
+			return $this->db->query("SELECT *, COUNT(DISTINCT A.uid) FROM
+							(SELECT sid, uid, status, name, score, time, memory, codeLength, submitTime, language, private, isShowed, 
+							-score*100000000000000+time*10000000000+memory*100000+sid val FROM Submission
+							WHERE pid=? AND (status>=0 OR status<=-3) AND isShowed=1) A
+						INNER JOIN
+							(SELECT uid, min(-score*100000000000000+time*10000000000+memory*100000+sid) eval, COUNT(*) AS count
+							 FROM Submission WHERE pid=? AND (status>=0 OR status<=-3) AND isShowed=1 GROUP BY uid) B
+						ON A.val=B.eval AND A.uid=B.uid GROUP BY A.uid ORDER BY A.val LIMIT ?,?;",
+							array($pid, $pid, $row_begin, $count))->result();
+	
+		}
 	}
 	
 	private function filter_to_string($filter){
@@ -153,7 +172,8 @@ class Submission extends CI_Model{
 			if ( ! is_null($result->cid)) {
 				$this->load->model('contests');
 				$info = $this->contests->load_contest_status($result->cid);
-				if ($info->contestMode == 'Codeforces' || $info->contestMode == 'OI') return $result;
+				if ($this->session->userdata('priviledge') == 'admin') return $result;
+				else if ($info->contestMode == 'Codeforces' || $info->contestMode == 'OI') return $result;
 				else if (strtotime($info->endTime) < strtotime('now')) return $result;
 				else return FALSE;
 			} else return $result;

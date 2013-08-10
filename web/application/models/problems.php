@@ -41,7 +41,7 @@ class Problems extends CI_Model{
 	
 	function load_problemset_status($uid, $start, $end){
 		return $this->db->query("SELECT min(status) AS status, pid FROM Submission 
-									WHERE uid=? AND pid>=? AND pid<? GROUP BY pid", array($uid, $start, $end))->result();
+									WHERE uid=? AND pid>=? AND pid<? AND status>-4 GROUP BY pid", array($uid, $start, $end))->result();
 	}
 	
 	function load_dataconf($pid){
@@ -92,7 +92,7 @@ class Problems extends CI_Model{
 	
 	function load_filter_problemset_status($uid, $keyword){
 		return $this->db->query("SELECT min(status) AS status, pid FROM Submission WHERE uid=? AND
-								pid in (SELECT pid FROM ProblemSet WHERE (title LIKE ? OR source LIKE ?) AND isShowed=1)
+								pid in (SELECT pid FROM ProblemSet WHERE (title LIKE ? OR source LIKE ?) AND isShowed=1 AND status>-4)
 								GROUP BY pid", array($uid, $keyword, $keyword))->result();
 	}
 	
@@ -103,9 +103,10 @@ class Problems extends CI_Model{
 	}
 	
 	function load_limits($pid){
-		$result = $this->db->query("SELECT pid, title, dataConfiguration from ProblemSet WHERE pid=? AND isShowed=1", array($pid));
+		$result = $this->db->query("SELECT pid, title, dataConfiguration, isShowed from ProblemSet WHERE pid=?", array($pid));
 		if ($result->num_rows() == 0) return FALSE;
-		return $result->row();		
+		if ($this->user->is_admin() || $result->row()->isShowed == 1) return $result->row();
+		else return FALSE;
 	}
 	
 	function add($data, $pid = 0){

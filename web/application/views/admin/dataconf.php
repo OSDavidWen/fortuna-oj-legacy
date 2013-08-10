@@ -10,7 +10,7 @@
 	<div class="control-group">
 		<label for="file_upload" class="control-label">
 			Upload Data
-			<i id="file_upload_tips" class="icon-info-sign" title="File will be auto compiled if has c/cpp/pas extension."></i>
+			<i id="file_upload_tips" class="icon-info-sign" title="File will be auto compiled if has c/cpp/pas/dpr extension."></i>
 		</label>
 		<div class="controls">
 			<div class="fileupload-buttonbar">
@@ -33,6 +33,8 @@
 		</div>
 	</div>
 </form>
+
+<p class="alert-error">For Output Only problem, if there are additional files, please compress them as data.zip and upload with testdata.</p>
 
 <fieldset class="span5" style="display:none" id="data_config">
 <legend>Data Configuration</legend>

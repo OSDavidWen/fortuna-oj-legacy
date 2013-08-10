@@ -261,8 +261,26 @@ class Main extends CI_Controller {
 			$this->load->view('error', array('message' => 'You are not allowed to download this file!'));
 		else if ( ! is_file($file))
 			$this->load->view('error', array('message' => 'File Not Found!'));
-		else
+		else if ($dir != 'submission')
 			$this->load->view('main/download', array('file' => $file, 'filename' => $filename));
+		else {
+			$filename = str_replace('compressed', '', $filename);
+			$type = system("type.sh $file");
+			$filename .= $type;
+			
+			$this->load->view('main/download', array('file' => $file, 'filename' => $filename));
+		}
+	}
+
+	public function datadownload($pid) {
+		$this->load->library('form_validation');
+
+		$this->form_validation->set_error_delimiters('<div class="alert alert-error">', '</div>');
+
+		$this->form_validation->set_rules('pid', 'Problem ID', 'required');
+		$this->form_validation->set_rules('authcode', 'Authentication Code', 'required');
+
+		
 	}
 	
 	public function limits($pid){
@@ -272,25 +290,27 @@ class Main extends CI_Controller {
 		if ($data != FALSE){
 			$data->data = json_decode($data->dataConfiguration);
 			
-			$data->timeLimit = $data->memoryLimit = 0;
-			foreach ($data->data->cases as $case){
-				foreach ($case->tests as $test){
-				
-					if ($data->timeLimit == 0){
-						$data->timeLimit = $test->timeLimit;
-						$data->memoryLimit = $test->memoryLimit;
-						
-					} elseif ($data->timeLimit != $test->timeLimit || $data->memoryLimit != $test->memoryLimit)
-						$data->timeLimit = -1;
-						
+			if ($data->data->IOMode != 2) {
+				$data->timeLimit = $data->memoryLimit = 0;
+				foreach ($data->data->cases as $case){
+					foreach ($case->tests as $test){
+					
+						if ($data->timeLimit == 0){
+							$data->timeLimit = $test->timeLimit;
+							$data->memoryLimit = $test->memoryLimit;
+							
+						} elseif ($data->timeLimit != $test->timeLimit || $data->memoryLimit != $test->memoryLimit)
+							$data->timeLimit = -1;
+							
+						if ($data->timeLimit < 0) break;
+					}
 					if ($data->timeLimit < 0) break;
 				}
-				if ($data->timeLimit < 0) break;
-			}
 			
-			if ($data->timeLimit < 0){
-				unset($data->timeLimit);
-				unset($data->memoryLimit);
+				if ($data->timeLimit < 0){
+					unset($data->timeLimit);
+					unset($data->memoryLimit);
+				}
 			}
 		}
 	
@@ -305,13 +325,13 @@ class Main extends CI_Controller {
 		if (!$id) return;
 		
 		$this->load->model('misc');
-		if ($this->misc->is_accepted($this->session->userdata('uid'), $pid))
+		if ($this->misc->is_accepted($this->user->uid(), $pid) || $this->user->is_admin())
 			$this->misc->add_categorization($pid, $id);
 	}
 	
 	public function deltag($pid, $id){
 		$this->load->model('misc');
-		if ($this->misc->is_accepted($this->session->userdata('uid'), $pid))
+		if ($this->misc->is_accepted($this->user->uid(), $pid) || $this->user->is_admin())
 			$this->misc->delete_categorization($pid, $id);		
 	}
 
@@ -329,7 +349,11 @@ class Main extends CI_Controller {
 				'language' => $this->input->cookie('language'),
 				'code' => ''
 			);
-			if ($cid > 0) $data['cid'] = $cid;
+			if ($cid > 0) {
+				$data['cid'] = $cid;
+				$this->load->model('contests');
+				$data['submitTime'] = $this->contests->load_contest_status($cid)->submitTime;
+			}
 			if ($tid > 0) $data['tid'] = $tid;
 			if ($gid > 0) $data['gid'] = $gid;
 			$this->load->view('main/submit', $data);
@@ -367,7 +391,7 @@ class Main extends CI_Controller {
 			else if (isset($data['cid'])){
 				$this->load->model('contests');
 				$info = $this->contests->load_contest_status($data['cid']);
-				if (strtotime($info->startTime) > time() || strtotime($info->endTime) < time()) return;		
+				if (max(strtotime($info->startTime), strtotime($info->submitTime)) > time() || strtotime($info->endTime) < time()) return;		
 				$languages = explode(',', $info->language);
 				if ( ! in_array($language, $languages)) return;
 			}			
@@ -592,7 +616,7 @@ class Main extends CI_Controller {
 		$this->load->model('problems');
 		
 		$is_accepted = $this->misc->is_accepted($this->session->userdata('uid'), $pid);
-		if ( ! $is_accepted && ! $this->user->is_admin()) return;
+		//if ( ! $is_accepted && ! $this->user->is_admin()) return;
 		
 		if ( !isset($_FILES['solution'])) return;
 		

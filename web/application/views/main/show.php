@@ -28,7 +28,7 @@
 		echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"#main/limits/$data->pid\" style=\"text-align:left\">";
 		echo '<span id="trigger"><i class="icon-chevron-down"></i></span></a>';
 		
-		if (isset($data->data->spjMode)) echo "<span style=\"color: red\">&nbsp;&nbsp;&nbsp;Special Judge</span>";
+		if (isset($data->data->spjMode)) echo "&nbsp;&nbsp;<span class=\"label label-important\">Special Judge</span>";
 		
 		echo '</div>';	
 		echo '</div>';
@@ -126,9 +126,7 @@
 		<div class="well" id="div_solutions">
 			<fieldset id="solutions">
 				<legend><h5><em>Solutions</em>
-				<?php if ($is_accepted || $this->user->is_admin()) {?>
 					<button id="add_solution_btn" class="btn btn-mini pull-right" onclick="add_solution()">add</button>
-				<?php } ?>
 				</h5></legend>
 				
 				<div><?php
@@ -150,7 +148,12 @@
 				<legend><h5><em>Source</em></h5></legend>
 				<div class="content"><?=nl2br($data->source)?></div>
 			</fieldset></div>
-		<?php } ?>		
+		<?php } ?>
+
+		<div class="well"><fieldset>
+			<legend><h5><em>Advanced</em></h5></legend>
+			<span><a href='index.php/misc/testdata/<?=$data->pid?>' target="_blank">Download Data</a></span>
+		</fieldset></div>
 	</div>
 </div>
 

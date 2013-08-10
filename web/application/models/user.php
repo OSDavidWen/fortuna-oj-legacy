@@ -17,14 +17,49 @@ class User extends CI_Model{
 		}
 		return FALSE;
 	}
-	
+
 	function uid(){
 		return $this->session->userdata('uid');
+	}
+
+	function username() {
+		return $this->session->userdata('username');
+	}
+
+	function load_uid($name) {
+		return $this->db->query("SELECT uid FROM User WHERE name=?", array($name))->row()->uid;
+	}
+
+	function load_username($uid) {
+		return $this->db->query("SELECT name FROM User WHERE uid=?", array($uid))->row()->name;
 	}
 	
 	function is_admin(){
 		if ($this->session->userdata('priviledge') == 'admin') return TRUE;
 		return FALSE;
+	}
+
+	function permission($method) {
+		$permission = $this->db->query("SELECT permission FROM User WHERE uid=?",
+						array($this->user->uid()))->row()->permission;
+		$permission = json_decode($permission, TRUE);
+		
+		if (isset($permission[$method])) {
+			if ((int)$permission[$method] >= time()) return TRUE;
+			else {
+				unset($permission[$method]);
+				$permission = json_encode($permission);
+				$this->db->query("UPDATE User SET permission=? WHERE uid=?",
+						array($permission, $this->user->uid()));
+				return FALSE;
+			}
+		} else return FALSE;
+	}
+
+	function set_permission($permission, $uid) {
+		$permission = json_encode($permission);
+		$this->db->query("UPDATE User SET permission=? WHERE uid=?",
+				array($permission, $uid));
 	}
 	
 	function username_check($username){
@@ -97,7 +132,7 @@ class User extends CI_Model{
 		
 		$this->db->query("UPDATE User SET lastLogin=now(), lastIP=?
 						WHERE uid=?",
-						array($this->session->userdata('ip_address'), (int)$result->row()->uid));
+						array($this->input->ip_address(), (int)$result->row()->uid));
 	}
 	
 	function registion_success($post = array()){
@@ -124,6 +159,8 @@ class User extends CI_Model{
 		$this->session->unset_userdata('show_category');
 		$this->session->unset_userdata('problems_per_page');
 		$this->session->unset_userdata('submission_per_page');
+		$this->session->unset_userdata('download');
+		$this->session->unset_userdata('push');
 	}
 	
 	function submit(){
@@ -210,8 +247,8 @@ class User extends CI_Model{
 	}
 	
 	function load_users_list(){
-		return $this->db->query("SELECT uid, name, school, isEnabled, priviledge FROM User
-								ORDER BY uid DESC")
+		return $this->db->query("SELECT uid, name, school, isEnabled, priviledge, lastIP, lastLogin FROM User
+								ORDER BY lastLogin DESC")
 								->result();
 	}
 	
@@ -283,5 +320,69 @@ class User extends CI_Model{
 		$this->db->query("UPDATE User SET avatar=?
 						WHERE uid=?",
 						array($avatar, $uid));
+	}
+
+	function in_mail_count($uid) {
+		return $this->db->query("SELECT COUNT(*) as count FROM Mail WHERE to_uid=?",
+					array($uid))->row()->count;
+	}
+
+	function mail_count($uid) {
+		$result = $this->db->query("SELECT COUNT(*) as count FROM
+					(SELECT from_uid as uid FROM Mail WHERE to_uid=?
+					 UNION
+					 SELECT to_uid as uid FROM Mail WHERE from_uid=?)T",
+					array($uid, $uid));
+		if ($result->num_rows() == 0) return 0;
+		else return $result->row()->count;
+	}
+
+	function load_mail_list($uid, $row_begin, $count) {
+		return $this->db->query("SELECT * FROM (SELECT idMail, from_uid, to_uid, from_user, to_user, title, sendTime FROM Mail
+					WHERE idMail in
+						(SELECT max(idMail) FROM Mail WHERE from_uid=? OR to_uid=?
+						GROUP BY (if (from_uid>to_uid, to_uid, from_uid)*100000+if (from_uid>to_uid, from_uid, to_uid))))
+					AS T1 
+				LEFT JOIN 
+					(SELECT from_uid AS val, isRead FROM Mail
+					WHERE idMail in
+						(SELECT max(idMail) FROM Mail
+						WHERE to_uid=?
+						GROUP BY from_uid)
+					) AS T2 
+				ON if(T1.to_uid=?, T1.from_uid, T1.to_uid)=T2.val
+				ORDER BY idMail DESC",
+					array($uid, $uid, $uid, $uid, $uid, $uid))->result();
+	}
+
+	function unread_mail_count($uid) {
+		return $this->db->query("SELECT COUNT(*) as count FROM Mail WHERE to_uid=? AND isRead=0",
+					array($uid))->row()->count;
+	}
+
+	function load_mail($uid) {
+//		$mail = $this->db->query("SELECT * FROM Mail WHERE idMail=?",
+//					array($idMail))->row();
+//		if ($mail->to_uid == $uid || $mail->from_uid == $uid) return $mail;
+//		else return FALSE;
+		$cuid = $this->user->uid();
+		return $this->db->query("SELECT * FROM Mail 
+					WHERE (from_uid=? AND to_uid=?) OR (from_uid=? AND to_uid=?)
+					ORDER BY idMail",
+					array($uid, $cuid, $cuid, $uid))->result();
+	}
+
+	function set_mail_read($uid) {
+		$this->db->query("UPDATE Mail SET isRead=1 WHERE to_uid=? AND isRead=0", array($uid));
+	}
+
+	function save_mail($data) {
+		$sql = $this->db->insert_string('Mail', $data);
+ 		$this->db->query($sql);
+	}
+
+	function running_contest_count() {
+		return $this->db->query("SELECT COUNT(*) AS count FROM Contest
+					WHERE unix_timestamp(startTime)<=unix_timestamp() AND unix_timestamp(endTime)>=unix_timestamp()")->row()->count;
 	}
 }

@@ -1,6 +1,8 @@
 <fieldset>
 <legend><strong><em>Settings:</em></strong></legend>
 
+<button class="btn btn-small" onclick="requestNotificationPermission(); return false">Show Desktop Notification</button>
+
 <form action="index.php/users/<?=$user->name?>/settings" method="post" id="user_settings" class="form-horizontal">
 	<div class="control-group">
 		<label for="old_password" class="control-label">Old Password</label>
@@ -52,8 +54,9 @@
 			<input type="number" min="1" name="submission_per_page" id="submission_per_page" class="input-mini" value="<?=set_value('submission_per_page', $config->submissionPerPage)?>" />
 		</div>
 	</div>
+
 		
-	<button id="submit" class="btn btn-primary pull-right">Save</button>
+	<button id="submit" class="btn btn-primary pull-right" type="submit">Save</button>
 </form>
 
 <fieldset>

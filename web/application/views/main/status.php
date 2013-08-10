@@ -2,6 +2,8 @@
 	function my_set_checkbox($array, $value){
 		if ($array != NULL && in_array($value, $array)) return 'checked';
 	}
+
+	$allowed_download = '';
 ?>
 
 <div class="status_table">
@@ -180,10 +182,20 @@
 					echo "<td><span class=\"label label-info\">$row->memory</span></td>";
 				} else echo '<td>---</td><td>---</td>';
 				
-				echo "<td><a href=\"#main/code/$row->sid\">$row->language</a></td>";
+				if ($row->uid == $this->user->uid() || $this->user->is_admin() || ! $row->private)
+					echo "<td><a href=\"#main/code/$row->sid\">$row->language</a></td>";
+				else echo "<td>$row->language</td>";
 				echo "<td>$row->codeLength</td>";
 				
-			} else echo '<td>---</td><td>---</td><td>---</td><td>---</td>';
+			} else {
+				echo '<td>---</td><td>---</td>';
+				if ($row->uid == $this->user->uid() || $this->user->is_admin() || ! $row->private) {
+					echo "<td>File <a href='/index.php/main/download/$row->pid/$row->sid.compressed/submission' target='_blank'>
+						<i class='icon-download-alt'></i></a></td>";
+					$allowed_download .= "$row->sid.compressed";
+				} else echo '<td>---</td>';
+				echo '<td>---</td>';
+			}
 			
 			echo "<td>$row->submitTime</td>";
 			
@@ -212,6 +224,9 @@
 </div>
 	
 <?=$this->pagination->create_links()?>
+<?php
+	$this->session->set_userdata('download', $allowed_download);
+?>
 
 <script type="text/javascript">
 	var problems = [<?php

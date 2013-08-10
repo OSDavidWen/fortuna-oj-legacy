@@ -14,7 +14,8 @@
             </tr></thead>';
         
         $case_no = 1;
-        $ok = $this->problems->is_showed($pid);
+	$dataconf = json_decode($this->problems->load_dataconf($pid)->dataConfiguration);
+        $ok = $this->problems->is_showed($pid) && $dataconf->IOMode != 2;
         foreach ($result->cases as $row1 => $case){
             $case_memory = $case_time = $case_status = -5;
             $case_result = '';
@@ -30,16 +31,16 @@
                 echo "<tbody class=\"case\"><tr><td>$case_no</td><td></td>
                         <td><span class='badge badge-info'>" . $case->score . "</span></td><td>$case_result\t";
                 
-                if ($test->status > 0 && $ok) {
-                    $infile = $data['cases'][$case_no - 1]->tests[0]->input;
-                    $outfile = $data['cases'][$case_no - 1]->tests[0]->output;
+                if (($test->status > 0 || $test->status < -2) && $ok) {
+			$infile = $data['cases'][$case_no - 1]->tests[0]->input;
+			$outfile = $data['cases'][$case_no - 1]->tests[0]->output;
 					
-					$this->session->set_userdata('download', $infile . '|' . $outfile);
+			$this->session->set_userdata('download', $infile . '|' . $outfile);
                     
-                    echo "<a href='index.php/main/download/$pid/$infile' target='_blank'>Input</a> ";
-                    echo "<a href='index.php/main/download/$pid/$outfile' target='_blank'>Output</a> ";
+                   	echo "<a href='index.php/main/download/$pid/$infile' target='_blank'>Input</a> ";
+                   	echo "<a href='index.php/main/download/$pid/$outfile' target='_blank'>Output</a> ";
                     
-                    $ok = false;
+                   	$ok = false;
                 }
                 
                 echo "</td><td>$case_time</td><td>$case_memory</td></tr></tbody>";
@@ -55,11 +56,11 @@
                 $test_no = 1;
                 foreach ($case->tests as $row2 => $test) {
                     echo "<tr><td></td><td>$test_no</td><td></td><td>$test->result\t";
-                    if ($test->status > 0 && $ok) {
+                    if (($test->status > 0 || $test->status < -2) && $ok) {
                         $infile = $data['cases'][$case_no - 1]->tests[$test_no - 1]->input;
                         $outfile = $data['cases'][$case_no - 1]->tests[$test_no - 1]->output;
 						
-						$this->session->set_userdata('download', $infile . '|' . $outfile);
+			$this->session->set_userdata('download', $infile . '|' . $outfile);
                         
                         echo "<a href='#main/download/$pid/$infile'>Input</a> ";
                         echo "<a href='#main/download/$pid/$outfile'>Output</a> ";

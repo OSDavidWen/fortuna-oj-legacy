@@ -1,10 +1,10 @@
 var loadedJsFile = new Array()
 
 function loadJsFile ( name, src, success ) {
-	if ((arguments.length == 3 && arguments[2]) || $.inArray(name, loadedJsFile) == -1) {
+	if ($.inArray(name, loadedJsFile) == -1) {
 		loadedJsFile.push(name)
 		$.getScript(src, success)
-	}
+	} else success();
 }
 
 if ( ! ('onhashchange' in window)) {
@@ -22,6 +22,48 @@ if ( ! ('onhashchange' in window)) {
 	
 } else if ( window.attachEvent ) {
 	window.attachEvent('onhashchange', on_hash_change);
+}
+
+function requestNotificationPermission() {
+	window.webkitNotifications.requestPermission();
+}
+
+function showMailNotification() {
+	var notification = window.webkitNotifications.createNotification(
+		'/favicon.ico',
+		'Fortuna Online Judge',
+		'You have some new mails!'
+	);
+	notification.show();
+	setTimeout(function() { notification.cancel() }, 5000);
+}
+
+var firstNotification = true;
+function getServerPushData() {
+	url = "index.php/background/push";
+	if (firstNotification) url += '/1';
+	$.ajax({
+		type:"POST",
+		url:url,
+		success: function(data) {
+			if (data != '' && data != null) {
+				firstNotification = false;
+				data = eval('(' + data + ')');
+
+				if (data.m > 0) {
+					$('#unread_mail_count').html(data.m);
+					showMailNotification();
+				} else  $('#unread_mail_count').html('');
+
+				if (data.c > 0) $('#running_contest_count').html(data.c);
+				else $('#running_contest_count').html('');
+			}
+			setTimeout('getServerPushData()', 3000);
+		},
+		error: function() {
+			setTimeout('getServerPushData()', 3000);
+		}
+	})
 }
 
 function get_cookie(name){
@@ -120,6 +162,8 @@ function init_framework() {
 	var priviledge = get_cookie('priviledge');
 	if (priviledge == 'admin') $('.nav_admin').attr({style:"display:block"});
 	else $('.nav_admin').attr({style:"display:none"});
+
+	getServerPushData();
 }
 
 function load_userinfo() {

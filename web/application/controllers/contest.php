@@ -80,7 +80,7 @@ class Contest extends CI_Controller {
 		}
 
 		$this->load->library('pagination');
-		$config['base_url'] = base_url() . 'index.php#contest/index/';
+		$config['base_url'] = '#contest/index/';
 		$config['total_rows'] = $count;
 		$config['per_page'] = $contests_per_page;
 		$config['cur_page'] = $page;
@@ -136,7 +136,7 @@ class Contest extends CI_Controller {
 					}
 
 			$this->load->library('pagination');
-			$config['base_url'] = base_url() . "index.php#contest/status/$cid/";
+			$config['base_url'] = "#contest/status/$cid/";
 			$config['total_rows'] = $count;
 			$config['per_page'] = $submission_per_page;
 			$config['uri_segment'] = 4;
@@ -205,6 +205,21 @@ class Contest extends CI_Controller {
 				$data = $this->contests->load_contest_ranklist_ACM($cid);
 			else if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional'){
 				$data = $this->contests->load_contest_ranklist_OI($cid, $info);
+			}
+		}
+		
+		if  (strtotime($info->startTime) > strtotime('now') && ! $this->user->is_admin())
+			$this->load->view("information", array('data' => 'Contest NOT start!'));
+		else $this->load->view('contest/standing', array('data' => $data, 'info' => $info));
+	}
+	
+	public function statistic($cid){
+		$info = $this->contests->load_contest_status($cid);
+		if ($info != FALSE){
+			if ($info->contestMode == 'ACM')
+				$data = $this->contests->load_contest_statistic_ACM($cid);
+			else if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional'){
+				$data = $this->contests->load_contest_statistic_OI($cid, $info);
 			}
 		}
 		

@@ -33,7 +33,7 @@
 			echo "Submit: <span class=\"badge badge-info\">$data->submitCount</span></div>";
 		}
 		
-		if (strtotime($info->endTime) > time()){
+		if (strtotime($info->submitTime) <= time() && strtotime($info->endTime) > time()){
 			if ($IOMode != 2) {
 				echo "<button style='margin-top:3px' class='btn btn-primary' onclick=\"load_page('main/submit/$data->pid/$cid')\">Submit</button>";
 			} else {
@@ -99,7 +99,7 @@
 </div>
 
 <div style="text-align:center"><?php
-	if (strtotime($info->endTime) > time()){
+	if (strtotime($info->submitTime) <=time() && strtotime($info->endTime) > time()){
 		if ($IOMode != 2) {
 			echo "<button style='margin-top:3px' class='btn btn-primary' onclick=\"load_page('main/submit/$data->pid/$cid')\">Submit</button>";
 		} else {

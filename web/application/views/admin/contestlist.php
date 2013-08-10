@@ -1,14 +1,14 @@
 <h4>
 	Contest List
-	<button class="btn btn-primary btn-mini pull-right" onclick="window.location.hash='admin/newcontest'">Add</button>
+	<button class="btn btn-primary btn-small pull-right" onclick="window.location.hash='admin/newcontest'">Add</button>
 </h4>
 <hr />
 
 <div class="contest_list">
 	<table id="contest_table" class="table table-condensed table-bordered table-striped">
 		<thead>
-			<th>Contest ID</th><th>Title</th><th>Start Time</th><th>End Time</th><th>Status</th>
-			<th>Mode</th><th>Type</th><th>Reg</th><th>Edit</th><th></th>
+			<th>Contest ID</th><th>Title</th><th>Start Time</th><th>Submit Time</th><th>End Time</th>
+			<th>Status</th><th>Mode</th><th>Type</th><th>Edit</th><th></th>
 		</thead>
 		
 		<tbody><?php
@@ -17,7 +17,7 @@
 				echo "<tr><td>$cid</td><td>"; 
 				echo (isset($row->running) ? "<a class='title' href=\"#contest/problems/$cid\">$row->title</a>"
 											: "<a class='title' href=\"#contest/home/$cid\">$row->title</a>");
-				echo "</td><td>$row->startTime</td><td>$row->endTime</td>";
+				echo "</td><td>$row->startTime</td><td>$row->submitTime</td><td>$row->endTime</td>";
 				
 				echo "<td>$row->status";
 				if (strpos($row->status, 'Ended'))
@@ -26,7 +26,7 @@
 				
 				echo "<td><div class=\"badge badge-info\">$row->contestMode</div></td>";
 				echo '<td><div class="badge badge-info">' . ($row->private ? 'Private' : 'Public') . '</div></td>';
-				echo "<td><div class=\"badge badge-info\"><i class=\"icon-user icon-white\"></i>x$row->count</div></td>";
+//				echo "<td><div class=\"badge badge-info\"><i class=\"icon-user icon-white\"></i>x$row->count</div></td>";
 				echo "<td><button class=\"btn btn-mini\" onclick='window.location.href=\"#admin/newcontest/$cid\"'>Edit</button></td>"; 
 				echo "<td><button class=\"close\" onclick=\"delete_contest($cid, $(this))\">&times;</button></td></tr>";
 			}

@@ -1,11 +1,16 @@
 <table class="table table-bordered table-condensed table-stripped">
 	<thead>
-		<th>uid</th><th>Name</th><th>School</th><th>Status</th><th>Priviledge</th><th>Groups</th><th></th>
+		<th>uid</th><th>Name</th><th>School</th><th>Status</th><th>Priviledge</th><th>Groups</th>
+		<th>Last IP Addr</th>
+		<th>Last Login</th>
+		<th></th>
 	</thead>
 	<tbody><?php
 		foreach ($data as $row){
-			echo "<tr><td>$row->uid</td><td><span class='label label-info name'>$row->name</span></td><td>$row->school</td><td>";
-			echo "<span style='width:55px; text-align:center' onclick=\"user_change_status($row->uid, $(this))\"";
+			echo "<tr><td>$row->uid</td>";
+			echo "<td><span class='label label-info name'><a href='#users/$row->name'>$row->name</a></span></td>";
+			echo "<td>$row->school</td>";
+			echo "<td><span style='width:55px; text-align:center' onclick=\"user_change_status($row->uid, $(this))\"";
 			if ($row->isEnabled) echo 'class="label label-success">Enabled';
 			else echo 'class="label label-important">Disabled';
 			echo '</span></td><td>';
@@ -13,6 +18,8 @@
 			else echo '<span class="label">User</span>';
 			echo '</td><td>';
 			foreach ($row->groups as $group) echo "<span class=\"label\">$group->name</span> ";
+			echo "<td>$row->lastIP</td>";
+			echo "<td>$row->lastLogin</td>";
 			echo "</td><td><button class='close' onclick=\"delete_user($row->uid, $(this))\">&times;</button></td></tr>";
 		}
 	?></tbody>

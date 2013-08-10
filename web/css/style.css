@@ -17,6 +17,10 @@ a:hover {color: #0088cc; text-decoration: none;}
 	font-size: 16px;
 }
 
+.mail_content {
+	background-color: #FCFBFE;
+}
+
 .overlay {
 	position: fixed;
 	left: 0;

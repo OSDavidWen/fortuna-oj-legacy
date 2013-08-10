@@ -80,7 +80,7 @@ void init(){
 		syslog(LOG_ERR, "Failed to connec to database!");
 		exit(1);
 	}
-        
+    
 	char command[255];
 	sprintf(command, "mkdir /tmp/foj -p > /dev/null");
 	system(command);

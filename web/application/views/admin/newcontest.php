@@ -20,15 +20,21 @@
 			<label class="control-label">Contest Time</label>
 			<div class="controls controls-row">
 				<div style="display:inline">
-				<span class="label" style="width: 40px; text-align:center">Start</span>
-				<input type="date" name="start_date" class="input-medium" value="<?=set_value('start_date', isset($startTime) ? date('Y-m-d', strtotime($startTime)) : '')?>"/>
-				<input type="time" name="start_time" class="input-medium" value="<?=set_value('start_time', isset($startTime) ? date('H:i', strtotime($startTime)) : '')?>"/>
+				<span class="label" style="width: 75px; text-align:center">Start Time</span>
+				<input type="date" name="start_date" class="input-medium" value="<?=set_value('start_date', isset($startTime) ? date('Y-m-d', strtotime($startTime)) : date('Y-m-d'))?>"/>
+				<input type="time" name="start_time" class="input-medium" value="<?=set_value('start_time', isset($startTime) ? date('H:i', strtotime($startTime)) : date('H:m', time()))?>"/>
 				</div>
 				<br />
 				<div style="display:inline">
-				<span class="label" style="width: 40px; text-align:center">End</span>
-				<input type="date" name="end_date" class="input-medium" value="<?=set_value('end_date', isset($endTime) ? date('Y-m-d', strtotime($endTime)) : '')?>"/>
-				<input type="time" name="end_time" class="input-medium" value="<?=set_value('end_time', isset($endTime) ? date('H:i', strtotime($endTime)) : '')?>"/>
+				<span class="label" style="width: 75px; text-align:center">Submit Time</span>
+				<input type="date" name="submit_date" class="input-medium" value="<?=set_value('submit_date', isset($submitTime) ? date('Y-m-d', strtotime($submitTime)) : date('Y-m-d'))?>"/>
+				<input type="time" name="submit_time" class="input-medium" value="<?=set_value('submit_time', isset($submitTime) ? date('H:i', strtotime($submitTime)) : date('H:m', time() + 18000))?>"/>
+				</div>
+				<br />
+				<div style="display:inline">
+				<span class="label" style="width: 75px; text-align:center">End Time</span>
+				<input type="date" name="end_date" class="input-medium" value="<?=set_value('end_date', isset($endTime) ? date('Y-m-d', strtotime($endTime)) : date('Y-m-d'))?>"/>
+				<input type="time" name="end_time" class="input-medium" value="<?=set_value('end_time', isset($endTime) ? date('H:i', strtotime($endTime)) : date('H:m', time() + 18000))?>"/>
 				</div>
 			</div>
 			

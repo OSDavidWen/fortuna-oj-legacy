@@ -9,6 +9,7 @@
 			</a></li>
 			<li><a href="#contest/status/<?=$cid?>">Status</a></li>
 			<li><a href="#contest/standing/<?=$cid?>">Standing</a></li>
+			<li><a href="#contest/statistic/<?=$cid?>">Statistic</a></li>
 		</ul>
 	</div>
 </div>

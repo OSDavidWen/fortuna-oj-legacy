@@ -21,10 +21,10 @@
 				"<span class=\"label label-info\"><a href=\"#users/$row->name\">$row->name</a></span></td><td>";
 				
 			if ($row->status < 0 && $row->status > -3) echo $row->result;
-			elseif ($row->status == 8 || $row->status == 9) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
+			elseif ($row->status == 8 || $row->status == 9 || $row->status == -4) echo "<a href=\"#main/result/$row->sid\">$row->result</a>";
 			else{
 				if ($info->running && $info->contestMode == 'OI Traditional' && ! $is_admin){
-					echo '<span class="label label-success">Compiled</span>';
+					echo '<span class="label label-success">Submitted</span>';
 				}else{
 					if ($info->contestMode == 'OI' || $info->contestMode == 'OI Traditional') {
 						switch ($row->status) {

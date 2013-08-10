@@ -6,7 +6,7 @@
 
 <h4>
 	Problemset
-	<button class="btn btn-primary btn-mini pull-right" onclick="window.location.hash='admin/addproblem'">Add</button>
+	<button class="btn btn-primary btn-small pull-right" onclick="window.location.hash='admin/addproblem'">Add</button>
 </h4>
 <hr />
 

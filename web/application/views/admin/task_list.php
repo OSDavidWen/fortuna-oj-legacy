@@ -1,6 +1,6 @@
 <h4>
 	Task List
-	<button class="btn btn-primary btn-mini pull-right" onclick="window.location.hash='admin/new_task'">Add</button>
+	<button class="btn btn-primary btn-small pull-right" onclick="window.location.hash='admin/new_task'">Add</button>
 </h4>
 <hr />
 

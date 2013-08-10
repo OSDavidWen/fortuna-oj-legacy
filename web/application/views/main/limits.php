@@ -7,7 +7,9 @@
 		echo "<tr><td class=\"case_no\">Case $caseCnt</td><td>" . number_format($case->score, 2) . ' pts</td><td></td><td></td></tr>';
 		$testCnt = 1;
 		foreach ($case->tests as $test){
-			echo "<tr><td>Test $testCnt</td><td></td><td>$test->timeLimit ms</td><td>$test->memoryLimit KB</td></tr>";
+			echo "<tr><td>Test $testCnt</td><td></td>";
+			if (isset($test->timeLimit)) echo "<td><span class='badge badge-info'>$test->timeLimit ms</span></td>"; else echo '<td></td>';
+			if (isset($test->memoryLimit)) echo "<td><span class='badge badge-info'>$test->memoryLimit KB</span></td></tr>"; else echo '<td></td>';
 			$testCnt++;
 		}
 		$caseCnt++;
